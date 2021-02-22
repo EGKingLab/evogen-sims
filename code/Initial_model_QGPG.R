@@ -26,6 +26,12 @@ set.seed(1631)
 
 tic <- Sys.time()
 
+sel_type <- "F"
+gen_os <- 20
+
+#number of gens of selection
+Nsel <- 120
+
 Nhaps <- 18
 haps <- paste0("H",seq(1,Nhaps))
 Nmark <- 1000
@@ -117,7 +123,9 @@ cat("F",gg,"\n")
 }
 
 
-#Initial pop
+
+
+#selection
 
 mark.effs <- rexp(Nmark)
 BVs <- colSums(mark.effs*(t(pop.set[,"A",]) + t(pop.set[,"B",])))
@@ -127,16 +135,33 @@ env.eff <- rnorm(pop.size,0,sqrt(env.var))
 phenos <- BVs + env.eff
 init.mean <- mean(phenos)
 init.sd <- sd(phenos)
-new.opt <- init.mean + dist.to.trait*init.sd
-dist.p <- abs(phenos - new.opt)
+
+if(sel_type == "C")
+{
+  new.opt.all <- rep(init.mean + dist.to.trait*init.sd,
+                     times = Nsel)
+}else{
+  if(sel_type == "F")
+    {
+   
+    #make vector of new.opt
+    new.opt.all <- rep(c(init.mean - dist.to.trait*init.sd, init.mean + dist.to.trait*init.sd),
+                       each = gen_os, 
+                       times = ((Nsel/2)/gen_os))
+    
+  }else{
+    cat("invalid sel_type")
+  }
+}
+
+
+dist.p <- abs(phenos - new.opt.all[1])
 seld <- (dist.p/init.sd)/10
 rel.w <- 1-seld
+rel.w[rel.w < 0] <- 0
 N.offspring <- round(rel.w*10)
 
-#number of gens of selection
-Nsel <- 10
-
-for(gg in 1:Nsel)
+for(ss in 1:Nsel)
 {
   
   #make gamete pool
@@ -169,15 +194,20 @@ for(gg in 1:Nsel)
   BVs <- colSums(mark.effs*(t(pop.set[,"A",]) + t(pop.set[,"B",])))
   env.eff <- rnorm(pop.size,0,sqrt(env.var))
   phenos <- BVs + env.eff
+  
+  new.opt <- new.opt.all[(ss+1)]
+  
   dist.p <- abs(phenos - new.opt)
   seld <- (dist.p/init.sd)/10
   rel.w <- 1-seld
   N.offspring <- round(rel.w*10)
-  cat("S",gg,"\t",mean(phenos),"\n")
+  cat("S",ss,"\t",mean(phenos),"\t",var(BVs),"\n")
 }
 
 toc<- Sys.time()
 
 toc-tic
 
+
+#what to keep?!
 
