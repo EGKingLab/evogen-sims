@@ -46,7 +46,7 @@ Ngens.cross <- 5
 
 recomb.rate <- 1
 
-pop.size.i <- 100
+pop.size.i <- 1000
 
 h2 <- 0.5
 
@@ -161,6 +161,12 @@ rel.w <- 1-seld
 rel.w[rel.w < 0] <- 0
 N.offspring <- round(rel.w*10)
 
+output <- data.frame("gen" = seq(1,Nsel),"freq" = numeric(length=Nsel),"pheno"= numeric(length=Nsel))
+freqs.pos <- colMeans(pop.set, dims=2)
+focal.pos <- sample(which(freqs.pos < 0.6 & freqs.pos > 0.4 & mark.effs >2),1)
+
+
+
 for(ss in 1:Nsel)
 {
   
@@ -201,6 +207,10 @@ for(ss in 1:Nsel)
   seld <- (dist.p/init.sd)/10
   rel.w <- 1-seld
   N.offspring <- round(rel.w*10)
+  
+  output[ss,"pheno"] <- mean(phenos)
+  output[ss,"freq"] <- mean(as.numeric(pop.set[,,focal.pos]))
+  
   cat("S",ss,"\t",mean(phenos),"\t",var(BVs),"\n")
 }
 
@@ -208,6 +218,14 @@ toc<- Sys.time()
 
 toc-tic
 
+out.dat <- write.csv(output,file = "../OutputData/small_test.csv")
 
 #what to keep?!
+
+library(ggplot2)
+library(cowplot)
+theme_set(theme_cowplot())
+
+ggplot(output, aes(gen,freq)) +
+  geom_point()
 
