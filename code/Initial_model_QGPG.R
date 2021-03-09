@@ -27,10 +27,12 @@ set.seed(1631)
 tic <- Sys.time()
 
 sel_type <- "F"
-gen_os <- 20
+pop_type <- "C"
+
+gen_os <- 10
 
 #number of gens of selection
-Nsel <- 120
+Nsel <- 20
 
 Nhaps <- 18
 haps <- paste0("H",seq(1,Nhaps))
@@ -161,10 +163,12 @@ rel.w <- 1-seld
 rel.w[rel.w < 0] <- 0
 N.offspring <- round(rel.w*10)
 
-output <- data.frame("gen" = seq(1,Nsel),"freq" = numeric(length=Nsel),"pheno"= numeric(length=Nsel))
-freqs.pos <- colMeans(pop.set, dims=2)
-focal.pos <- sample(which(freqs.pos < 0.6 & freqs.pos > 0.4 & mark.effs >2),1)
+output.pheno <- matrix(NA,Nsel+1,2)
+output.pheno[(Nsel+1),1] <- init.mean
+output.pheno[(Nsel+1),2] <- var(BVs)
 
+output.freqs <- matrix(NA,Nsel+1,Nmark)
+output.freqs[(Nsel+1),] <- colMeans(pop.set, dims=2)
 
 
 for(ss in 1:Nsel)
@@ -208,8 +212,10 @@ for(ss in 1:Nsel)
   rel.w <- 1-seld
   N.offspring <- round(rel.w*10)
   
-  output[ss,"pheno"] <- mean(phenos)
-  output[ss,"freq"] <- mean(as.numeric(pop.set[,,focal.pos]))
+  output.freqs[ss,] <- colMeans(pop.set, dims=2)
+  
+  output.pheno[ss,1] <- mean(phenos)
+  output.pheno[ss,2] <- var(BVs)
   
   cat("S",ss,"\t",mean(phenos),"\t",var(BVs),"\n")
 }
@@ -218,14 +224,6 @@ toc<- Sys.time()
 
 toc-tic
 
-out.dat <- write.csv(output,file = "../OutputData/small_test.csv")
-
-#what to keep?!
-
-library(ggplot2)
-library(cowplot)
-theme_set(theme_cowplot())
-
-ggplot(output, aes(gen,freq)) +
-  geom_point()
+saveRDS(output.freqs, file = paste0("../output/Freq_out_S",sel_type,"_P",pop_type,".rds"))
+saveRDS(output.pheno, file = paste0("../output/Pheno_out_S",sel_type,"_P",pop_type,".rds"))
 
