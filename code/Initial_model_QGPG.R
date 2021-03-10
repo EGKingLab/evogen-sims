@@ -22,14 +22,22 @@
 
 # next generation
 
+
+args <- commandArgs(TRUE)
+
+seed.s <- args[1]
+
+
 set.seed(1631)
 
 tic <- Sys.time()
 
-sel_type <- "F"
+sel_type <- args[2]
 pop_type <- "C"
 
-gen_os <- 10
+gen_os <- args[3]
+
+samp_id <- args[4]
 
 #number of gens of selection
 Nsel <- 20
@@ -217,13 +225,13 @@ for(ss in 1:Nsel)
   output.pheno[ss,1] <- mean(phenos)
   output.pheno[ss,2] <- var(BVs)
   
-  cat("S",ss,"\t",mean(phenos),"\t",var(BVs),"\n")
+  cat("S",ss,"\n")
 }
 
 toc<- Sys.time()
 
 toc-tic
 
-saveRDS(output.freqs, file = paste0("../output/Freq_out_S",sel_type,"_P",pop_type,".rds"))
-saveRDS(output.pheno, file = paste0("../output/Pheno_out_S",sel_type,"_P",pop_type,".rds"))
+saveRDS(output.freqs, file = paste0("../output/Freq_out_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
+saveRDS(output.pheno, file = paste0("../output/Pheno_out_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
 
