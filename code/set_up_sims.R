@@ -5,7 +5,7 @@ rand_seeds <- round(runif(1000,1,1000000))
 
 counter <- 1
 
-gen_os <- c(1,5,10,20,50)
+gen_os <- c(1,5,10,25,50)
 
 pop_type <- c("C","F")
 

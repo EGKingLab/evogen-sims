@@ -25,7 +25,7 @@
 
 args <- commandArgs(TRUE)
 
-seed.s <- args[1]
+seed.s <- as.numeric(args[1])
 
 
 set.seed(1631)
@@ -35,12 +35,12 @@ tic <- Sys.time()
 sel_type <- args[2]
 pop_type <- "C"
 
-gen_os <- args[3]
+gen_os <- as.numeric(args[3])
 
 samp_id <- args[4]
 
 #number of gens of selection
-Nsel <- 20
+Nsel <- 500
 
 Nhaps <- 18
 haps <- paste0("H",seq(1,Nhaps))
