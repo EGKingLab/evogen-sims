@@ -27,9 +27,6 @@ args <- commandArgs(TRUE)
 
 seed.s <- as.numeric(args[1])
 
-
-set.seed(1631)
-
 tic <- Sys.time()
 
 sel_type <- args[2]
@@ -232,6 +229,7 @@ toc<- Sys.time()
 
 toc-tic
 
-saveRDS(output.freqs, file = paste0("../output/Freq_out_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
-saveRDS(output.pheno, file = paste0("../output/Pheno_out_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
+output.all <- list("freqs" = output.freqs, "pheno" = output.pheno, "effects" = mark.effs)
+
+saveRDS(output.all, file = paste0("../output/Sim_Output_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
 
