@@ -1,6 +1,6 @@
 library(tidyverse)
-#library(cowplot)
-#theme_set(theme_cowplot)
+library(cowplot)
+theme_set(theme_cowplot())
 
 #make pheno plot
 ngens <- 500
@@ -8,6 +8,7 @@ nreps <- 30
 Long_phenos <- data.frame("Type" = numeric(length = ngens*nreps),
                           "Generation" = rep(seq(1,ngens),nreps),
                           "Phenotype"= numeric(length = ngens*nreps),
+                          "Optimum"= numeric(length = ngens*nreps),
                           "Sim_run" = character(length = ngens*nreps))
 pop_type <- "C"
 counter <- 1
@@ -26,6 +27,7 @@ for(nn in 1:niter)
     Long_phenos[row_counter:(row_counter+499),"Type"] <- rep(paste0(sel_type,gg),500)
     Long_phenos[row_counter:(row_counter+499),"Sim_run"] <- rep(samp_id,500)
     Long_phenos[row_counter:(row_counter+499),"Phenotype"] <- output$pheno[1:500,1]
+    Long_phenos[row_counter:(row_counter+499),"Optimum"] <- output$optim
     counter <- counter + 1
     row_counter <- row_counter + 500
     
@@ -37,14 +39,25 @@ for(nn in 1:niter)
   Long_phenos[row_counter:(row_counter+499),"Type"] <- rep(sel_type,500)
   Long_phenos[row_counter:(row_counter+499),"Sim_run"] <- rep(samp_id,500)
   Long_phenos[row_counter:(row_counter+499),"Phenotype"] <- output$pheno[1:500,1]
+  Long_phenos[row_counter:(row_counter+499),"Optimum"] <- output$optim
   counter <- counter + 1
   row_counter <- row_counter + 500
   
 }
 
+Long_phenos <- Long_phenos %>%
+  mutate(Type = factor(Type),
+         Type = fct_relevel(Type, "C","F1","F5","F10","F25","F50"))
 
-g1 <- ggplot(Long_phenos[3001:6000,], aes(Generation,Phenotype, color=Type, group=Sim_run)) +
-  geom_line()
+g1 <- Long_phenos[1:3000,] %>%
+  filter(Type %in% c("C","F5","F25")) %>%
+  ggplot(aes(Generation,Phenotype, color=Type, group=Sim_run)) +
+  geom_line() + 
+  geom_hline(yintercept = Long_phenos$Optimum[1], lty = 3) +
+  geom_hline(yintercept = Long_phenos$Optimum[2], lty = 3) +
+  theme(axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
 
 g1
 

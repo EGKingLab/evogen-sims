@@ -36,6 +36,8 @@ gen_os <- as.numeric(args[3])
 
 samp_id <- args[4]
 
+set.seed(seed.s)
+
 #number of gens of selection
 Nsel <- 500
 
@@ -152,7 +154,7 @@ if(sel_type == "C")
     {
    
     #make vector of new.opt
-    new.opt.all <- rep(c(init.mean - dist.to.trait*init.sd, init.mean + dist.to.trait*init.sd),
+    new.opt.all <- rep(c(init.mean + dist.to.trait*init.sd, init.mean - dist.to.trait*init.sd),
                        each = gen_os, 
                        times = ((Nsel/2)/gen_os))
     
@@ -229,7 +231,7 @@ toc<- Sys.time()
 
 toc-tic
 
-output.all <- list("freqs" = output.freqs, "pheno" = output.pheno, "effects" = mark.effs)
+output.all <- list("freqs" = output.freqs, "pheno" = output.pheno, "effects" = mark.effs,"optim" = new.opt.all)
 
 saveRDS(output.all, file = paste0("../output/Sim_Output_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
 
