@@ -61,16 +61,27 @@ g1 <- Long_phenos[1:3000,] %>%
 
 g1
 
-ww <- which(output$effects>5)
+
+ngens <- 500
+pop_type <- "C"
+gen_os <- 25
+sel_type <- "F"
+
+samp_id <- "S4"
 
 
-plot(output$freqs[c(seq(1,500,by=os)),ww[2]],type='l', ylim=c(0,1))
-lines(output$freqs[c(seq(1,500,by=os)),ww[3]], col='blue')
-lines(output$freqs[c(seq(1,500,by=os)),ww[4]], col='red')
+output <- readRDS(file = paste0("../output/Sim_Output_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
 
-plot(output$freqs[,ww[2]],type='l', ylim=c(0,1))
-lines(output$freqs[,ww[3]], col='blue')
-lines(output$freqs[,ww[4]], col='red')
-lines(output$freqs[,ww[5]], col='green')
+ff <- as.data.frame(output$freqs[1:100,1:50])
+ff$Generation <- seq(1,100)
 
-plot(output$pheno[,1],type='l')
+Long_genes <- pivot_longer(ff, -Generation, names_to="GeneId", values_to = "AlleleFrequency")
+
+
+
+ggplot(Long_genes, aes(Generation, AlleleFrequency, group=GeneId)) +
+  geom_line(alpha=1/6)
+
+
+plot(output$freqs[1:50,1], type="l", ylim=c(0,1))
+lines()
