@@ -72,16 +72,86 @@ samp_id <- "S4"
 
 output <- readRDS(file = paste0("../output/Sim_Output_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
 
-ff <- as.data.frame(output$freqs[1:100,1:50])
-ff$Generation <- seq(1,100)
-
-Long_genes <- pivot_longer(ff, -Generation, names_to="GeneId", values_to = "AlleleFrequency")
+ff <- as.data.frame(output$freqs[1:500,])
+ff$Generation <- seq(1,500)
 
 
+Long_genes <- ff %>%
+pivot_longer(-Generation, names_to="GeneId", values_to = "AlleleFrequency")
 
-ggplot(Long_genes, aes(Generation, AlleleFrequency, group=GeneId)) +
-  geom_line(alpha=1/6)
+Long_genes$EffectSize <- rep(output$effects,times=500)
+Long_genes$Init_freq <- rep(output$freqs[501,],times=500)
+
+  
 
 
-plot(output$freqs[1:50,1], type="l", ylim=c(0,1))
-lines()
+ex.ef <- Long_genes %>%
+  filter(EffectSize > 7, 
+         #Generation %in% seq(1,500, by = 25),
+         Init_freq > 0.1 & Init_freq < 0.9)
+ex.ef$Effect <- "Large"
+
+sm.ef <- Long_genes %>%
+  filter(EffectSize <1, Init_freq > 0.4 & Init_freq < 0.6)
+sm.ef$Effect <- "Small"
+
+
+ex.ef <- rbind(ex.ef, subset(sm.ef, GeneId == sm.ef$GeneId[1]))
+
+Long_genes %>%
+  filter(Generation %in% seq(1,500, by = 25),
+         Init_freq > 0.1 & Init_freq < 0.9
+         ) %>%
+  ggplot(aes(Generation, AlleleFrequency, group=GeneId)) +
+  geom_line(alpha=1/12) +
+  geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
+  scale_color_manual(values=c("blue","red"))
+
+##### Constant
+
+ngens <- 500
+pop_type <- "C"
+gen_os <- NA
+sel_type <- "C"
+
+samp_id <- "S6"
+
+
+output <- readRDS(file = paste0("../output/Sim_Output_S",sel_type,"_P",pop_type,"_",samp_id,".rds"))
+
+ff <- as.data.frame(output$freqs[1:500,])
+ff$Generation <- seq(1,500)
+
+
+Long_genes <- ff %>%
+  pivot_longer(-Generation, names_to="GeneId", values_to = "AlleleFrequency")
+
+Long_genes$EffectSize <- rep(output$effects,times=500)
+Long_genes$Init_freq <- rep(output$freqs[501,],times=500)
+
+
+
+ex.ef <- Long_genes %>%
+  filter(EffectSize > 7, 
+         #Generation %in% seq(1,500, by = 25),
+         Init_freq > 0.1 & Init_freq < 0.9)
+ex.ef$Effect <- "Large"
+
+sm.ef <- Long_genes %>%
+  filter(EffectSize <1, Init_freq > 0.4 & Init_freq < 0.6)
+sm.ef$Effect <- "Small"
+
+
+ex.ef <- rbind(ex.ef, subset(sm.ef, GeneId == sm.ef$GeneId[1]))
+
+Long_genes %>%
+  filter( 
+         Generation %in% seq(1,500, by = 25),
+         Init_freq > 0.1 & Init_freq < 0.9
+  ) %>%
+  ggplot(aes(Generation, AlleleFrequency, group=GeneId)) +
+  geom_line(alpha=1/12) +
+  geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
+  scale_color_manual(values=c("blue","red")) +
+  geom_vline(xintercept=154, color='yellow')
+
