@@ -28,3 +28,14 @@ Rscript Initial_model_QGPG.R 472321 F 10 S27 >temp27.txt 2>error27.txt &
 Rscript Initial_model_QGPG.R 472321 F 25 S28 >temp28.txt 2>error28.txt & 
 Rscript Initial_model_QGPG.R 472321 F 50 S29 >temp29.txt 2>error29.txt & 
 Rscript Initial_model_QGPG.R 472321 C NA S30 >temp30.txt 2>error30.txt & 
+
+Rscript Initial_model_QGPG.R 703160 F 25 S300 F >temp300.txt 2>error300.txt & 
+Rscript Initial_model_QGPG.R 703160 C NA S301 F >temp301.txt 2>error301.txt & 
+
+Rscript Initial_model_QGPG.R 703160 F 1 S1 C >temp1.txt 2>error1.txt & 
+Rscript Initial_model_QGPG.R 703160 F 5 S2 C >temp2.txt 2>error2.txt & 
+Rscript Initial_model_QGPG.R 703160 F 10 S3 C >temp3.txt 2>error3.txt & 
+Rscript Initial_model_QGPG.R 703160 F 25 S4 C >temp4.txt 2>error4.txt & 
+Rscript Initial_model_QGPG.R 703160 F 50 S5 C >temp5.txt 2>error5.txt & 
+Rscript Initial_model_QGPG.R 703160 C NA S6 C >temp6.txt 2>error6.txt & 
+

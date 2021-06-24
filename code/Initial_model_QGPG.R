@@ -23,18 +23,23 @@
 # next generation
 
 
-args <- commandArgs(TRUE)
+# seed.s <- 299774
+# sel_type <- "C"
+# gen_os <- NA
+# samp_id <- 300
+# pop_type <- "F"
 
+
+args <- commandArgs(TRUE)
 seed.s <- as.numeric(args[1])
+sel_type <- args[2]
+gen_os <- as.numeric(args[3])
+samp_id <- args[4]
+pop_type <- args[5]
 
 tic <- Sys.time()
 
-sel_type <- args[2]
-pop_type <- "C"
-
-gen_os <- as.numeric(args[3])
-
-samp_id <- args[4]
+pop_os <- 25
 
 set.seed(seed.s)
 
@@ -55,7 +60,7 @@ Ngens.cross <- 5
 
 recomb.rate <- 1
 
-pop.size.i <- 1000
+pop.size.i <- 10000
 
 h2 <- 0.5
 
@@ -132,6 +137,27 @@ cat("F",gg,"\n")
 }
 
 
+#pop size
+
+if(pop_type == "C")
+{
+  pop.size.all <- rep(pop.size,
+                     times = Nsel)
+}else{
+  if(pop_type == "F")
+  {
+    
+    #make vector of new.opt
+    pop.size.all <- rep(c(pop.size, pop.size/10),
+                       each = pop_os, 
+                       times = ((Nsel/2)/pop_os))
+    
+  }else{
+    cat("invalid pop_type")
+  }
+}
+
+
 
 
 #selection
@@ -196,6 +222,7 @@ for(ss in 1:Nsel)
         r.ind <- sample(seq(2,(Nmark -1)),1)
         gamete.pool[counter,] <- c(pop.set[ii,'A',1:(r.ind -1)],pop.set[ii,'B',r.ind:Nmark])
         counter <- counter + 1
+       
       }
     }
   }
@@ -203,13 +230,23 @@ for(ss in 1:Nsel)
   #shuffle gamete pool
   gamete.pool <- gamete.pool[sample(1:nrow(gamete.pool)),]
   
-  pop.set <- array(t(gamete.pool[1:(pop.size*2),]),dim=c(Nmark,2,pop.size))
+  if(nrow(gamete.pool)>= (pop.size.all[ss]*2))
+  {
+    pop.set <- array(t(gamete.pool[1:(pop.size.all[ss]*2),]),dim=c(Nmark,2,pop.size.all[ss]))
+  }else{
+    if((nrow(gamete.pool) %% 2) == 0)
+    {
+      pop.set <- array(t(gamete.pool[1:nrow(gamete.pool),]),dim=c(Nmark,2,(nrow(gamete.pool)/2)))
+    }else{
+      pop.set <- array(t(gamete.pool[1:(nrow(gamete.pool)-1),]),dim=c(Nmark,2,((nrow(gamete.pool)-1)/2)))
+    }
+  }
   pop.set <- aperm(pop.set, c(3,2,1))
   dimnames(pop.set)[[2]] <- c("A","B")
   dimnames(pop.set)[[3]] <- paste0(poslist$CHROM,"_",poslist$POS)
   
   BVs <- colSums(mark.effs*(t(pop.set[,"A",]) + t(pop.set[,"B",])))
-  env.eff <- rnorm(pop.size,0,sqrt(env.var))
+  env.eff <- rnorm(length(pop.set[,1,1]),0,sqrt(env.var))
   phenos <- BVs + env.eff
   
   new.opt <- new.opt.all[(ss+1)]
