@@ -156,8 +156,9 @@ Long_genes %>%
          Init_freq > 0.1 & Init_freq < 0.9
          ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
-  geom_line(alpha=1/3) +
-  scale_colour_gradientn(colors=c("white","black"))
+  geom_line(alpha=1/2) +
+  scale_colour_gradientn(colors=c("white","black")) +
+  theme(panel.background = element_rect(fill = "white"))
 
 #  scale_colour_gradientn(colors=c("red","white","blue","black"))
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
@@ -207,7 +208,7 @@ Long_genes %>%
   ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
   geom_line(alpha=1/3) +
-  scale_colour_gradientn(colors=c("red","white","blue","black"))+
+  scale_colour_gradientn(colors=c("white","black"))+
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
   #scale_color_manual(values=c("blue","red")) +
   geom_vline(xintercept=mm, color='yellow')
@@ -258,8 +259,8 @@ Long_genes %>%
          Init_freq > 0.1 & Init_freq < 0.9
   ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
-  geom_line(alpha=1/3) +
-  scale_colour_gradientn(colors=c("red","white","blue","black"))
+  geom_line(alpha=1/2) +
+  scale_colour_gradientn(colors=c("white","black"))
 
   
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
@@ -311,7 +312,7 @@ Long_genes %>%
   ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
   geom_line(alpha=1/3) +
-  scale_colour_gradientn(colors=c("red","white","blue","black"))+
+  scale_colour_gradientn(colors=c("white","black"))+
   geom_vline(xintercept=mm, color='yellow')
 
 
