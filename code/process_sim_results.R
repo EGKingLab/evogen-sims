@@ -74,25 +74,25 @@ Long_phenos <- data.frame("Type" = numeric(length = ngens*nreps),
 
 samp_id <- "S300"
 output <- readRDS(file = paste0("../output/Sim_Output_SF_PF_S300.rds"))
-Long_phenos[1:500,"Type"] <- rep("SF_PF",500)
+Long_phenos[1:500,"Type"] <- rep("FS_FP",500)
 Long_phenos[1:500,"Sim_run"] <- rep(samp_id,500)
 Long_phenos[1:500,"Phenotype"] <- output$pheno[1:500,1]
 Long_phenos[1:500,"Optimum"] <- output$optim
 
 output <- readRDS(file = paste0("../output/Sim_Output_SC_PF_S301.rds"))
-Long_phenos[501:1000,"Type"] <- rep("SC_PF",500)
+Long_phenos[501:1000,"Type"] <- rep("CS_FP",500)
 Long_phenos[501:1000,"Sim_run"] <- rep(samp_id,500)
 Long_phenos[501:1000,"Phenotype"] <- output$pheno[1:500,1]
 Long_phenos[501:1000,"Optimum"] <- output$optim
 
 output <- readRDS(file = paste0("../output/Sim_Output_SC_PC_S6.rds"))
-Long_phenos[1001:1500,"Type"] <- rep("SC_PC",500)
+Long_phenos[1001:1500,"Type"] <- rep("CS_CP",500)
 Long_phenos[1001:1500,"Sim_run"] <- rep(samp_id,500)
 Long_phenos[1001:1500,"Phenotype"] <- output$pheno[1:500,1]
 Long_phenos[1001:1500,"Optimum"] <- output$optim
 
 output <- readRDS(file = paste0("../output/Sim_Output_SF_PC_S4.rds"))
-Long_phenos[1501:2000,"Type"] <- rep("SF_PC",500)
+Long_phenos[1501:2000,"Type"] <- rep("FS_CP",500)
 Long_phenos[1501:2000,"Sim_run"] <- rep(samp_id,500)
 Long_phenos[1501:2000,"Phenotype"] <- output$pheno[1:500,1]
 Long_phenos[1501:2000,"Optimum"] <- output$optim
@@ -108,7 +108,8 @@ g1p <- Long_phenos %>%
 
 g1p
 
-
+phen.all <- plot_grid(g1,g1p, labels=c("a.","b."),ncol=2)
+ggsave(phen.all, filename="../output/phenotype_sim.pdf", width=6.5, height=2.5)
 
 #### Alllele freq plots
 
@@ -150,15 +151,16 @@ sm.ef$Effect <- "Small"
 
 ex.ef <- rbind(subset(ex.ef, GeneId %in% ex.ef$GeneId[c(1,2)]), subset(sm.ef, GeneId %in% sm.ef$GeneId[c(1,2)]))
 
-Long_genes %>%
-  filter(Generation %in% seq(1,500, by = 25),
+FSCP <- Long_genes %>%
+  filter(Generation %in% seq(1,500, by = 1),
          EffectSize > 0,
          Init_freq > 0.1 & Init_freq < 0.9
          ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
   geom_line(alpha=1/2) +
   scale_colour_gradientn(colors=c("white","black")) +
-  theme(panel.background = element_rect(fill = "white"))
+  theme(panel.background = element_rect(fill = "white")) + 
+  theme(legend.position = "none")
 
 #  scale_colour_gradientn(colors=c("red","white","blue","black"))
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
@@ -201,9 +203,9 @@ sm.ef$Effect <- "Small"
 
 ex.ef <- rbind(subset(ex.ef, GeneId %in% ex.ef$GeneId[c(1,2)]), subset(sm.ef, GeneId %in% sm.ef$GeneId[c(1,2)]))
 
-Long_genes %>%
+CSCP <- Long_genes %>%
   filter(EffectSize > 0,
-         Generation %in% seq(1,500, by = 25),
+         Generation %in% seq(1,500, by = 1),
          Init_freq > 0.1 & Init_freq < 0.9
   ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
@@ -211,7 +213,9 @@ Long_genes %>%
   scale_colour_gradientn(colors=c("white","black"))+
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
   #scale_color_manual(values=c("blue","red")) +
-  geom_vline(xintercept=mm, color='yellow')
+  geom_vline(xintercept=mm, color='yellow') + 
+  theme(legend.position = "none") +
+  theme(axis.title.x=element_blank())
 
 
 
@@ -253,14 +257,16 @@ sm.ef$Effect <- "Small"
 
 ex.ef <- rbind(subset(ex.ef, GeneId %in% ex.ef$GeneId[c(1,2)]), subset(sm.ef, GeneId %in% sm.ef$GeneId[c(1,2)]))
 
-Long_genes %>%
+FSFP <- Long_genes %>%
   filter(EffectSize > 0,
-         Generation %in% seq(1,500, by = 25),
+         Generation %in% seq(1,500, by = 1),
          Init_freq > 0.1 & Init_freq < 0.9
   ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
   geom_line(alpha=1/2) +
-  scale_colour_gradientn(colors=c("white","black"))
+  scale_colour_gradientn(colors=c("white","black")) + 
+  theme(legend.position = "none") +
+  theme(axis.title.y=element_blank())
 
   
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
@@ -305,15 +311,27 @@ sm.ef$Effect <- "Small"
 
 ex.ef <- rbind(subset(ex.ef, GeneId %in% ex.ef$GeneId[c(1,2)]), subset(sm.ef, GeneId %in% sm.ef$GeneId[c(1,2)]))
 
-Long_genes %>%
+CSFP <- Long_genes %>%
   filter(EffectSize > 0,
-         Generation %in% seq(1,500, by = 25),
+         Generation %in% seq(1,500, by = 1),
          Init_freq > 0.1 & Init_freq < 0.9
   ) %>%
   ggplot(aes(Generation, AlleleFrequency, group=GeneId, color=EffectSize)) +
   geom_line(alpha=1/3) +
   scale_colour_gradientn(colors=c("white","black"))+
-  geom_vline(xintercept=mm, color='yellow')
+  geom_vline(xintercept=mm, color='yellow') + 
+  theme(legend.position = "none") +
+  theme(axis.title.x=element_blank(),axis.title.y=element_blank())
+
+
+allele.all <- plot_grid(CSCP,CSFP,FSCP,FSFP, ncol=2, labels=c("a.","b.","c.","d."), 
+                        rel_heights = c(1,1.1,1,1.1), rel_widths = c(1.1,1,1.1,1),
+                        label_x=c(0,-0.06,0,-0.06))
+
+ggsave(allele.all, filename="../output/afreq_sim.pdf",width=6.5, height=5)
+
+
+
 
 
 
