@@ -160,7 +160,10 @@ FSCP <- Long_genes %>%
   geom_line(alpha=1/2) +
   scale_colour_gradientn(colors=c("white","black")) +
   theme(panel.background = element_rect(fill = "white")) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  ggtitle("FSCP") +
+  theme(plot.title = element_text(hjust = 0.5, size=12,  color="steelblue"))
+
 
 #  scale_colour_gradientn(colors=c("red","white","blue","black"))
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
@@ -215,7 +218,10 @@ CSCP <- Long_genes %>%
   #scale_color_manual(values=c("blue","red")) +
   geom_vline(xintercept=mm, color='yellow') + 
   theme(legend.position = "none") +
-  theme(axis.title.x=element_blank())
+  theme(axis.title.x=element_blank()) +
+  ggtitle("CSCP") +
+  theme(plot.title = element_text(hjust = 0.5, size=12,  color="steelblue"))
+
 
 
 
@@ -266,7 +272,10 @@ FSFP <- Long_genes %>%
   geom_line(alpha=1/2) +
   scale_colour_gradientn(colors=c("white","black")) + 
   theme(legend.position = "none") +
-  theme(axis.title.y=element_blank())
+  theme(axis.title.y=element_blank()) +
+  ggtitle("FSFP") +
+  theme(plot.title = element_text(hjust = 0.5, size=12,  color="steelblue"))
+
 
   
   #geom_line(data=ex.ef, aes(Generation, AlleleFrequency, color=Effect)) +
@@ -321,7 +330,9 @@ CSFP <- Long_genes %>%
   scale_colour_gradientn(colors=c("white","black"))+
   geom_vline(xintercept=mm, color='yellow') + 
   theme(legend.position = "none") +
-  theme(axis.title.x=element_blank(),axis.title.y=element_blank())
+  theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+  ggtitle("CSFP") +
+  theme(plot.title = element_text(hjust = 0.5, size=12,  color="steelblue"))
 
 
 allele.all <- plot_grid(CSCP,CSFP,FSCP,FSFP, ncol=2, labels=c("a.","b.","c.","d."), 
