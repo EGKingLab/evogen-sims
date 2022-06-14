@@ -1,0 +1,89 @@
+// Keywords: QTLs, quantitative trait loci, heritability, environmental variance, breeding values, additive genetic variance, fitness()
+
+initialize() {
+	defineConstant("h2", 0.5);     // target heritability
+
+	initializeMutationRate(1e-6);
+	
+	initializeMutationType("m1", 0.5, "f", 0.0);       // neutral
+	initializeMutationType("m2", 0.5, "n", 0.0, 1.0);  // QTL
+	m2.convertToSubstitution = F;
+	
+	initializeGenomicElementType("g1", c(m1, m2), c(1, 0.01));
+	initializeGenomicElement(g1, 0, 1e5 - 1);
+	initializeRecombinationRate(1e-8);
+}
+1 late() {
+	sim.addSubpop("p1", 1000);
+}
+1: late() {
+	// sum the additive effects of QTLs
+	inds = sim.subpopulations.individuals;
+	additive = inds.sumOfMutationsOfType(m2);
+	
+	// model environmental variance, according to the target heritability
+	V_A = sd(additive)^2;
+	V_E = (V_A - h2 * V_A) / h2;    // from h2 == V_A / (V_A + V_E)
+	env = rnorm(size(inds), 0.0, sqrt(V_E));
+	
+	// set fitness effects and remember phenotypes
+	phenotypes = additive + env;
+	inds.fitnessScaling = 1.0 + dnorm(10.0 - phenotypes, 0.0, 5.0);
+	inds.tagF = phenotypes;
+}
+fitness(m2) {
+	return 1.0;   // QTLs are neutral; fitness effects are handled below
+}
+1:100000 late() {
+	if (sim.generation == 1)
+    {
+		cat("Mean phenotype:\n");
+	  }
+	meanPhenotype = mean(p1.individuals.tagF);
+	cat(format("%.2f", meanPhenotype));
+	writeFile(paste0("../output/SLiM/MeanPhenos.txt"), format("%.2f", meanPhenotype), append=T);
+
+	// Run until we reach the fitness peak
+	if (abs(meanPhenotype - 10.0) > 0.1)
+	{
+		cat(", ");
+		return;
+	}
+	
+	
+	cat("\n\n-------------------------------\n");
+	cat("QTLs at generation " + sim.generation + ":\n\n");
+	
+	qtls = sim.mutationsOfType(m2);
+	f = sim.mutationFrequencies(NULL, qtls);
+	s = qtls.selectionCoeff;
+	p = qtls.position;
+	o = qtls.originGeneration;
+	indices = order(f, F);
+	
+	for (i in indices)
+		cat("   " + p[i] + ": s = " + s[i] + ", f == " + f[i] + ", o == " + o[i] + "\n");
+		
+	sim.outputFull("../output/SLiM/full_out.txt");
+	sim.simulationFinished();	
+  // writeFile(paste0("../output/SLiM/genome_",sim.generation,".txt"), sim.outputFull());
+}
+
+2000 late() {
+         // obtain a random sample of genomes from the whole population
+         g = sim.subpopulations.genomes;
+         // get the unique mutations in the sample, sorted by position
+         m = sortBy(unique(g.mutations), "position");
+         
+         // print the positions
+         positions = format("%.6f", m.position / sim.chromosome.lastPosition);
+         cat("positions: " + paste(positions, sep=" ") + "\n");
+         // print the sampled genomes
+         for (genome in g)
+         {
+            hasMuts = (match(m, genome.mutations) >= 0);
+            cat(paste(asInteger(hasMuts), sep="") + "\n");
+         }
+}
+
+

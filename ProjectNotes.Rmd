@@ -1,0 +1,24 @@
+---
+title: "Project Notes"
+author: "Libby King"
+date: '2022-06-01'
+output: html_document
+---
+
+
+### Project Notes
+
+### Notes about Slim
+
+How to get output we need:
+- phenotype
+- allele frequency at every qtl for every generation
+
+How to set up initial genetic variation how we would like?
+- use fixed number??
+- set effect sizes according to dist?
+- mimic what we did already
+
+#### June 13
+
+Working on getting the output right for SLiM. Will use some custom Edios. 
