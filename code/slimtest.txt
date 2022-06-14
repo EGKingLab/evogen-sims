@@ -30,10 +30,14 @@ initialize() {
 	phenotypes = additive + env;
 	inds.fitnessScaling = 1.0 + dnorm(10.0 - phenotypes, 0.0, 5.0);
 	inds.tagF = phenotypes;
+	//writeFile(paste0("../output/SLiM/genome_track.txt"), paste0("Generation,Position,Frequency"));
 }
 fitness(m2) {
 	return 1.0;   // QTLs are neutral; fitness effects are handled below
 }
+
+
+
 1:100000 late() {
 	if (sim.generation == 1)
     {
@@ -42,6 +46,16 @@ fitness(m2) {
 	meanPhenotype = mean(p1.individuals.tagF);
 	cat(format("%.2f", meanPhenotype));
 	writeFile(paste0("../output/SLiM/MeanPhenos.txt"), format("%.2f", meanPhenotype), append=T);
+  
+  qtls = sim.mutationsOfType(m2);
+	f = sim.mutationFrequencies(NULL, qtls);
+	p = qtls.position;
+	indices = order(f, F);
+	
+	for (i in indices)
+	{
+		writeFile(paste0("../output/SLiM/genome_track.txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
+	}
 
 	// Run until we reach the fitness peak
 	if (abs(meanPhenotype - 10.0) > 0.1)
@@ -62,28 +76,17 @@ fitness(m2) {
 	indices = order(f, F);
 	
 	for (i in indices)
+	{
 		cat("   " + p[i] + ": s = " + s[i] + ", f == " + f[i] + ", o == " + o[i] + "\n");
+		//writeFile(paste0("../output/SLiM/genome_track.txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
+	}
+
 		
 	sim.outputFull("../output/SLiM/full_out.txt");
 	sim.simulationFinished();	
-  // writeFile(paste0("../output/SLiM/genome_",sim.generation,".txt"), sim.outputFull());
+  
 }
 
-2000 late() {
-         // obtain a random sample of genomes from the whole population
-         g = sim.subpopulations.genomes;
-         // get the unique mutations in the sample, sorted by position
-         m = sortBy(unique(g.mutations), "position");
-         
-         // print the positions
-         positions = format("%.6f", m.position / sim.chromosome.lastPosition);
-         cat("positions: " + paste(positions, sep=" ") + "\n");
-         // print the sampled genomes
-         for (genome in g)
-         {
-            hasMuts = (match(m, genome.mutations) >= 0);
-            cat(paste(asInteger(hasMuts), sep="") + "\n");
-         }
-}
+
 
 
