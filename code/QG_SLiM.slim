@@ -86,7 +86,10 @@ initialize() {
 	phenotypes = additive + env;
 	
 	// get new mean 4 sd away
-	defineConstant("newopt", mean(phenotypes) + sd(phenotypes)*4);		
+	mh = mean(phenotypes) + sd(phenotypes)*4;
+	ml = mean(phenotypes) - sd(phenotypes)*4;
+	nopt = rep(c(rep(mh ,25),rep(ml,25)), 12);
+	defineGlobal("newopt", nopt);		
 	
 	cat("VA " + V_A + "\n");
 	cat("newopt" + newopt + "\n");
@@ -107,7 +110,7 @@ initialize() {
 	phenotypes = additive + env;
 	//cat(phenotypes + "\n");
 	//inds.fitnessScaling = 1 + dnorm(newopt-phenotypes,0,0.25);
-	inds.fitnessScaling = 1-(abs(phenotypes - newopt)/200);
+	inds.fitnessScaling = 1-(abs(phenotypes - newopt[sim.generation])/200);
 	//1.0 + dnorm(100 - phenotypes, 0.0, 5.0);
 	inds.tagF = phenotypes;
 
