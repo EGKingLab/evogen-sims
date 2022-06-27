@@ -19,6 +19,11 @@ How to set up initial genetic variation how we would like?
 - set effect sizes according to dist?
 - mimic what we did already
 
+
+### June 20
+
+Have most of the simplest model in SLiM - still not in control of initial allele freqs. Maybe this is ok. Need to get output. 
+
 #### June 13
 
 Working on getting the output right for SLiM. Will use some custom Edios. 
