@@ -6,7 +6,7 @@ initialize() {
 	initializeMutationRate(1e-6);
 	
 	initializeMutationType("m1", 0.5, "f", 0.0);       // neutral
-	initializeMutationType("m2", 0.5, "n", 0.0, 1.0);  // QTL
+	initializeMutationType("m2", 0.5, "e", 0.0, 1.0);  // QTL
 	m2.convertToSubstitution = F;
 	
 	initializeGenomicElementType("g1", c(m1, m2), c(1, 0.01));
@@ -30,7 +30,8 @@ initialize() {
 	phenotypes = additive + env;
 	inds.fitnessScaling = 1.0 + dnorm(10.0 - phenotypes, 0.0, 5.0);
 	inds.tagF = phenotypes;
-	//writeFile(paste0("../output/SLiM/genome_track.txt"), paste0("Generation,Position,Frequency"));
+	writeFile(paste0("../output/SLiM/genome_track.txt"), paste0("Generation,Position,Frequency"));
+	writeFile(paste0("../output/SLiM/MeanPhenos.txt"), "MeanPheno");
 }
 fitness(m2) {
 	return 1.0;   // QTLs are neutral; fitness effects are handled below
@@ -38,33 +39,30 @@ fitness(m2) {
 
 
 
-1:100000 late() {
+1:100 late() {
 	if (sim.generation == 1)
     {
 		cat("Mean phenotype:\n");
 	  }
+	
 	meanPhenotype = mean(p1.individuals.tagF);
 	cat(format("%.2f", meanPhenotype));
 	writeFile(paste0("../output/SLiM/MeanPhenos.txt"), format("%.2f", meanPhenotype), append=T);
   
-  qtls = sim.mutationsOfType(m2);
-	f = sim.mutationFrequencies(NULL, qtls);
-	p = qtls.position;
-	indices = order(f, F);
+  cat(sim.generation,"\n");
+  	qtls = sim.mutationsOfType(m2);
+  	f = sim.mutationFrequencies(NULL, qtls);
+	  s = qtls.selectionCoeff;
+	  p = qtls.position;
+	  o = qtls.originGeneration;
+	  indices = order(f, F);
 	
-	for (i in indices)
-	{
-		writeFile(paste0("../output/SLiM/genome_track.txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
-	}
-
-	// Run until we reach the fitness peak
-	if (abs(meanPhenotype - 10.0) > 0.1)
-	{
-		cat(", ");
-		return;
-	}
-	
-	
+  	for (i in indices)
+	  {
+		  //cat(sim.generation,"   " + p[i] + ": s = " + s[i] + ", f == " + f[i] + ", o == " + o[i] + "\n");
+		  writeFile(paste0("../output/SLiM/genome_track.txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
+	  }
+  
 	cat("\n\n-------------------------------\n");
 	cat("QTLs at generation " + sim.generation + ":\n\n");
 	
@@ -81,11 +79,10 @@ fitness(m2) {
 		//writeFile(paste0("../output/SLiM/genome_track.txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
 	}
 
-		
-	sim.outputFull("../output/SLiM/full_out.txt");
-	sim.simulationFinished();	
-  
+	sim.outputFull(paste0("../output/SLiM/full_out_"sim.generation,".txt");
 }
+
+100 late () {sim.simulationFinished();}
 
 
 

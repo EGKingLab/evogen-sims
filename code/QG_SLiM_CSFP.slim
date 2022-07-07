@@ -62,8 +62,8 @@ initialize() {
 	}
 	 // remove the dummy subpopulation
          p2.setSubpopulationSize(0);
-   writeFile(paste0("../output/SLiM/genome_track_",rep,".txt"), paste0("Generation,Position,Frequency"));
-	writeFile(paste0("../output/SLiM/MeanPhenos_",rep,".txt"), paste0("Generation,Pheno,Optim"));
+   writeFile(paste0("../output/SLiM/genome_track_CSFP_",rep,".txt"), paste0("Generation,Position,Frequency"));
+	writeFile(paste0("../output/SLiM/MeanPhenos_CSFP_",rep,".txt"), paste0("Generation,Pheno,Optim"));
 
 } 
 
@@ -93,11 +93,15 @@ fitness(m2) {
 	// set fitness effects and remember phenotypes
 	phenotypes = additive + env;
 	
-	// get new mean 4 sd away
+	// get new mean 4 sd away - same here for constant
 	mh = mean(phenotypes) + sd(phenotypes)*4;
-	ml = mean(phenotypes) - sd(phenotypes)*4;
+	ml = mean(phenotypes) + sd(phenotypes)*4;
 	nopt = rep(c(rep(mh ,25),rep(ml,25)), 12);
 	defineGlobal("newopt", nopt);		
+	
+	// get new pop size
+	npop = rep(c(rep(10000 ,25),rep(1000,25)), 12);
+	defineGlobal("newpop", npop);		
 	
 	cat("VA " + V_A + "\n");
 	cat("newopt" + newopt + "\n");
@@ -110,15 +114,17 @@ qtls = sim.mutationsOfType(m2);
 	
 	for (i in indices)
 		{
-		writeFile(paste0("../output/SLiM/genome_track_",rep,".txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
+		writeFile(paste0("../output/SLiM/genome_track_CSFP_",rep,".txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
 		}	
 	meanPhenotype = mean(phenotypes);
-	writeFile(paste0("../output/SLiM/MeanPhenos_",rep,".txt"), paste0(sim.generation,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.generation])), append=T);
+	writeFile(paste0("../output/SLiM/MeanPhenos_CSFP_",rep,".txt"), paste0(sim.generation,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.generation])), append=T);
 
 }
 
 
 2:500 late() {
+	p1.setSubpopulationSize(newpop[sim.generation]);
+
 	// sum the additive effects of QTLs
 	inds = sim.subpopulations.individuals;
 	additive = inds.sumOfMutationsOfType(m2);
@@ -143,11 +149,11 @@ qtls = sim.mutationsOfType(m2);
 	
 	for (i in indices)
 		{
-		writeFile(paste0("../output/SLiM/genome_track_",rep,".txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
+		writeFile(paste0("../output/SLiM/genome_track_CSFP_",rep,".txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
 		}	
 
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("../output/SLiM/MeanPhenos_",rep,".txt"), paste0(sim.generation,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.generation])), append=T);
+	writeFile(paste0("../output/SLiM/MeanPhenos_CSFP_",rep,".txt"), paste0(sim.generation,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.generation])), append=T);
 
 
 

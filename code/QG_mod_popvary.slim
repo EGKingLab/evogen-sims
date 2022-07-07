@@ -1,8 +1,7 @@
 // Mimic constant, constant model
 
 initialize() {
-  setSeed(seed);
-  
+
 	// neutral mutations
 	initializeMutationRate(0);
 	initializeMutationType("m1", 0.5, "f", 0.0);      
@@ -62,14 +61,7 @@ initialize() {
 	}
 	 // remove the dummy subpopulation
          p2.setSubpopulationSize(0);
-   writeFile(paste0("../output/SLiM/genome_track_",rep,".txt"), paste0("Generation,Position,Frequency"));
-	writeFile(paste0("../output/SLiM/MeanPhenos_",rep,".txt"), paste0("Generation,Pheno,Optim"));
-
 } 
-
-fitness(m2) {
-	return 1.0;   // QTLs are neutral; fitness effects are handled below
-}
 
 1 late(){
 	qtls = sim.mutationsOfType(m2);
@@ -96,29 +88,28 @@ fitness(m2) {
 	// get new mean 4 sd away
 	mh = mean(phenotypes) + sd(phenotypes)*4;
 	ml = mean(phenotypes) - sd(phenotypes)*4;
-	nopt = rep(c(rep(mh ,25),rep(ml,25)), 12);
+	//nopt = rep(c(rep(mh ,25),rep(ml,25)), 12);
+	nopt = rep(mh, 600);
 	defineGlobal("newopt", nopt);		
 	
-	cat("VA " + V_A + "\n");
-	cat("newopt" + newopt + "\n");
-qtls = sim.mutationsOfType(m2);
-	f = sim.mutationFrequencies(NULL, qtls);
-	s = qtls.selectionCoeff;
-	p = qtls.position;
-	o = qtls.originGeneration;
-	indices = order(f, F);
+	// get new pop size
+	npop = rep(c(rep(10000 ,25),rep(1000,25)), 12);
+	defineGlobal("newpop", npop);		
 	
-	for (i in indices)
-		{
-		writeFile(paste0("../output/SLiM/genome_track_",rep,".txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
-		}	
-	meanPhenotype = mean(phenotypes);
-	writeFile(paste0("../output/SLiM/MeanPhenos_",rep,".txt"), paste0(sim.generation,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.generation])), append=T);
+	cat("VA " + V_A + "\n");
+	//cat("newopt" + newopt + "\n");
+
 
 }
 
+//{
+//	newSize = cos((sim.generation - 1) / 7.96) * 4500 + 5500;
+//	p1.setSubpopulationSize(asInteger(newSize));
+ //    }
 
 2:500 late() {
+	p1.setSubpopulationSize(newpop[sim.generation]);
+	
 	// sum the additive effects of QTLs
 	inds = sim.subpopulations.individuals;
 	additive = inds.sumOfMutationsOfType(m2);
@@ -134,26 +125,10 @@ qtls = sim.mutationsOfType(m2);
 	//1.0 + dnorm(100 - phenotypes, 0.0, 5.0);
 	inds.tagF = phenotypes;
 
-	qtls = sim.mutationsOfType(m2);
-	f = sim.mutationFrequencies(NULL, qtls);
-	s = qtls.selectionCoeff;
-	p = qtls.position;
-	o = qtls.originGeneration;
-	indices = order(f, F);
-	
-	for (i in indices)
-		{
-		writeFile(paste0("../output/SLiM/genome_track_",rep,".txt"), paste0(sim.generation,",", p[i], ",", format("%.6f",f[i])), append = T);
-		}	
-
-	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("../output/SLiM/MeanPhenos_",rep,".txt"), paste0(sim.generation,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.generation])), append=T);
-
-
-
 }
-
-
+fitness(m2) {
+	return 1.0;   // QTLs are neutral; fitness effects are handled below
+}
 
 501 late() {
 	cat("\n\n-------------------------------\n");
