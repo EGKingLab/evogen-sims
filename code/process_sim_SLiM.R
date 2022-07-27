@@ -8,8 +8,13 @@ types <- c("CSCP","CSFP","FSCP","FSFP")
 
 for(ii in 1:4)
 {
+
 type <- types[ii]
 dd <- read_csv(paste0("../output/SLiM/genome_track_",type,"_2.csv"))
+#tester <- subset(dd, Generation == 500)
+#nrow(tester)
+#mean(2*tester$Frequency*(1-tester$Frequency))
+
 dd$GeneID <- as.character(dd$Position)
 
 #add mean
