@@ -20,10 +20,16 @@ How to set up initial genetic variation how we would like?
 - mimic what we did already
 
 
-### June 20
+### July 28 2022
+
+Have implemented models in SLiM. Transferring repo to organization
+
+### June 20 2022
 
 Have most of the simplest model in SLiM - still not in control of initial allele freqs. Maybe this is ok. Need to get output. 
 
-#### June 13
+#### June 13 2022
 
 Working on getting the output right for SLiM. Will use some custom Edios. 
+
+
