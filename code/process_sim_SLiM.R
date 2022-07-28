@@ -12,9 +12,11 @@ for(ii in 1:4)
 type <- types[ii]
 dd <- read_csv(paste0("../output/SLiM/genome_track_",type,"_2.csv"))
 #tester <- subset(dd, Generation == 500)
-#nrow(tester)
-#mean(2*tester$Frequency*(1-tester$Frequency))
-
+#cat(nrow(tester),"\n")
+#ftest <- tester$Frequency
+#ftest <- c(ftest, rep(0,(100-length(ftest))))
+#cat(mean(2*ftest*(1-ftest)), "\n")
+#}
 dd$GeneID <- as.character(dd$Position)
 
 #add mean
