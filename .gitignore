@@ -10,6 +10,7 @@ output/SLiM/
 
 #Generated data files
 *.rds
+*.DS_Store
 
 # History files
 .Rhistory
