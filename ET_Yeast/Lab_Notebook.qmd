@@ -1,0 +1,22 @@
+---
+title: "Lab_Notebook"
+author: "Esdras T"
+format: html
+editor: visual
+---
+
+## Simulation project
+
+Here are the notes taken while working on the yeast simulation model. Most of these notes are based on the code writing and some additional ideas that might come while working on the project.
+
+## Writting Flow
+
+The most current notes are at the top.
+
+**November 29th**
+
+[*The very beginning of the notes.*]{.underline}
+
+During the one on one meeting, we discussed about selection coefficient. I came to realize that our selection is predicated on the **optimum phenotype** not the selection coefficient we set. For fluctuating selection, we will be **changing the optimum phenotype at a given generation interval**.
+
+Also, we talked about the introduction of new mutations. When only one individual carries the mutation (assuming beneficial mutation), that individual will have a high fitness thus higher reproductive priorities. Therefore, the mutation will fix so quickly.
