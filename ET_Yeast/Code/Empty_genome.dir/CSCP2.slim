@@ -1,7 +1,9 @@
-// set up a simple neutral simulation
+// set up a simple neu  tral simulation
 initialize() {
 	setSeed(12345);
 	// 1st mutation which is neutral and its genomic element type 
+	// We also need initializeSLiMOptions(keepPedigrees=T) "Not sure why I would do this but since we need both Quant and Pop analysis, it might make some sense to keep the pedigree for further analyzes.
+	
 	initializeMutationRate(1e-7);
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeGenomicElementType("g1", m1, 1.0);
@@ -10,12 +12,12 @@ initialize() {
 	initializeMutationType("m2", 0.5, "s", scriptForQTLs);
 	initializeGenomicElementType("g2", m2, 1.0);
 	m2.convertToSubstitution = F;
-	//m2.mutationStackGroup = -1;
+	m2.mutationStackGroup = -1;
 	m2.mutationStackPolicy = "l";
 	m1.color = "green";
 	m2.color = "red";
 	
-	//defining constants that will help us determin the QTLs position and the length of our chromosome.
+	//defining constants that will help us determine the QTLs position and the length of our chromosome.
 	
 	defineConstant("C", 100); // # of qtl I want
 	defineConstant("W", 5000); //# Neutal buffers for our QTLs
@@ -35,13 +37,13 @@ initialize() {
 	defineConstant("Q", q); //remember our QTL positions
 	initializeRecombinationRate(1e-8); //We're using a fixed recombiantion rate
 }
-// create a population of 500 individuals
+// create a population of 10000 individuals
 1 early() {
 	sim.addSubpop("p1", 10000);
 	
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/genome_CSCP",".csv"), paste0("Generation,Position,Frequency,Effect, origin"));
-		
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/MeanPhenotypes_CSCP",".csv"), paste0("Generation,Phenotype"));
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP",".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+	
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP",".csv"), paste0("Generation,Phenotype"));
 }
 
 mutationEffect(m2) {
@@ -54,10 +56,11 @@ mutationEffect(m2) {
 	inds = sim.subpopulations.individuals;
 	phenotype = inds.sumOfMutationsOfType(m2);
 	optimum = 10.0;
-	inds.fitnessScaling = dnorm(optimum - phenotype, 0.0, 1.0); //1.0 + dexp(optimum - phenotype); Check Recipe 13.6 for more about fitness. Stabilizing, directional, disruptive, trancution, and squashed stabilizing selections
+	inds.fitnessScaling = dnorm(optimum - phenotype, 0.0, 1.0); //1.0 + dexp(optimum - phenotype); Check Recipe 13.6 for more about fitness. Stabilizing, directional, disruptive, trancution, and squashed stabilizing selections OR dnorm(optimum - phenotype, 0.0, 1.0)
+	
 	inds.tagF = phenotype;
 	
-	//REMEMBER THIS IN RECIPE 13.6 TRUNCATION SELECTION. This can help when you want to change selection at given generation
+	//REMEMBER THIS IN RECIPE 13.6 TRUNCATION SELECTION
 	
 	/* To make this interesting, we need to build up some genetic diversity in QTLs first, so let's run
 for 10000 ticks under neutral conditions first, with a population size of 5000, and then impose
@@ -70,7 +73,7 @@ truncation selection for the next 5000 ticks*/
 	meanPhenotype = mean(p1.individuals.tagF);
 	cat(format("%.2f", meanPhenotype));
 	
-   cat("\n\n-------------------------------\n");
+	cat("\n\n-------------------------------\n");
 	cat("QTLs at cycle " + sim.cycle + ":\n\n");
 	
 	qtls = sim.mutationsOfType(m2);
@@ -82,11 +85,11 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/genome_CSCP",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
-		
-		meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/MeanPhenotypes_CSCP",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype)), append=T);
-	}
+		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+	
+	meanPhenotype = mean(p1.individuals.tagF);
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype)), append=T);
+}
 
 1000 late() {
 	cat("\n\n-------------------------------\n");
@@ -98,7 +101,7 @@ truncation selection for the next 5000 ticks*/
 	posit = qtls.position;
 	origin = qtls.originTick;
 	indices = order(freq, F);
-
+	
 	for (i in indices)
 		cat("   " + posit[i] + ": selCoef = " + selCoef[i] + ", freq == " + freq[i] + ", origin == " + origin[i] + "\n");
 	sim.simulationFinished();
