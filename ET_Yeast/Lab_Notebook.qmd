@@ -13,7 +13,39 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
-**November 29th**
+[***December 23rd 2022***]{.underline}
+
+I today figured out that .tagF wouldn't work until we scale the fitness. Maybe it might be good to read more about it in the Eidos manual. Also, according to the plots, it seemed like the mutation doesn't change much about the frequency over generation when used a genome from dummy population.ed
+
+[***December 5th 2022***]{.underline}
+
+Creating an initial genome using a dummy population. In this case we need a sub-population with a single genome that has added mutations and its effect size correspond to the number of QTLs.
+
+```{r, echo=FALSE}
+library(slimr)
+slim_block(1, early(),
+             {sim.addSubpop("p2", 1);
+	g = p2.genomes[0];
+	muts = g.addNewMutation(m2, rexp(100), Q);
+	
+	sim.addSubpop("p1", 10000);
+	marks = runif(100, 0,1);
+	ind = 0;
+	for(qpos in Q)
+	{
+		for(g in p1.genomes)
+		{
+			if(rbinom(1,1,marks[ind])==1){g.addMutations(muts[ind]);}
+		}
+		ind = ind + 1;
+	}
+	p2.setSubpopulationSize(0);})
+
+```
+
+Have an initial frequency distribution; draw random positions where your mutations could be in the sub-population to use.
+
+[***November 29th 2022***]{.underline}
 
 [*The very beginning of the notes.*]{.underline}
 

@@ -10,7 +10,8 @@ initialize() {
 	initializeMutationType("m2", 0.5, "f", 0.3); // synonymous
 	initializeMutationType("m3", 0.5, "f", 0.1);  // Exponential with selection coef of 0.1. This is our QTL
 	
-	/* The above shows a constant mutation! Note that if we wanted the mutation effect to be discrete, we would use a user specified "s" distribution. check scriptForQTLs */
+	/* The above shows a constant mutation! Note that if we wanted the mutation effect to be discrete, 
+	we would use a user specified "s" distribution. check scriptForQTLs */
 	
 	m3.convertToSubstitution = F; // We need our QTL to stay even after fixation
 	
@@ -47,8 +48,9 @@ initialize() {
 
 1 early() {sim.addSubpop("p1", 10000);
 	
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/Output.dir/genomeV2",".csv"), paste0("Generation, Position, Frequency, Effect"));
+/*	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/Output.dir/genomeV2",".csv"), paste0("Generation, Position, Frequency, Effect"));
 	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/Output.dir/phenotypesV2",".csv"), paste0("Generation, Phenotype, Optimum"));
+*/
 }
 
 mutationEffect(m3){
@@ -72,7 +74,7 @@ mutationEffect(m3){
 	//	return 1.0;   // QTLs are neutral; fitness effects are handled below
 	//}
 }
-1:500 late() {
+501 late() {
 	if (sim.cycle == 1) //cycle used to be generation
 		cat("Mean phenotype:\n");
 	
@@ -86,7 +88,7 @@ mutationEffect(m3){
 	p = qtls.position;
 	o = qtls.originTick;
 	indices = order(f, F);
-	
+	/*
 	for (i in indices)
 	{
 		//mydata = cat("   " + p[i] + ": s = " + s[i] + ", f == " + f[i] + ", o == " + o[i] + "\n");
@@ -97,8 +99,9 @@ mutationEffect(m3){
 	meanPhenotype = mean(p1.individuals.tagF);
 	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/Output.dir/phenotypesV2",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt)), append=T);
 }
+*/
 
-501 late() {
+/*501 late() {
 	cat("\n\n-------------------------------\n");
 	cat("QTLs at generation " + sim.cycle + ":\n\n");
 	
@@ -108,7 +111,7 @@ mutationEffect(m3){
 	p = qtls.position;
 	o = qtls.originTick;
 	indices = order(f, F);
-	
+*/	
 	for (i in indices)
 		
 		cat("   " + p[i] + ": s = " + s[i] + ", f == " + f[i] + ", o == " + o[i] + "\n");
