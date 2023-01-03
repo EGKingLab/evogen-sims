@@ -13,6 +13,8 @@ initialize() {
 	scriptQTL = "rexp(1);";
 	initializeMutationType("m2", 0.5, "s", scriptQTL);  // QTL
 	initializeGenomicElementType("g2", m2, 1.0);
+	m1.color = "green";
+	m2.color = "red";
 	m2.convertToSubstitution = F;
 	m2.mutationStackPolicy = "l";
 	
@@ -62,8 +64,8 @@ initialize() {
 	}
 	// remove the dummy subpopulation
 	p2.setSubpopulationSize(0);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast/ModOutPut/genome_track_CSCP_",".csv"), paste0("Generation,Position,Frequency,Effect"));
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast/ModOutPut/MeanPhenos_CSCP_",".csv"), paste0("Generation,Pheno,Optim"));
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/genome_track_CSCP_",".csv"), paste0("Generation,Position,Frequency,Effect"));
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/MeanPhenos_CSCP_",".csv"), paste0("Generation,Pheno,Optim"));
 
 }
 
@@ -110,10 +112,10 @@ mutationEffect(m2) {
 	
 	for (i in indices)
 	{
-		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast/ModOutPut/genome_track_CSCP_",".csv"), paste0(sim.cycle,",", p[i], ",", format("%.6f",f[i]), ",", format("%.6f",s[i])), append = T);
+		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/genome_track_CSCP_",".csv"), paste0(sim.cycle,",", p[i], ",", format("%.6f",f[i]), ",", format("%.6f",s[i])), append = T);
 	}
 	meanPhenotype = mean(phenotypes);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast/ModOutPut/MeanPhenos_CSCP_",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.cycle])), append=T);
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/MeanPhenos_CSCP_",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.cycle])), append=T);
 
 }
 
@@ -143,11 +145,11 @@ mutationEffect(m2) {
 	
 	for (i in indices)
 	{
-		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast/ModOutPut/genome_track_CSCP_",".csv"), paste0(sim.cycle,",", p[i], ",", format("%.6f",f[i]), ",", format("%.6f",s[i])), append = T);
+		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/genome_track_CSCP_",".csv"), paste0(sim.cycle,",", p[i], ",", format("%.6f",f[i]), ",", format("%.6f",s[i])), append = T);
 	}
 	
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast/ModOutPut/MeanPhenos_CSCP_",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.cycle])), append=T);
+	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/MeanPhenos_CSCP_",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",",format("%.6f",newopt[sim.cycle])), append=T);
 
 
 

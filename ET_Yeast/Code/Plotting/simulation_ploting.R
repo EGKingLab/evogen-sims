@@ -31,10 +31,11 @@ dummy_norate %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))
   theme_cowplot(12)+
   theme(legend.position = "none")
 
-test = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/code/test/genome_test.csv")%>% 
+test = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/code/test.dir/genome_test.csv") %>% 
   filter(Frequency < 1 & Frequency > 0)
 
-test_pheno = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/code/test/MeanPhenotypes_test.csv") 
+test_pheno = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/code/test.dir/MeanPhenotypes_test.csv") %>% 
+  mutate(fitnessScaling = (1 + (Phenotype - Optimum)/200))
 
 plot(test_pheno$Generation, test_pheno$Phenotype)
 hist(test_pheno$Phenotype)
