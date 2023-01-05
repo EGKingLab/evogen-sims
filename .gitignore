@@ -3,7 +3,7 @@ SNP_table_Yeast.txt
 
 #tracking files
 error*
-#test*
+test
 
 #regenerated files
 output/SLiM/
