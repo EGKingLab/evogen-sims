@@ -1,8 +1,9 @@
 // set up a simple neutral simulation
 initialize() {
 	setSeed(12345);
+	initializeSex('A');
 	// 1st mutation which is neutral and its genomic element type 
-	initializeMutationRate(1e-7);
+	initializeMutationRate(0);
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeGenomicElementType("g1", m1, 1.0);
 	
@@ -37,7 +38,7 @@ initialize() {
 }
 
 1 early() {
-	sim.addSubpop("p2", 1);
+	sim.addSubpop("p2", 2);
 	g = p2.genomes[0];
 	muts = g.addNewMutation(m2, rexp(100), Q);
 	
@@ -53,10 +54,12 @@ initialize() {
 		ind = ind + 1;
 	}
 	p2.setSubpopulationSize(0);
+	p1.setCloningRate(0);
+	p1.setSelfingRate(0);
 	
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate",".csv"), paste0("Generation,Position,Frequency,Effect, origin"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate",".csv"), paste0("Generation,Position,Frequency,Effect, origin"));
 	
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate",".csv"), paste0("Generation,Phenotype,Optimum"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate",".csv"), paste0("Generation,Phenotype,Optimum"));
 }
 
 mutationEffect(m2) {
@@ -100,10 +103,10 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(phenotypes);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 2:1000 late() {
@@ -132,10 +135,10 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 1000 late() {

@@ -41,9 +41,9 @@ initialize() {
 1 early() {
 	sim.addSubpop("p1", 10000);
 	
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP",".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP",".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
 	
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP",".csv"), paste0("Generation,Phenotype"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP",".csv"), paste0("Generation,Phenotype"));
 }
 
 mutationEffect(m2) {
@@ -85,10 +85,10 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype)), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype)), append=T);
 }
 
 1000 late() {

@@ -1,8 +1,8 @@
 library(tidyverse)
 library(cowplot)
 
-empty_geno = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP.csv")%>% 
-  filter(Frequency < 1 & Frequency > 0)
+empty_geno = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/genome_CSCP.csv") #%>% 
+  #filter(Frequency < 1 & Frequency > 0)
 
 empty_geno_ph = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Empty_geno/MeanPhenotypes_CSCP.csv")
 plot(empty_geno_ph$Generation, empty_geno_ph$Phenotype)
@@ -12,8 +12,13 @@ empty_geno %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   theme_cowplot(12)+
   theme(legend.position = "none")
 
-dummy = read.csv("/Users/ezra/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate.csv")%>% 
-  filter(Frequency < 1 & Frequency > 0)
+dummy = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/genome_CSCP_MutRate.csv") #%>% 
+  #filter(Frequency < 1 & Frequency > 0)
+
+dummy_ph = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/MeanPhenotypes_CSCP_MutRate.csv")
+
+plot(dummy_ph$Generation, dummy_ph$Phenotype)
+
 
 dummy %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
@@ -47,4 +52,25 @@ test %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   theme(legend.position = "none")
 
 plot(test$Generation, test$Frequency)
+
+
+#####################
+
+trial = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/Trial/genome_CSCP_trial.csv") #%>% 
+  #filter(Frequency < 1 & Frequency > 0)
+
+trial_pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/Trial/MeanPhenotypes_CSCP_trial.csv") 
+
+plot(trial_pheno$Generation, trial_pheno$Phenotype)
+hist(trial_pheno$Phenotype)
+#hist(trial_pheno$Optimum)
+
+trial %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+hist(trial$Effect, breaks = 100000)
+
+plot(trial$Generation, trial$Frequency)
 
