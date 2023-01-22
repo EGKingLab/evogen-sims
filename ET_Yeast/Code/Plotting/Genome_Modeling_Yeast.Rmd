@@ -1,0 +1,118 @@
+---
+title: "Genome_Modeling_Yeast"
+author: "Esdras T."
+date: '2023-01-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Effect of selection pressure and population size on yeast phenotype and genotype over generations
+
+The following document entails the path followed while designing the yeast model while considering the:
+1) Constant selection (Optimum) vs Constant Population
+2) Fluctuating selection vs Constant Population
+3) Constant Selection vs Fluctuating Population
+4) Fluctuating Selection vs Fluctuating Population
+
+### 1) Constant selection (Optimum) vs Constant Population
+ This model is straight forward as everything is constant. There are 100 QTL positions that affect the phenotype of interest (for example, change in temperature), and we also used a dummy population to start with some allele frequencies and effect of those QTL in our population. The optimum was considered to be the sum of mean phenotypes and 2 standard deviations. 
+
+```{r echo=FALSE}
+CSCP_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSCP_WF.csv")
+
+CSCP_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSCP_WF.csv")
+
+CSCP_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+CSCP_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+CSCP_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+```
+
+### 2) Fluctuating selection vs Constant Population
+
+Different functions were used to set a fluctuating selection. 1) The first was to use two different optima where some generations were give an optimum of mean phenotype plus 2 sd and  other generations were given an optimum of mean phenotype minus 2 sd.  2) The next used a uniform distribution with a minimum optimum of mean phenotype minus 2sd and the maximum of mean phenotype plus 2sd. 3) The third used a normal distribution with mean = mean(phenotypes)+ sd(phenotypes) times 2 and  standard deviation = sd(phenotypes) times 2. 4) the fourth fluctuating selection was based of the increase of mean phenotype for every 25 generations for 1, 2, 3, and 4 standard deviations then the cycle starts over again until we reach the genration 1000. 5) The last fluctuation in selection was not based on the change in optimum, but the slection coefficient and dominance.
+All the output results are read below, the graphs are combined together for easy comparison.
+
+```{r echo=FALSE}
+FSCP1_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v1.csv")
+
+FSCP1_pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v1.csv")
+
+plot1_phenoGen = FSCP1_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot1_pheno = FSCP1_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+plot1_Genom = FSCP1_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+######################## FSCP2  #####################
+
+FSCP2_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v2.1.csv")
+
+FSCP2_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v2.1.csv")
+
+plot2_phenoGen = FSCP2_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot2_pheno = FSCP2_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+plot2_Genom = FSCP2_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+############## FSCP3  #################
+
+FSCP3_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v2.2.csv")
+
+FSCP3_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v2.2.csv")
+
+plot3_phenoGen = FSCP3_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot3_pheno = FSCP3_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+plot3_Genom = FSCP3_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+################### FSCP4  ################
+
+FSCP4_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v3.csv")
+
+FSCP4_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v3.csv")
+
+plot4_phenoGen = FSCP4_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot4_pheno = FSCP4_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+plot4_Genom = FSCP4_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+################## FSCP5  ######################
+
+FSCP5_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v4.csv")
+
+FSCP5_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v4.csv")
+
+plot5_phenoGen = FSCP5_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot5_pheno = FSCP5_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+plot5_Genom = FSCP5_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+
+```
+
+### 3) Constant Selection vs Fluctuating Population
+
+There are many ways of modeling a fluctuating population while considering a given generation interval. For this study, the chosen generation interval is mostly 25.The first model considered a population fluctuating between 10,000 and 1,000 for every 25 generations. In reality, such king of pop might be hard to find it in normal world. Another possibility was to model a population that follows a uniform distribution (Check the code to know generation interval. Also, the pop size was integer, of course) with a minimum of 100 and max of 10,000. Also, Poisson distribution has been used while considering a mean (alpha parameter) of 10,000.
+
