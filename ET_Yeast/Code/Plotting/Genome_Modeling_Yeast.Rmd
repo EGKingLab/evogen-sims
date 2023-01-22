@@ -45,13 +45,14 @@ FSCP1_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics
 
 FSCP1_pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v1.csv")
 
-plot1_phenoGen = FSCP1_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
-plot1_pheno = FSCP1_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+plot1_phenoGen = FSCP1_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)+ ggtitle("FSCP1 Pheno vs Generation")
+plot1_pheno = FSCP1_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("FSCP1 Pheno")
 
 plot1_Genom = FSCP1_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
   theme_cowplot(12)+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("FSCP1 Genome")
 
 ######################## FSCP2  #####################
 
@@ -59,13 +60,14 @@ FSCP2_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics
 
 FSCP2_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v2.1.csv")
 
-plot2_phenoGen = FSCP2_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
-plot2_pheno = FSCP2_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+plot2_phenoGen = FSCP2_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12) + ggtitle("FSCP2 Pheno vs Generation")
+plot2_pheno = FSCP2_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("FSCP2 Pheno")
 
 plot2_Genom = FSCP2_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
   theme_cowplot(12)+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("FSCP2 Genome")
 
 ############## FSCP3  #################
 
@@ -73,13 +75,14 @@ FSCP3_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics
 
 FSCP3_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v2.2.csv")
 
-plot3_phenoGen = FSCP3_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
-plot3_pheno = FSCP3_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+plot3_phenoGen = FSCP3_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12) + ggtitle("FSCP3 Pheno vs Generation")
+plot3_pheno = FSCP3_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("FSCP3 Pheno")
 
 plot3_Genom = FSCP3_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
   theme_cowplot(12)+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("FSCP3 Genome")
 
 ################### FSCP4  ################
 
@@ -87,13 +90,14 @@ FSCP4_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics
 
 FSCP4_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v3.csv")
 
-plot4_phenoGen = FSCP4_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
-plot4_pheno = FSCP4_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+plot4_phenoGen = FSCP4_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12) + ggtitle("FSCP4 Pheno vs Generation")
+plot4_pheno = FSCP4_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("FSCP4 Pheno")
 
 plot4_Genom = FSCP4_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
   theme_cowplot(12)+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("FSCP4 Genome")
 
 ################## FSCP5  ######################
 
@@ -101,13 +105,21 @@ FSCP5_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics
 
 FSCP5_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v4.csv")
 
-plot5_phenoGen = FSCP5_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
-plot5_pheno = FSCP5_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+plot5_phenoGen = FSCP5_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12) + ggtitle("FSCP5 Pheno vs Generation")
+
+plot5_pheno = FSCP5_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("FSCP5 Pheno")
 
 plot5_Genom = FSCP5_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
   theme_cowplot(12)+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("FSCP5 Genome")
+
+plot_grid(plot1_phenoGen, plot2_phenoGen, plot3_phenoGen, plot4_phenoGen, plot5_phenoGen)
+
+plot_grid(plot1_pheno, plot2_pheno, plot3_pheno, plot4_pheno, plot5_pheno)
+
+plot_grid(plot1_Genom, plot2_Genom, plot3_Genom, plot4_Genom, plot5_Genom)
 
 
 ```
