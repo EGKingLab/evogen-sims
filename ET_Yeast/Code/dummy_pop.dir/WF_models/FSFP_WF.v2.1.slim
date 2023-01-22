@@ -60,9 +60,9 @@ initialize() {
 	}
 	p2.setSubpopulationSize(0);
 	
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF.csv"), paste0("Generation,Position,Frequency,Effect, origin"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSFP_WF.v2.1.csv"), paste0("Generation,Position,Frequency,Effect, origin"));
 	
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF",".csv"), paste0("Generation,Phenotype,Optimum"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSFP_WF.v2.1",".csv"), paste0("Generation,Phenotype,Optimum"));
 }
 
 mutationEffect(m2) {
@@ -82,15 +82,9 @@ mutationEffect(m2) {
 	
 	// set fitness effects and remember phenotypes
 	phenotypes = additive + env;
-	
-	mh = mean(phenotypes) + sd(phenotypes)*4;
-	ml = mean(phenotypes) + sd(phenotypes)*4;
-	nopt = rep(c(rep(mh ,25),rep(ml,25)), 41);
+	nopt = runif(1001, mean(phenotypes) - sd(phenotypes)*2, mean(phenotypes) + sd(phenotypes)*2);
 	npop = rep(c(rep(10000, 25), rep(1000, 25)), 21);
-	//npop = rpois(1001, 10000);
-	//npop = asInteger(runif(1001, 100, 10000));
-	//npop = repEach(c(asInteger(runif(41, 100, 10000))), 25);
-	//npop = rep(mypop, 41);
+	
 	defineGlobal("newopt", nopt);
 	defineGlobal("newpop", npop);
 	
@@ -113,11 +107,11 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(phenotypes);
 	
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 2:1000 late() {
@@ -148,13 +142,12 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
-/*
 1001:1500 late() {
 	p1.setSubpopulationSize(100);
 	// sum the additive effects of QTLs
@@ -183,10 +176,10 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 
@@ -218,13 +211,13 @@ truncation selection for the next 5000 ticks*/
 	
 	for (i in indices)
 		//cat("   " + posit[i] + ": s = " + selCoef[i] + ", f == " + freq[i] + ", o == " + origin[i] + "\n");
-		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	meanPhenotype = mean(p1.individuals.tagF);
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSFP_WF.v2.1",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
-*/
-1000 late() {
+
+2000 late() {
 	cat("\n\n-------------------------------\n");
 	cat("QTLs at generation " + sim.cycle + ":\n\n");
 	

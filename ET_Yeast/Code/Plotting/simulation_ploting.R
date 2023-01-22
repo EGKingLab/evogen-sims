@@ -55,15 +55,19 @@ plot(test$Generation, test$Frequency)
 
 
 #####################
-
-trial = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/Trial/genome_CSCP_trial.csv") #%>% 
+library(tidyverse)
+library(cowplot)
+trial = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF.csv") #%>% 
   #filter(Frequency < 1 & Frequency > 0)
 
-trial_pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/Trial/MeanPhenotypes_CSCP_trial.csv") 
+trial_pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF.csv") 
 
 plot(trial_pheno$Generation, trial_pheno$Phenotype)
-hist(trial_pheno$Phenotype)
+hist(trial_pheno$Phenotype, breaks = 300)
 #hist(trial_pheno$Optimum)
+
+cor.test(trial_pheno$Phenotype,trial_pheno$Optimum)
+var(trial_pheno$Phenotype)
 
 trial %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
   geom_point()+
