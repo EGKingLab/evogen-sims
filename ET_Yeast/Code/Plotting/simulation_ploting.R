@@ -78,3 +78,112 @@ hist(trial$Effect, breaks = 100000)
 
 plot(trial$Generation, trial$Frequency)
 
+############################################################
+############################################################
+############################################################
+
+########## CSCP ########
+CSCP_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSCP_WF.csv")
+
+CSCP_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSCP_WF.csv")
+
+plot(CSCP_Pheno$Generation, CSCP_Pheno$Phenotype)
+hist(CSCP_Pheno$Phenotype, breaks = 300)
+CSCP_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+CSCP_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+CSCP_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+########## FSCP1 ########
+
+FSCP1_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v1.csv")
+
+FSCP1_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v1.csv")
+
+plot1_phenoGen = FSCP1_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot1_phenoGen
+plot1_pheno = FSCP1_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 500) +  theme_cowplot(12)
+plot1_pheno
+
+plot1_Genom = FSCP1_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+########## FSCP2 ########
+
+FSCP2_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v2.1.csv")
+
+FSCP2_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v2.1.csv")
+
+plot2_phenoGen = FSCP2_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot2_pheno = FSCP2_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 500) +  theme_cowplot(12)
+
+plot2_phenoGen
+plot2_pheno
+
+plot2_Genom = FSCP2_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+######## FSCP3 ######
+FSCP3_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v2.2.csv")
+
+FSCP3_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v2.2.csv")
+
+plot3_phenoGen = FSCP3_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot3_pheno = FSCP3_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 500) +  theme_cowplot(12)
+
+plot3_phenoGen
+plot3_pheno
+
+plot3_Genom = FSCP1_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+################### FSCP4 ##############################
+
+FSCP4_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v3.csv")
+
+FSCP4_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v3.csv")
+
+plot4_phenoGen = FSCP4_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot4_pheno = FSCP4_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 250) +  theme_cowplot(12)
+
+plot4_phenoGen
+plot4_pheno
+
+plot4_Genom = FSCP4_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+################### FSCP5 ##############################
+
+FSCP5_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_FSCP_WF.v4.csv")
+
+FSCP5_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_FSCP_WF.v4.csv")
+
+plot5_phenoGen = FSCP5_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+plot5_pheno = FSCP5_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 300) +  theme_cowplot(12)
+
+plot5_phenoGen
+plot5_pheno
+
+plot5_Genom = FSCP5_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+plot5_Genom
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+####### CSFP ###
+
