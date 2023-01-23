@@ -13,6 +13,10 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***January 7th 2023***]{.underline}
+
+\[***defineGlobal***\] makes your object available for use. For example, the new optimum or new population size. ?? How is it different from define constant? For a constant, it is mostly a single number while Global can be a list.
+
 [***January 5th 2023***]{.underline}
 
 The tick and cycle events in slim make sense especially when we are considering overlapping population. That is, one person might have a child, grand-child, and grand grand kids. Thefore, for that particular person, we might see one tick, and have multiple cycles. \[That's how I would explain tick and cycle thing\]

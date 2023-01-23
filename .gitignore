@@ -9,6 +9,7 @@ output/SLiM/
 #Generated data files
 *.rds
 *.DS_Store
+*csv
 # History files
 .Rhistory
 .Rapp.history

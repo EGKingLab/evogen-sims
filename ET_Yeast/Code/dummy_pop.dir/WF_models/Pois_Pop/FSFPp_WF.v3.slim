@@ -1,6 +1,7 @@
 // set up a simple neutral simulation
 initialize() {
 	setSeed(12345);
+	initializeSex("A");
 	// 1st mutation which is neutral and its genomic element type 
 	initializeMutationRate(1E-07);
 	initializeMutationType("m1", 0.5, "f", 0.0);
@@ -37,7 +38,7 @@ initialize() {
 }
 
 1 early() {
-	sim.addSubpop("p2", 1);
+	sim.addSubpop("p2", 2);
 	g = p2.genomes[0];
 	
 	//p1.genomes.addNewMutation(m2, rexp(70), sample(Q, 70));
@@ -59,8 +60,11 @@ initialize() {
 		ind = ind + 1;
 	}
 	p2.setSubpopulationSize(0);
+	p1.setSelfingRate(0);
+	p1.setCloningRate(0);
+	p1.setSexRatio(0.5);
 	
-	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Pois_Pop/genome_FSFP_WFp.v3.csv"), paste0("Generation,Position,Frequency,Effect, origin"));
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Pois_Pop/genome_FSFPp_WF.v3.csv"), paste0("Generation,Position,Frequency,Effect, origin"));
 	
 	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Pois_Pop/MeanPhenotypes_FSFPp_WF.v3",".csv"), paste0("Generation,Phenotype,Optimum"));
 }
