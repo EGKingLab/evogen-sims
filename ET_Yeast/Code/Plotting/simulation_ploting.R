@@ -187,3 +187,64 @@ plot5_Genom
 
 ####### CSFP ###
 
+### Constant Selection & fluctuating pop between 10000 and 1000
+
+CSFPo_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/genome_CSFP_WF.csv")
+
+CSFPo_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/MeanPhenotypes_CSFP_WF.csv")
+
+CSFPo_PhGen_plot = CSFPo_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12)
+CSFPo_Ph_plot = CSFPo_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12)
+
+CSFPo_PhGen_plot
+CSFPo_Ph_plot
+
+CSFPo_Geno_plot = CSFPo_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none")
+
+CSFPo_Geno_plot
+
+### Constant Selection & fluctuating pop following uniform distribution
+
+
+CSFPu_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Uniform_Pop/genome_CSFPu_WF.csv")
+
+CSFPu_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Uniform_Pop/MeanPhenotypes_CSFPu_WF.csv")
+
+CSFPu_PhGen_plot = CSFPu_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12) + ggtitle("Unif CSFP Pheno vs Generation Unif")
+CSFPu_Ph_plot = CSFPu_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("Unif CSFP Pheno")
+
+CSFPu_PhGen_plot
+CSFPu_Ph_plot
+
+CSFPu_Geno_plot = CSFPu_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none") + 
+  ggtitle("Unif CSFP Allele Freq")
+
+CSFPu_Geno_plot
+
+### Constant Selection & fluctuating pop following Poisson distribution
+
+
+CSFPp_Genom = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Pois_Pop/genome_CSFPp_WF.csv")
+
+CSFPp_Pheno = read.csv("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/DummyPop/WF_models/Pois_Pop/MeanPhenotypes_CSFPp_WF.csv")
+
+CSFPp_PhGen_plot = CSFPp_Pheno %>% ggplot(aes(Generation, Phenotype)) + geom_point() +  theme_cowplot(12) + ggtitle("Pois CSFP Pheno vs Generation ")
+CSFPp_Ph_plot = CSFPp_Pheno %>% ggplot(aes(Phenotype)) + geom_histogram(bins = 150) +  theme_cowplot(12) + ggtitle("Pois CSFP Pheno")
+
+CSFPp_PhGen_plot
+CSFPp_Ph_plot
+
+CSFPp_Geno_plot = CSFPp_Genom %>%  ggplot(aes(Generation, Frequency, col = as.character(Effect)))+
+  geom_point()+
+  theme_cowplot(12)+
+  theme(legend.position = "none") + 
+  ggtitle("Pois CSFP Allele Freq")
+
+CSFPp_Geno_plot
+
