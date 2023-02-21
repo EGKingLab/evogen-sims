@@ -1,0 +1,111 @@
+
+initialize() {
+	setSeed(2345);
+	initializeSLiMOptions(keepPedigrees=T);
+	initializeSex("A");
+	defineConstant("X_me", 1e06);
+	defineConstant("slocus", 5e5);
+	initializeMutationRate(1e-7);
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeGenomicElementType("g1", m1, 1);
+	scriptForQTLs = "rexp(1);";
+	initializeMutationType("m2", 0.5, "s", scriptForQTLs);
+	initializeGenomicElementType("g2", m2, 1);
+	initializeGenomicElement(g1, 0, slocus - 1);
+	initializeGenomicElement(g2, slocus, slocus);
+	initializeGenomicElement(g1, slocus + 1, X_me);
+	
+	q = c(NULL, slocus);
+	defineConstant("Q", q);
+	
+	initializeRecombinationRate(1e-8);
+	m1.color = "blue";
+	m2.color = "red";
+}
+
+
+1 early() {
+	sim.addSubpop("p2", 2);
+	g = p2.genomes[0];
+	muts = g.addNewMutation(m2, rexp(1), Q);
+	sim.addSubpop("p1", 10000);
+	markers = runif(1);
+	ind = 0;
+	for (position in Q){
+		for (g in p1.genomes){
+			if(rbinom(1,1, markers[ind]) == 1){g.addMutations(muts[ind]);}
+		}
+		ind = ind + 1;
+	}
+	p2.setSubpopulationSize(0);
+	p1.setSexRatio(0.5);
+	p1.setCloningRate(0);
+	p1.setSelfingRate(0);
+	
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Single_Pos/genome_singl",".csv"), paste0("Generation,Position,Frequency,Effect,Heterozygosity,origin"));
+	
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Single_Pos/MeanPhenotypes_singl",".csv"), paste0("Generation,Phenotype,Optimum"));
+}
+
+mutationEffect(m2) {
+	return 1.0;
+}
+
+1 late() {
+	defineConstant("h2", 0.5);
+	inds = sim.subpopulations.individuals;
+	additive = inds.sumOfMutationsOfType(m2);
+	
+	V_A = sd(additive)^2;
+	defineConstant("V_E",(V_A/h2)- V_A);
+	env = rnorm(size(inds), 0.0, sqrt(V_E));
+	
+	
+	phenotypes = additive + env;
+	
+	lower_opt = mean(phenotypes) + sd(phenotypes)*2;
+	upper_opt = mean(phenotypes) + sd(phenotypes)*2;
+	nopt = rep(c(rep(lower_opt ,25),rep(upper_opt,25)), 21);
+	defineGlobal("newopt", nopt);
+	
+	
+	qtls = sim.mutationsOfType(m2);
+	freq = sim.mutationFrequencies(NULL, qtls);
+	selCoef = qtls.selectionCoeff;
+	posit = qtls.position;
+	origin = qtls.originTick;
+	het = calcHeterozygosity(p1.genomes);
+	indices = order(freq, F);
+	for (i in indices)
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Single_Pos/genome_singl",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",",format("%.6f",het[i]), ",", origin[i]), append = T);
+	
+	meanPhenotype = mean(phenotypes);
+	
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Single_Pos/MeanPhenotypes_singl",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+}
+
+2:500 late(){
+	inds = sim.subpopulations.individuals;
+	additive = inds.sumOfMutationsOfType(m2);
+	env = rnorm(size(inds), 0.0, sqrt(V_E));
+	phenotypes = additive + env;
+	inds.fitnessScaling = 1- (abs(phenotypes - newopt[sim.cycle])/200);
+	
+	inds.tagF = phenotypes;
+	
+	qtls = sim.mutationsOfType(m2);
+	freq = sim.mutationFrequencies(NULL, qtls);
+	selCoef = qtls.selectionCoeff;
+	posit = qtls.position;
+	origin = qtls.originTick;
+	het = calcHeterozygosity(p1.genomes);
+	indices = order(freq, F);
+	for (i in indices)
+		writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Single_Pos/genome_singl",".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",",het, ",", origin[i]), append = T);
+	
+	meanPhenotype = mean(phenotypes);
+	
+	writeFile(paste0("/Users/etb68/OneDrive - University of Missouri/Academics Mizzou (etb68@umsystem.edu)/Biologycal_Sciences/Research_Projects/Yeast_GitHub/evogen-sims/ET_Yeast/output.dir/Single_Pos/MeanPhenotypes_singl",".csv"), paste0(sim.cycle,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+}
+
+500 late() { sim.outputFixedMutations(); }
