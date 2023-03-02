@@ -3,13 +3,15 @@ SNP_table_Yeast.txt
 #tracking files
 error*
 Trash*
+Example*
+*vcf
+#*csv
 #test*
 #regenerated files
 output/SLiM/
 #Generated data files
 *.rds
 *.DS_Store
-#*csv
 # History files
 .Rhistory
 .Rapp.history
