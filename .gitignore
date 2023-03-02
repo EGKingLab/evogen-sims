@@ -4,7 +4,7 @@ SNP_table_Yeast.txt
 error*
 Trash*
 Example*
-*vcf
+#*vcf
 #*csv
 #test*
 #regenerated files
