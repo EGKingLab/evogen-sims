@@ -612,7 +612,6 @@ plot_grid(CSFPo_Ph_plot, CSFPu_Ph_plot, CSFPp_Ph_plot)
 
 plot_grid(CSFPo_Geno_plot, CSFPu_Geno_plot, CSFPp_Geno_plot)
 
-
 ```
 
 ### 4) Fluctuating Selection vs Fluctuating Population
