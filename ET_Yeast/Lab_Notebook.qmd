@@ -13,6 +13,14 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***March 6th 2023***]{.underline}
+
+Started the project while following a single step per time. The first stem was to set the genome size and the number of QTLs. The genome size will approximately equal to 1,220,281 (arbitrary), and the number of QTLs considered are 1 with interval (I) of 610,140, 10 QTLs (I = 110,934), 70 QTLs (I = 17,186), 100 QTLs (I = 12,081), 300 QTLs (I = 4,053).
+
+> To write the file, the file name will include the replicate, QTL#, and hertability value
+
+On the plan, there is writing a bash code that combines all the files together.
+
 [***February 20th 2023***]{.underline}
 
 Remember that to output the whole genome file, you can use sim.outputFull("path to your directory"). The same applies when you want to save VCF file and some other important files.
