@@ -1,0 +1,169 @@
+---
+title: "CSCP_QTL_Plots"
+author: "Esdras T."
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(ggforce)
+library(caret)
+library(here)
+theme_set(theme_cowplot())
+```
+
+## Notes
+
+This documents provides the plots for genetic simulation in consideration with different QTL numbers, while selection and population size are constnat
+
+```{r}
+myGfile <- read.csv("../../../output.dir/Selection_Models/genome1_70_0.5.csv")
+myPfile <- read.csv("../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5.csv")
+```
+
+### Genomic Plots
+
+
+
+```{r echo=FALSE}
+
+myGfile %>% ggplot(aes(x = Generation, y = Frequency, color = as.character(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+myGfile %>% ggplot(aes(Effect))+
+  geom_density()
+  theme(legend.position = "none")
+  
+myGfile %>% ggplot(aes(Heterozygosity))+
+  geom_density()
+  theme(legend.position = "none")
+  
+myGfile %>% ggplot(aes(Frequency))+
+  geom_density(bins = 1000)
+  theme(legend.position = "none")
+
+  myfreq <- myGfile %>% group_by(Frequency, Generation) %>% count(Frequency)
+  myfreqfix <- myfreq %>% rename(Counts = n) %>% filter(Frequency %in% c(0,1))
+  myfreq %>% ggplot(aes(x = n, y = Frequency))+
+  geom_point()+
+  theme(legend.position = "none")
+  
+```
+
+### Phenotype related Plots
+
+```{r, echo=FALSE}
+
+
+
+myPfile %>% ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  geom_vline(xintercept = 1000, color = "red")
+
+
+
+myPfile %>% ggplot(aes(x = Generation, y = meanFitness))+
+  geom_line()+
+  geom_vline(xintercept = 1000, color = "red")
+
+ myPfile %>% ggplot(aes(x = Phenotype, y = meanFitness))+
+  geom_point()
+
+myPfile %>% ggplot(aes(x = Phenotype))+
+  geom_histogram(bins = 200)
+
+myPfile %>% ggplot(aes(x = meanFitness))+
+  geom_density()
+
+
+
+```
+
+## Designing a function that reads all plots at the same time
+
+```{r}
+
+source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
+
+myQTL.plot <- function(file1, file2, name){
+
+  myGfile <- read.csv(file1)
+
+  myPfile <- read.csv(file2)
+  name <- name
+
+  FreqPlot <- myGfile %>% ggplot(aes(x = Generation, y = Frequency, color = as.character(Position)))+
+    geom_line()+
+    ggtitle(paste(name, "Generation vs Frequency"))+
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+  EffectDens <- myGfile %>% ggplot(aes(Effect))+
+    geom_density()+
+    theme(legend.position = "none")+
+    ggtitle(paste(name, "Effect Density"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+
+  PhenoGen <- myPfile %>% ggplot(aes(x = Generation, y = Phenotype))+
+    geom_line()+
+    geom_vline(xintercept = 1000, color = "red")+
+    ggtitle(paste(name, "Generation vs Phenotype"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+  FitGen <- myPfile %>% ggplot(aes(x = Generation, y = meanFitness))+
+    geom_line()+
+    geom_vline(xintercept = 1000, color = "red")+
+    ggtitle(paste(name, "Generation vs Fitness"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+
+  PhenoDens <- myPfile %>% ggplot(aes(x = Phenotype))+
+    geom_histogram(bins = 200)+
+    ggtitle(paste(name, "Phenotype Histogram"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+  FitDens <- myPfile %>% ggplot(aes(x = meanFitness))+
+    geom_density()+
+    ggtitle(paste(name, "Fitness Density"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+  Pheno_Fit <- plot_grid(PhenoGen, FitGen, PhenoDens, FitDens)
+  Freq_Effect <- plot_grid(FreqPlot, EffectDens, cols = 1)
+
+  return(list(Pheno_Fit, Freq_Effect))
+}
+
+```
+
+### Implementig our Fubction
+
+```{r}
+# "../../../output.dir/Selection_Models/genome1_70_0.5.csv"
+# "../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5.csv"
+
+myQTL.plot("../../../output.dir/Selection_Models/genome1_70_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5.csv", "QT7.1")
+
+```
+
