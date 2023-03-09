@@ -1,1 +1,5 @@
 slim -d seed=2345 -d repl=1 -d loci=1 -d region=6104140 -d h=0.5 CSCP.QTL.slim  > ../../output.dir/Selection_Models/testCSCP_1.txt 1>errorFSFP_1.txt & 
+slim -d seed=2345 -d repl=1 -d loci=10 -d region=110934 -d h=0.5 CSCP.QTL.slim  > ../../output.dir/Selection_Models/testCSCP_1.txt 1>errorFSFP_1.txt &
+slim -d seed=2345 -d repl=1 -d loci=70 -d region=17186 -d h=0.5 CSCP.QTL.slim  > ../../output.dir/Selection_Models/testCSCP_1.txt 1>errorFSFP_1.txt & 
+slim -d seed=2345 -d repl=1 -d loci=100 -d region=12081 -d h=0.5 CSCP.QTL.slim  > ../../output.dir/Selection_Models/testCSCP_1.txt 1>errorFSFP_1.txt & 
+slim -d seed=2345 -d repl=1 -d loci=300 -d region=4053 -d h=0.5 CSCP.QTL.slim  > ../../output.dir/Selection_Models/testCSCP_1.txt 1>errorFSFP_1.txt & 
