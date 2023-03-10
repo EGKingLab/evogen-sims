@@ -12,7 +12,6 @@ library(cowplot)
 library(ggforce)
 library(caret)
 library(here)
-library(patchwork)
 theme_set(theme_cowplot())
 ```
 
@@ -20,7 +19,7 @@ theme_set(theme_cowplot())
 
 This documents provides the plots for genetic simulation in consideration with different QTL numbers, while selection and population size are constnat
 
-```{r, echo=FALSE}
+```{r}
 myGfile <- read.csv("../../../output.dir/Selection_Models/genome1_70_0.5.csv")
 myPfile <- read.csv("../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5.csv")
 ```
@@ -28,12 +27,12 @@ myPfile <- read.csv("../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5
 ### Genomic Plots
 
 
-```{r, echo=FALSE, include=FALSE}
+
+```{r echo=FALSE}
 
 myGfile %>% ggplot(aes(x = Generation, y = Frequency, color = as.character(Position)))+
   geom_line()+
-  theme(legend.position = "none")+
-  facet_zoom(x = Generation > 850 & Generation < 1500)
+  theme(legend.position = "none")
 
 myGfile %>% ggplot(aes(Effect))+
   geom_density()
@@ -55,29 +54,17 @@ myGfile %>% ggplot(aes(Frequency))+
   
 ```
 
-```{r, include=FALSE}
-# The code here is for plotting frequencies with 25 intervals and zooming in some area
-
-#ggplot()+geom_rect(data = rectgl, aes(xmin = x, xmax = y, ymin = -Inf, ymax = 1), fill = "gray")+
-#    geom_line(data = myGfile, aes(x = Generation, y = Frequency, color = as.character(Position)))+
-#    theme(legend.position = "none")+
-#    facet_zoom(x = Generation > 850 & Generation < 1500)
-```
-
 ### Phenotype related Plots
 
-```{r, echo=FALSE, include=FALSE}
-
-x = seq(1, 2000, 50)
-y = seq(from  = 26, to = 2025, by = 50)
-rectgl = tibble(x,y)
-# geom_rect(data = rectgl, aes(xmin = x, xmax = y, ymin = 100, ymax = Inf), fill = "gray")+
+```{r, echo=FALSE}
 
 
-ggplot()+
- # geom_rect(data = rectgl, aes(xmin = x, xmax = y, ymin = 100, ymax = Inf), fill = "gray")+
-  geom_line(data = myPfile, (aes(x = Generation, y = Phenotype)), color = "red")+
-  facet_zoom(x = Generation > 355 & Generation < 510)
+
+myPfile %>% ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  geom_vline(xintercept = 1000, color = "red")
+
+
 
 myPfile %>% ggplot(aes(x = Generation, y = meanFitness))+
   geom_line()+
@@ -92,11 +79,13 @@ myPfile %>% ggplot(aes(x = Phenotype))+
 myPfile %>% ggplot(aes(x = meanFitness))+
   geom_density()
 
+
+
 ```
 
 ## Designing a function that reads all plots at the same time
 
-```{r, echo=FALSE, include=FALSE}
+```{r}
 
 source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
 
@@ -109,7 +98,6 @@ myQTL.plot <- function(file1, file2, name){
 
   FreqPlot <- myGfile %>% ggplot(aes(x = Generation, y = Frequency, color = as.character(Position)))+
     geom_line()+
-    facet_zoom(x = Generation > 850 & Generation < 1500)+
     ggtitle(paste(name, "Generation vs Frequency"))+
   theme(axis.title = element_text(face = "bold"),
         axis.text = element_text(face = "italic"),
@@ -124,21 +112,11 @@ myQTL.plot <- function(file1, file2, name){
         axis.text = element_text(face = "italic"),
         plot.title = element_text(hjust = 0.5),
         legend.position = "none")
-  
-  FreqDens <- myGfile %>% ggplot(aes(Frequency))+
-  geom_density()+
-  theme(legend.position = "none")+
-    ggtitle(paste(name, "Allele Frequency Density"))+
-    theme(axis.title = element_text(face = "bold"),
-        axis.text = element_text(face = "italic"),
-        plot.title = element_text(hjust = 0.5),
-        legend.position = "none")
 
 
-  PhenoGen <- ggplot()+
-  geom_rect(data = rectgl, aes(xmin = x, xmax = y, ymin = 100, ymax = Inf), fill = "gray")+
-  geom_line(data = myPfile, (aes(x = Generation, y = Phenotype)), color = "red")+
-  facet_zoom(x = Generation > 355 & Generation < 510)+
+  PhenoGen <- myPfile %>% ggplot(aes(x = Generation, y = Phenotype))+
+    geom_line()+
+    geom_vline(xintercept = 1000, color = "red")+
     ggtitle(paste(name, "Generation vs Phenotype"))+
     theme(axis.title = element_text(face = "bold"),
         axis.text = element_text(face = "italic"),
@@ -172,54 +150,20 @@ myQTL.plot <- function(file1, file2, name){
         legend.position = "none")
 
   Pheno_Fit <- plot_grid(PhenoGen, FitGen, PhenoDens, FitDens)
-  Freq_Effect <- wrap_plots(FreqDens, EffectDens)
-  
-  return(list(Pheno_Fit, Freq_Effect, FreqPlot))
+  Freq_Effect <- plot_grid(FreqPlot, EffectDens, cols = 1)
+
+  return(list(Pheno_Fit, Freq_Effect))
 }
 
 ```
 
-### Implementig our Function
+### Implementig our Fubction
 
-#### Plots for 100 QTL 
-
-##### Fist replicate
-```{r, echo = FALSE}
+```{r}
 # "../../../output.dir/Selection_Models/genome1_70_0.5.csv"
 # "../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5.csv"
 
-myQTL.plot("../../../output.dir/Selection_Models/genome1_100_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_100_0.5.csv", "QT7.1")
+myQTL.plot("../../../output.dir/Selection_Models/genome1_70_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_70_0.5.csv", "QT7.1")
 
 ```
 
-
-##### Second replicate
-
-```{r, echo = FALSE}
-myQTL.plot("../../../output.dir/Selection_Models/genome2_100_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes2_100_0.5.csv", "QT7.2")
-```
-
-##### 3rd replicate
-
-```{r, echo = FALSE}
-myQTL.plot("../../../output.dir/Selection_Models/genome3_100_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes3_100_0.5.csv", "QT7.3")
-```
-
-
-##### 4th replicate
-
-```{r, echo = FALSE}
-myQTL.plot("../../../output.dir/Selection_Models/genome4_100_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes4_100_0.5.csv", "QT7.4")
-```
-
-
-##### 5th replicate
-
-```{r, echo = FALSE}
-myQTL.plot("../../../output.dir/Selection_Models/genome5_100_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes5_100_0.5.csv", "QT7.5")
-```
-
-
-```{r}
-
-```
