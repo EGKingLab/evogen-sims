@@ -1,5 +1,7 @@
 #large files
 SNP_table_Yeast.txt
+*.vcf
+*.png
 #tracking files
 error*
 Trash*
