@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-## Plotting Allele Frequency Over Generation and Phenotype Information
+## Plotting Allele Frequency and Phenotype Information
 
 This file takes all genome files for every replicate given the number of QTL positions(e.g if 1 qtl or 100 qtls).
 
@@ -15,6 +15,7 @@ This file takes all genome files for every replicate given the number of QTL pos
 library(tidyverse)
 library(cowplot)
 library(ggforce)
+library(purrr)
 library(caret)
 library(here)
 library(patchwork)
@@ -30,13 +31,13 @@ setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/test.dir/")
 
 ```{r}
 #| echo: false
-my_plots <- function(df, mygenomefile){
+my_plots <- function(df, mygenomefile, mypath){
   
   source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
   
   Freq_plot <- 
     ggplot(df, aes(x = Generation, y = Frequency, color = as.character(Position)))+
-    geom_line()+
+    geom_line(size = 0.2)+
     labs(title = "Gen vs Freq")+
     theme(axis.title = element_text(face = "bold"),
         axis.text = element_text(face = "italic"),
@@ -52,16 +53,16 @@ my_plots <- function(df, mygenomefile){
         plot.title = element_text(hjust = 0.5),
         legend.position = "none")
   
-  ggsave(file.path(mypath, paste0(mygenomefile, "Freq_plot.png")), Freq_plot, width = 6, height = 4, dpi = 300)
-  ggsave(file.path(mypath, paste0(mygenomefile, "Effect_plot.png")), Effect_plot, width = 6, height = 4, dpi = 300)
+  ggsave(file.path(mypath, paste0(basename(mygenomefile), "Freq_plot.png")), Freq_plot, width = 6, height = 4, dpi = 300)
+  ggsave(file.path(mypath, paste0(basename(mygenomefile), "Effect_plot.png")), Effect_plot, width = 6, height = 4, dpi = 300)
 }
 
-#mygenomefiles <- c("../../../output.dir/Selection_Models/genome1_70_0.5.csv", "../../../output.dir/Selection_Models/genome2_70_0.5.csv", "../../../output.dir/Selection_Models/genome3_70_0.5.csv")
-mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP_Plots.dir"
+mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^genome.*\\.csv$", full.names = TRUE)
+
 
 dfs <- map(mygenomefiles, read.csv)
-walk2(dfs, mygenomefiles, my_plots, mypath = mypath)
+walk2(dfs, mygenomefiles, my_plots, mypath)
 
 ```
 
@@ -105,21 +106,20 @@ mon_plots <- function(data, myphenofile, mypath){
         axis.text = element_text(face = "italic"),
         plot.title = element_text(hjust = 0.5),
         legend.position = "none")
+  
   Pheno_Fit <- plot_grid(pheno_plot, Fitness_plot, PhenoDens, FitDens)
   
-  ggsave(file.path(mypath, paste0(myphenofile, "Pheno_plots.png")), Pheno_Fit, width = 6, height = 4, dpi = 300)
+  ggsave(file.path(mypath, paste0(basename(myphenofile), "Pheno_plots.png")), Pheno_Fit, width = 6, height = 4, dpi = 300)
  
-  # ggsave(paste0(myphenofile, "Pheno_Fit.png"), Pheno_Fit_plot, width = 6, height = 4, dpi = 300)
 }
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP_Plots.dir"
 myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
-
-# OR "^Mean_pheno.*\\.csv$"
-
-#myphenofiles <- c("../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv")
 
 dfs <- map(myphenofiles, read.csv)
 walk2(dfs, myphenofiles, mon_plots, mypath = mypath)
 ```
 
-    fklist=list.files(c(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^MeanPhenotypes.*\\.csv$"))`
+    `fklist=list.files(c(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^MeanPhenotypes.*\\.csv$"))`
+
+
+    `#myphenofiles <- c("../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv")`
