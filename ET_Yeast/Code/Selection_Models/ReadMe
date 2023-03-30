@@ -1,0 +1,6 @@
+> Here is the simulation for constant selection constant population.
+> The phenotypes are zcored scaled and there is an addition of a constant 10
+> The file "CSCP.QTL.slim has the slim simulation
+> RunMySlimSamples.txt has the number of replicates, genome size, and heritability
+> RunSlimQTL.sh is bash file that allows to run our simulation on the server
+> MyComputerRun.sh helps run the simulation on my personal computer
