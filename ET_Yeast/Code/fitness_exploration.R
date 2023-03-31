@@ -6,7 +6,7 @@ set.seed(7711)
 
 
 #how many loci
-nloci <- 500
+nloci <- 100
 
 #how many individuals
 ninds <- 10000
@@ -35,20 +35,22 @@ V_E <- (V_A/h2)- V_A
 env <- rnorm(ninds, 0.0, sqrt(V_E))
 
 phenotypes <- tibble(phenotypes = additive + env)
+phenotypes$phenotypes <- ((phenotypes$phenotypes)/nloci) * 100
+#phenotypes$phenotypes <- ((phenotypes$phenotypes - mean(phenotypes$phenotypes))/sd(phenotypes$phenotypes)) + 10
 
 #define new optimum
 new_opt <- mean(phenotypes$phenotypes) + sd(phenotypes$phenotypes)*2
-
 
 phenotypes |>
   ggplot(aes(x=phenotypes)) +
   geom_histogram() +
   geom_vline(xintercept = new_opt, color = "steelblue")
 
-
 scaling_f <- 200
   
 phenotypes$fitness <- 1 - (abs(phenotypes$phenotypes - new_opt)/scaling_f)
+
+#phenotypes$fitness <- (dnorm(new_opt - phenotypes$phenotypes, 10))
 
 phenotypes |>
   ggplot(aes(x=fitness)) +
