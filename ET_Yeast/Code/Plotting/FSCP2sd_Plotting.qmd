@@ -20,7 +20,7 @@ library(caret)
 library(here)
 library(patchwork)
 theme_set(theme_cowplot())
-setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/")
+#setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/")
 ```
 
 ## Allele Frequency and Effect Plots
@@ -113,7 +113,7 @@ mon_plots <- function(data, myphenofile, mypath){
  
 }
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd_Plots.dir"
-myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd.di r/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
+myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd.dir/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
 
 dfs <- map(myphenofiles, read.csv)
 walk2(dfs, myphenofiles, mon_plots, mypath = mypath)
