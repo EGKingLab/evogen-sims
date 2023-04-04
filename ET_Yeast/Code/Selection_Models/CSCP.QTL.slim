@@ -90,7 +90,8 @@ mutationEffect(m2) {
 	
 	// Calculate the phenotypes by adding the genetic and environmental components
 	phenotypes = additive + env;
-	phenotpes = (phenotypes/loci)*100;
+	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
 	// Define the lower and upper bounds of the optimal phenotype and define a global variable newopt
@@ -131,11 +132,12 @@ mutationEffect(m2) {
 	
 	// Calculate phenotype values for each individual as the sum of their additive genetic and environmental values
 	phenotypes = additive + env;
-	phenotpes = (phenotypes/loci)*100;
+	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
-	inds.fitnessScaling = 1 - (abs(phenotypes - newopt[sim.cycle])/200);
+	inds.fitnessScaling = 1 - (abs(phenotypes - newopt[sim.cycle])/100);
 	// Get the mean fitness and phenotype and write them to a CSV file
 	
 	//mean_fitness =sum(ind.fitness(for(ind in inds))) / len(inds)
