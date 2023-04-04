@@ -35,7 +35,7 @@ V_E <- (V_A/h2)- V_A
 env <- rnorm(ninds, 0.0, sqrt(V_E))
 
 phenotypes <- tibble(phenotypes = additive + env)
-phenotypes$phenotypes <- ((phenotypes$phenotypes)/nloci) * 100
+phenotypes$phenotypes <- (phenotypes$phenotypes/ sd(phenotypes$phenotypes)) + 100
 #phenotypes$phenotypes <- ((phenotypes$phenotypes - mean(phenotypes$phenotypes))/sd(phenotypes$phenotypes)) + 10
 
 #define new optimum
@@ -46,7 +46,7 @@ phenotypes |>
   geom_histogram() +
   geom_vline(xintercept = new_opt, color = "steelblue")
 
-scaling_f <- 200
+scaling_f <- 100
   
 phenotypes$fitness <- 1 - (abs(phenotypes$phenotypes - new_opt)/scaling_f)
 
@@ -60,6 +60,6 @@ phenotypes |>
 phenotypes |>
   ggplot(aes(phenotypes, fitness)) +
   geom_point() +
-  ylim(0,1) +
+  #ylim(0,1) +
   geom_vline(xintercept = new_opt, color = "steelblue")
 
