@@ -1,6 +1,10 @@
 > Here is the simulation for constant selection constant population.
-> The phenotypes are zcored scaled and there is an addition of a constant 10
+> The phenotypes are  scaled by diving the individual pheno with standard deviation and there is an addition of a constant 100 to avoid negative values
 > The file "CSCP.QTL.slim has the slim simulation
 > RunMySlimSamples.txt has the number of replicates, genome size, and heritability
 > RunSlimQTL.sh is bash file that allows to run our simulation on the server
-> MyComputerRun.sh helps run the simulation on my personal computer
+> MyComputerRun.sh helps run the simulation on my personal computeri
+
+> CSCP.QTL.slim = Constant Selection Fluctuating Selection slim code
+> FSCP2sd.QTL.slim = Fluctuating Selection in which the optimum is two standard deviation below or above the mean phenotype
+> RunCSCP_SLiM.sh = sbatch cppde to run CSCP replicates
