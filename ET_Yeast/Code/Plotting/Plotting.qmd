@@ -33,11 +33,11 @@ setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/test.dir/")
 #| echo: false
 my_plots <- function(df, mygenomefile, mypath){
   
-  source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
+  #source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
   
   Freq_plot <- 
     ggplot(df, aes(x = Generation, y = Frequency, color = as.character(Position)))+
-    geom_line(size = 0.2)+
+    geom_line(linewidth = 0.2)+
     labs(title = "Gen vs Freq")+
     theme(axis.title = element_text(face = "bold"),
         axis.text = element_text(face = "italic"),
@@ -71,7 +71,7 @@ walk2(dfs, mygenomefiles, my_plots, mypath)
 ```{r}
 mon_plots <- function(data, myphenofile, mypath){
   
-  source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
+  #source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
   
   pheno_plot <- 
     ggplot(data, aes(x = Generation, y = Phenotype))+
