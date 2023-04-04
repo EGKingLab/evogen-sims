@@ -1,0 +1,125 @@
+---
+title: "Geno_Plots_FSCP2d"
+author: "Ezra T"
+format: html
+editor: visual
+---
+
+## Plotting Allele Frequency and Phenotype Information
+
+This file takes all genome files for every replicate given the number of QTL positions(e.g if 1 qtl or 100 qtls).
+
+**Packages**
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(ggforce)
+library(purrr)
+library(caret)
+library(here)
+library(patchwork)
+theme_set(theme_cowplot())
+setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/")
+```
+
+## Allele Frequency and Effect Plots
+
+`# Get list of CSV files in directory`
+
+`mygenomefiles <- list.files(pattern = "\\.csv$")`
+
+```{r}
+#| echo: false
+my_plots <- function(df, mygenomefile, mypath){
+  
+  #source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
+  
+  Freq_plot <- 
+    ggplot(df, aes(x = Generation, y = Frequency, color = as.character(Position)))+
+    geom_line(linewidth = 0.2)+
+    labs(title = "Gen vs Freq")+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+   
+  
+  Effect_plot <- ggplot(df, aes(Effect))+
+    geom_density()+
+    labs(title = "QTL Effect Density")+ 
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+  
+  ggsave(file.path(mypath, paste0(basename(mygenomefile), "Freq_plot.png")), Freq_plot, width = 6, height = 4, dpi = 300)
+  ggsave(file.path(mypath, paste0(basename(mygenomefile), "Effect_plot.png")), Effect_plot, width = 6, height = 4, dpi = 300)
+}
+
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd_Plots.dir"
+mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
+
+
+dfs <- map(mygenomefiles, read.csv)
+walk2(dfs, mygenomefiles, my_plots, mypath)
+
+```
+
+## Phenotype, and Fitness Plots
+
+```{r}
+mon_plots <- function(data, myphenofile, mypath){
+  
+  #source("../../../Code/Plotting/CSCP_QTL.dir/usetheme.R")
+  
+  pheno_plot <- 
+    ggplot(data, aes(x = Generation, y = Phenotype))+
+    geom_line()+
+    labs(title = "Pheno vs Gen")+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+   
+  
+  Fitness_plot <- ggplot(data, aes(x = Generation, y = meanFitness))+
+    geom_line()+
+    labs(title = "Pheno vs Gen")+ 
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+  
+  PhenoDens <- ggplot(data, aes(x = Phenotype))+
+    geom_histogram(bins = 200)+
+    ggtitle(paste("Phenotype Histogram"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+  
+  FitDens <- ggplot(data, aes(x = meanFitness))+
+    geom_density()+
+    ggtitle(paste("Fitness Density"))+
+    theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+  
+  Pheno_Fit <- plot_grid(pheno_plot, Fitness_plot, PhenoDens, FitDens)
+  
+  ggsave(file.path(mypath, paste0(basename(myphenofile), "Pheno_plots.png")), Pheno_Fit, width = 6, height = 4, dpi = 300)
+ 
+}
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd_Plots.dir"
+myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd.di r/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
+
+dfs <- map(myphenofiles, read.csv)
+walk2(dfs, myphenofiles, mon_plots, mypath = mypath)
+```
+
+    `fklist=list.files(c(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^MeanPhenotypes.*\\.csv$"))`
+
+
+    `#myphenofiles <- c("../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv")`
