@@ -54,12 +54,14 @@ my_plots <- function(df, mygenomefile, mypath){
   ggsave(file.path(mypath, paste0(basename(mygenomefile), "Effect_plot.png")), Effect_plot, width = 6, height = 4, dpi = 300)
 }
 
+<<<<<<< HEAD
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1_Plots.dir/"
 mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/SFP_2sd_1.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1_Plots.dir/"
+mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/SFP_2sd_1.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 dfs <- map(mygenomefiles, read.csv)
 walk2(dfs, mygenomefiles, my_plots, mypath)
-
 ```
 
 ## Phenotype, and Fitness Plots
