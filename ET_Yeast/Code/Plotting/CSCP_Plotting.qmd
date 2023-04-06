@@ -58,8 +58,7 @@ my_plots <- function(df, mygenomefile, mypath){
 }
 
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP_Plots.dir"
-mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^genome.*\\.csv$", full.names = TRUE)
-
+mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 
 dfs <- map(mygenomefiles, read.csv)
 walk2(dfs, mygenomefiles, my_plots, mypath)
@@ -113,7 +112,7 @@ mon_plots <- function(data, myphenofile, mypath){
  
 }
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP_Plots.dir"
-myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
+myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP.dir/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
 
 dfs <- map(myphenofiles, read.csv)
 walk2(dfs, myphenofiles, mon_plots, mypath = mypath)

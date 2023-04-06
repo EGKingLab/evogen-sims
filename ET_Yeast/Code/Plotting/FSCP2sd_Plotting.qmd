@@ -60,7 +60,6 @@ my_plots <- function(df, mygenomefile, mypath){
 mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd_Plots.dir"
 mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSCP2sd.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 
-
 dfs <- map(mygenomefiles, read.csv)
 walk2(dfs, mygenomefiles, my_plots, mypath)
 
