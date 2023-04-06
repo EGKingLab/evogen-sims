@@ -57,7 +57,7 @@ my_plots <- function(df, mygenomefile, mypath){
   ggsave(file.path(mypath, paste0(basename(mygenomefile), "Effect_plot.png")), Effect_plot, width = 6, height = 4, dpi = 300)
 }
 
-mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP_Plots.dir"
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/plots.dir/CSCP_Plots.dir"
 mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 
 dfs <- map(mygenomefiles, read.csv)
@@ -111,7 +111,7 @@ mon_plots <- function(data, myphenofile, mypath){
   ggsave(file.path(mypath, paste0(basename(myphenofile), "Pheno_plots.png")), Pheno_Fit, width = 6, height = 4, dpi = 300)
  
 }
-mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP_Plots.dir"
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/plots.dir/CSCP_Plots.dir"
 myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP.dir/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
 
 dfs <- map(myphenofiles, read.csv)

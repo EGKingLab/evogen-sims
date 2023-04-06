@@ -54,12 +54,9 @@ my_plots <- function(df, mygenomefile, mypath){
   ggsave(file.path(mypath, paste0(basename(mygenomefile), "Effect_plot.png")), Effect_plot, width = 6, height = 4, dpi = 300)
 }
 
-<<<<<<< HEAD
-mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1_Plots.dir/"
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/plots.dir/FSFP_2sd_1_Plots.dir/"
 mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/SFP_2sd_1.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 
-mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1_Plots.dir/"
-mygenomefiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/SFP_2sd_1.dir/", pattern = "^genome.*\\.csv$", full.names = TRUE)
 dfs <- map(mygenomefiles, read.csv)
 walk2(dfs, mygenomefiles, my_plots, mypath)
 ```
@@ -107,11 +104,7 @@ mon_plots <- function(data, myphenofile, mypath){
   ggsave(file.path(mypath, paste0(basename(myphenofile), "Pheno_plots.png")), Pheno_Fit, width = 6, height = 4, dpi = 300)
  
 }
-<<<<<<< HEAD
-mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/ FSFP_2sd_1_Plots.dir/"
-=======
-mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1_Plots.dir/"
->>>>>>> 04b74f895f22bc511d8f2dfb60ab5d73813cd6c2
+mypath <- "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/plots.dir/FSFP_2sd_1_Plots.dir/"
 myphenofiles <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1.dir/", pattern = "^MeanPhenotypes.*\\.csv$", full.names = TRUE)
 
 dfs <- map(myphenofiles, read.csv)
