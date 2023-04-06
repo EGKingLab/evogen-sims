@@ -56,4 +56,4 @@ else
 
   echo "All is well, Boss.  The ${output} file is there."
 fi
-echo "=== Fini finito! End of SLiM QTLs CSCP run >" $(date)
+echo "=== Fini finito! End of SLiM QTLs FSFP run >" $(date)
