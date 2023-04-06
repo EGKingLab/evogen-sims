@@ -8,3 +8,4 @@
 > CSCP.QTL.slim = Constant Selection Fluctuating Selection slim code
 > FSCP2sd.QTL.slim = Fluctuating Selection in which the optimum is two standard deviation below or above the mean phenotype
 > RunCSCP_SLiM.sh = sbatch cppde to run CSCP replicates
+> FSFP2sd_A This is for fluctuating selection ( + or - 2 standard deviation), fluctuating population (1000, 1000, 5000)for every 25 generation

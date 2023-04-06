@@ -67,8 +67,8 @@ initialize() {
 	p1.setSelfingRate(0);
 	
 	// Create CSV file for genome data and mean phenotype data
-	writeFile(paste0("../../output.dir/Selection_Models/FSCP2sd.dir/genome2sd",repl,"_",loci,"_",h,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
-	writeFile(paste0("../../output.dir/Selection_Models/FSCP2sd.dir/MeanPhenotypes2sd",repl,"_",loci,"_",h,".csv"), paste0("Generation,meanFitness,Phenotype,Optimum"));
+	writeFile(paste0("../../output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A",repl,"_",loci,"_",h,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+	writeFile(paste0("../../output.dir/Selection_Models/FSFP_2sd_1.dir/MeanPhenotypesFSFP2sd_A",repl,"_",loci,"_",h,".csv"), paste0("Generation,meanFitness,Phenotype,Optimum"));
 }
 
 // Function to calculate mutation effect
@@ -91,15 +91,16 @@ mutationEffect(m2) {
 	// Calculate the phenotypes by adding the genetic and environmental components
 	phenotypes = additive + env;
 	phenotypes = (phenotypes/sd(phenotypes))+100;
-	//phenotypes = (phenotypes/loci)*100;
-	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
 	// Define the lower and upper bounds of the optimal phenotype and define a global variable newopt
-	lower_opt = mean(phenotypes) + sd(phenotypes)*2;
-	upper_opt = mean(phenotypes) - sd(phenotypes)*2;
+	lower_opt = mean(phenotypes) - sd(phenotypes)*2;
+	upper_opt = mean(phenotypes) + sd(phenotypes)*2;
 	nopt = rep(c(rep(lower_opt ,25),rep(upper_opt,25)), 41);
 	defineGlobal("newopt", nopt);
 	
+	npop = rep(c(rep(10000, 25), rep(1000, 25),rep(5000, 25)), 27);
+        defineGlobal("newpop", npop);
+
 	// Get the mutation information and order them by frequency
 	qtls = sim.mutationsOfType(m2);
 	freq = sim.mutationFrequencies(NULL, qtls);
@@ -111,16 +112,17 @@ mutationEffect(m2) {
 	
 	// Write mutation information to a CSV file
 	for (i in indices)
-		writeFile(paste0("../../output.dir/Selection_Models/FSCP2sd.dir/genome2sd",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("../../output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	// Get the mean phenotype and write it to a CSV file
 	meanPhenotype = mean(phenotypes);
-	writeFile(paste0("../../output.dir/Selection_Models/FSCP2sd.dir/MeanPhenotypes2sd",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", 1, ",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("../../output.dir/Selection_Models/FSFP_2sd_1.dir/MeanPhenotypesFSFP2sd_A",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", 1, ",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 // Implement the selection process for generations 2 to 500
 
 2:2000 late(){
+	p1.setSubpopulationSize(newpop[sim.cycle]);
 	// Get individuals in the population
 	inds = sim.subpopulations.individuals;
 	
@@ -133,6 +135,8 @@ mutationEffect(m2) {
 	// Calculate phenotype values for each individual as the sum of their additive genetic and environmental values
 	phenotypes = additive + env;
 	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/loci)*100;
+	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
 	inds.fitnessScaling = 1 - (abs(phenotypes - newopt[sim.cycle])/100);
@@ -157,13 +161,13 @@ mutationEffect(m2) {
 	// Order mutations by frequency (descending) and output information for each mutation to a CSV file (genome_singl.csv)
 	indices = order(freq, F);
 	for (i in indices)
-		writeFile(paste0("../../output.dir/Selection_Models/FSCP2sd.dir/genome2sd",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
+		writeFile(paste0("../../output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
 	
 	// Calculate mean phenotype for the population
 	meanPhenotype = mean(phenotypes);
 	
 	// Output information about mean phenotype and mean fitness to a CSV file (MeanPhenotypes_singl.csv)
-	writeFile(paste0("../../output.dir/Selection_Models/FSCP2sd.dir/MeanPhenotypes2sd",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("../../output.dir/Selection_Models/FSFP_2sd_1.dir/MeanPhenotypesFSFP2sd_A",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 2001 late(){
