@@ -15,7 +15,7 @@
 
 echo -e "=== Bigining of SLiM run with different QTLs > $(date) ==="
 
-output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/genome5_300_0.5.csv"
+output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP.dir/genome5_300_0.5.csv"
 if [[ ! -f "$output" ]]
 then
   echo "My file ${output} doesn't exist. Running SLiM QTLs now."
