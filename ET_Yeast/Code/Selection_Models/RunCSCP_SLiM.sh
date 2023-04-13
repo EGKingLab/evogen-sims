@@ -5,8 +5,8 @@
 #SBATCH -J SLiM_qtl 
 #SBATCH -c 4
 #SBATCH --mem 120G
-#SBATCH -o ../../output.dir/Selection_Models/SLiM_QTL_CSCP-%j.log
-#SBATCH -e ../../output.dir/Selection_Models/SLiM_QTL_CSCP--%j.err
+#SBATCH -o ../../output.dir/Selection_Models/CSCP.dir/SLiM_QTL_CSCP-%j.log
+#SBATCH -e ../../output.dir/Selection_Models/CSCP.dir/SLiM_QTL_CSCP--%j.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=etb68@mail.missouri.edu
 ##########SCIENCE FOLLOWS HERE ########################

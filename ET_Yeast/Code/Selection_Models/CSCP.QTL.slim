@@ -67,7 +67,7 @@ initialize() {
 	p1.setSelfingRate(0);
 	
 	// Create CSV file for genome data and mean phenotype data
-	writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/genome",repl,"_",loci,"_",h,".csv"), paste0("Generation,Position,Frequency,Effect,Heterozygosity,Origin"));
+	writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/genome",repl,"_",loci,"_",h,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
 	writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/MeanPhenotypes",repl,"_",loci,"_",h,".csv"), paste0("Generation,meanFitness,Phenotype,Optimum"));
 }
 
@@ -106,18 +106,19 @@ mutationEffect(m2) {
 	selCoef = qtls.selectionCoeff;
 	posit = qtls.position;
 	origin = qtls.originTick;
-	q_a = 1 - freq;	
-
-	het = 2*q_a*freq;
+	//q_a = 1 - freq;	
+	//het = 2*q_a*freq;
 	indices = order(freq, F);
 	
 	// Write mutation information to a CSV file
 	for (i in indices)
-		writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/genome",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",",format("%.6f",het[i]), ",", origin[i]), append = T);
+		q_a = 1 - freq[i];
+		het = 2*q_a*freq[i];
+		writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/genome",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	// Get the mean phenotype and write it to a CSV file
-	meanPhenotype = mean(phenotypes);
-	writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/MeanPhenotypes",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", 1, ",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+		meanPhenotype = mean(phenotypes);
+		writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/MeanPhenotypes",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", 1, ",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 // Implement the selection process for generations 2 to 500
@@ -156,13 +157,17 @@ mutationEffect(m2) {
 	origin = qtls.originTick;
 	
 	// Calculate heterozygosity for each individual's genome
-	het = 2*q_a*freq;
+	//het = 2*q_a*freq;
 	//het = calcHeterozygosity(p1.genomes);
 	
 	// Order mutations by frequency (descending) and output information for each mutation to a CSV file (genome_singl.csv)
 	indices = order(freq, F);
 	for (i in indices)
-		writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/genome",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",",format("%.6f",het[i]),",", origin[i]), append = T);
+		
+               // q_a = 1 - freq[i];
+               // het = 2*q_a*freq[i];
+
+		writeFile(paste0("../../output.dir/Selection_Models/CSCP.dir/genome",repl,"_",loci,"_",h,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
 	
 	// Calculate mean phenotype for the population
 	meanPhenotype = mean(phenotypes);
