@@ -45,6 +45,7 @@ phenotypes |>
   geom_histogram(bins = 50) +
   geom_vline(xintercept = new_opt, color = "steelblue")
 
+
 scaling_f <- 100
   
 phenotypes$fitness <- 1 - (abs(phenotypes$phenotypes - new_opt)/scaling_f)
