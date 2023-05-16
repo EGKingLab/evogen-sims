@@ -22,8 +22,7 @@ markers <- runif(nloci,0.01,0.99)
 
 additive <- numeric(length = ninds)
 
-for(ii in 1:ninds)
-{
+for(ii in 1:ninds){
   #get genotype for 10 loci for one individual
   geno <- rbinom(rep(1,10),rep(1,10), markers)
   effs <- geno*effects
@@ -43,7 +42,7 @@ new_opt <- mean(phenotypes$phenotypes) + sd(phenotypes$phenotypes)*2
 
 phenotypes |>
   ggplot(aes(x=phenotypes)) +
-  geom_histogram() +
+  geom_histogram(bins = 50) +
   geom_vline(xintercept = new_opt, color = "steelblue")
 
 scaling_f <- 100
@@ -54,7 +53,7 @@ phenotypes$fitness <- 1 - (abs(phenotypes$phenotypes - new_opt)/scaling_f)
 
 phenotypes |>
   ggplot(aes(x=fitness)) +
-  geom_histogram()
+  geom_histogram(bins = 50)
 
 
 phenotypes |>

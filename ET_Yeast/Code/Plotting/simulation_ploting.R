@@ -567,9 +567,3 @@ FSFPp5_Geno_plot = FSFPp5_Genom %>%  ggplot(aes(Generation, Frequency, col = as.
 FSFPp5_PhGen_plot
 FSFPp5_Ph_plot
 FSFPp5_Geno_plot
-
-
-
-
-=======
->>>>>>> 4053e85d2cdbf6198cd36527325ccf73d3acda93

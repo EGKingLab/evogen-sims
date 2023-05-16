@@ -20,7 +20,7 @@ library(caret)
 library(here)
 library(patchwork)
 theme_set(theme_cowplot())
-setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/test.dir/")
+#setwd("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/Code/Plotting/test.dir/")
 ```
 
 ## Allele Frequency and Effect Plots
@@ -122,3 +122,71 @@ walk2(dfs, myphenofiles, mon_plots, mypath = mypath)
 
 
     `#myphenofiles <- c("../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv", "../../../output.dir/Selection_Models/MeanPhenotypes1_1_0.5.csv")`
+
+## Fourier Transformation
+
+This is to try Fourier transform
+
+```{r}
+geno <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSFP.1.dir/genomeCSFP_A1_300_0.5.csv")
+
+ft_geno <- geno %>% 
+  group_by(Position) %>% 
+  mutate(FFT_PowerDensity = abs((fft(Frequency)^2)/2000)*2.5e-4,
+         Freq =  0:(n_distinct(Position)-1)/2000) %>% 
+  select(Generation, Position, Frequency, FFT_PowerDensity, Freq) 
+
+i1 <- ggplot(ft_geno, aes(x = Generation, y = Frequency, color = as.character(Position)))+
+  geom_line(linewidth = 0.2)+
+  labs(title = "Gen vs Freq")+
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+i2 <- ggplot(ft_geno, aes(x = Generation, y = FFT_PowerDensity, color = as.character(Position)))+
+  geom_line(linewidth = 0.2)+
+  labs(title = "Gen vs Freq")+
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+i1 | i2
+
+```
+
+```{r}
+set.seed(56778)
+y <- rnorm(20)
+x <- rep(1:5, each = 4) %>% sample()
+z <- tibble(x, y) #%>% data.frame() #%>% mutate(x = factor(x))
+```
+
+```{r}
+z %>% filter(x==1) %>% fft(y)
+
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+set.seed(56778)
+y <- rnorm(20)
+x <- rep(1:5, each = 4) %>% sample()
+z <- tibble(x, y)
+
+t <- z %>% 
+  group_by(x) %>% 
+  mutate(fourier_transform = Mod(fft(y)))
+
+t %>% ggplot(aes(x,y))+
+  geom_line()
+
+ggplot()+
+  geom_line(data = t, aes(x,y), color = "red")+
+  geom_line(data = t, aes(x,fourier_transform), color = "blue", linetype = "dotdash")
+
+```
