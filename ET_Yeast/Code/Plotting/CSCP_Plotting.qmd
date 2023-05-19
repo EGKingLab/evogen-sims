@@ -128,21 +128,35 @@ walk2(dfs, myphenofiles, mon_plots, mypath = mypath)
 This is to try Fourier transform
 
 ```{r}
-geno <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSFP.1.dir/genomeCSFP_A1_300_0.5.csv")
+#geno <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models#/CSFP.1.dir/genomeCSFP_A1_300_0.5.csv")
 
-ft_geno <- geno %>% 
+geno1 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/CSCP.dir/genome1_100_0.5.csv")
+geno2 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/FSFP_4sd_1.dir/genomeFSFP4sd_A1_300_0.5.csv")
+
+ft_geno1 <- geno1 %>% 
   group_by(Position) %>% 
   mutate(FFT_PowerDensity = abs((fft(Frequency)^2)/2000)*2.5e-4,
          Freq =  0:(n_distinct(Position)-1)/2000) %>% 
   select(Generation, Position, Frequency, FFT_PowerDensity, Freq) 
 
-i1 <- ggplot(ft_geno, aes(x = Generation, y = Frequency, color = as.character(Position)))+
+i11 <- ggplot(geno1, aes(x = Generation, y = Frequency, color = as.character(Position)))+
   geom_line(linewidth = 0.2)+
   labs(title = "Gen vs Freq")+
   theme(axis.title = element_text(face = "bold"),
         axis.text = element_text(face = "italic"),
         plot.title = element_text(hjust = 0.5),
         legend.position = "none")
+
+i12 <- ggplot(geno2, aes(x = Generation, y = Frequency, color = as.character(Position)))+
+  geom_line(linewidth = 0.2)+
+  labs(title = "Gen vs Freq")+
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+i11 
+  i12 
 
 i2 <- ggplot(ft_geno, aes(x = Generation, y = FFT_PowerDensity, color = as.character(Position)))+
   geom_line(linewidth = 0.2)+
@@ -158,9 +172,12 @@ i1 | i2
 
 ```{r}
 set.seed(56778)
+r <- sample(rep(seq(1:4), each = 5))
 y <- rnorm(20)
 x <- rep(1:5, each = 4) %>% sample()
-z <- tibble(x, y) #%>% data.frame() #%>% mutate(x = factor(x))
+z <- tibble(r, x, y) %>% mutate(x = factor(x))
+z_wide <- z %>% group_by(r) %>% spread(key = x, value = y)
+
 ```
 
 ```{r}
@@ -188,5 +205,71 @@ t %>% ggplot(aes(x,y))+
 ggplot()+
   geom_line(data = t, aes(x,y), color = "red")+
   geom_line(data = t, aes(x,fourier_transform), color = "blue", linetype = "dotdash")
+
+```
+
+```{r}
+geno2 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/FSFP_4sd_1.dir/genomeFSFP4sd_A1_300_0.5.csv")
+
+dirt <- geno2 %>% select(Generation, Position, Frequency) %>% group_by(Generation) %>% spread(key = Position, value = Frequency) #%>% filter(Generation != 1)
+
+View(dirt)
+
+dirt_ft <- dirt[-1]
+fttr <- abs(apply(dirt_ft, 2, fft))
+pow_fr <- apply(fttr, 2, Mod)
+
+pow_frr <-pow_fr/2000
+
+pow_frm <- cbind(dirt[1], as_tibble(pow_frr))
+
+View(pow_frm)
+
+pow_fr_long <- pow_frm %>% pivot_longer(-1, names_to = "Position", values_to = "Power")
+
+pow_fr_long %>% filter(Power < 0.05 & Position == 18301) %>% ggplot(aes(x = Generation, y = Power, color = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+
+pow_fro <- pow_fr %>% as.matrix(pow_fr)
+df_long <- gather(pow_fr, key = "variable", value = "value")
+```
+
+```{r}
+ty <- geno2 %>% group_by(Generation) %>% select( Frequency, Generation)
+
+pow_frm= as_tibble(pow_fr[-1,])
+
+pow_frm %>% ggplot(aes(`42710`))+
+  geom_density()
+
+plot(pow_frm$pow_fr)
+```
+
+```{python}
+
+# import pandas and numpy modules
+import pandas as pd
+import numpy as np
+
+# read csv file using pandas
+geno2 = pd.read_csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/FSFP_4sd_1.dir/genomeFSFP4sd_A1_300_0.5.csv")
+
+# select columns and reshape data using pandas
+dirt = geno2[["Generation", "Position", "Frequency"]].pivot(index="Generation", columns="Position", values="Frequency").drop(1)
+
+# view dirt using pandas
+print(dirt)
+
+# get dirt values as a numpy array
+dirt_ft = dirt.values
+
+# apply fft to each column using numpy
+fttr = np.abs(np.fft.fft(dirt_ft, axis=0))
+
+# get the power spectrum using numpy
+pow_fr = np.abs(fttr)
+
 
 ```
