@@ -37,7 +37,7 @@ geno3 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Sel
 ft_geno <- geno2 %>%
   group_by(Position) %>%
   mutate(FFT_PowerDensity = abs(fft(Frequency)),
-         FFT_Freq = spectrum(Frequency)$freq[1:n_distinct(Generation)]) %>%
+         FFT_Freq = spectrum(Frequency, plot = FALSE)$freq[1:n_distinct(Generation)]) %>%
   mutate(FFT_PowerDensity = case_when(FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0,
          TRUE~ FFT_PowerDensity),
          FFT_back = Re(fft(FFT_PowerDensity, inverse = TRUE))/length(Frequency))
@@ -99,7 +99,7 @@ fft_fun <- function(data, pos){
   Mu_Freq_num <- as.numeric(ft_data$Mu_Freq)
   
   FFT_Power = abs(fft(Mu_Freq_num))
-  FFT_Freq = spectrum(Mu_Freq_num)$freq[seq_len(length(Mu_Freq_num))]
+  FFT_Freq = spectrum(Mu_Freq_num, plot = FALSE)$freq[seq_len(length(Mu_Freq_num))]
   FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num)
   
   mydf <- data.frame(
@@ -120,7 +120,6 @@ fft_fun <- function(data, pos){
 ```
 
 ```{r}
-
 Positions = unique(geno2$Position)
 Newdata <- future_map(Positions, fft_fun, data = geno2) %>%  list_rbind()
 

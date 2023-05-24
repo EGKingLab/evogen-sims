@@ -13,6 +13,10 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***May 23rd 2023***]{.underline}
+
+Have been working with FFT. I have figured out that the best way to work with them for each QTL position is to use a for loop or a function (Check your current code). While I am still processing data on every QTL along all generation, it would instead be feasible to do the analysis then find the mean Frequency for each generation. From there, we can work on the plots. Despite everything that I have done so far, I need to find the best way for post-processig for Fourier. Also, I need to check if all fourier assumptions are met otherwise I would consider wavelet assumptions. One of the assumption of Fourier is "The sampled signal segment must contain a whole number of [periods](https://www.nti-audio.com/en/support/know-how/fast-fourier-transform-fft#:~:text=In%20the%20Fourier%20transformation%2C%20the%20assumption%20is%20that,segment%20must%20contain%20a%20whole%20number%20of%20periods.). (Does this means that a QTL has to be present for all generations?????)"
+
 [***March 6th 2023***]{.underline}
 
 Started the project while following a single step per time. The first stem was to set the genome size and the number of QTLs. The genome size will approximately equal to 1,220,281 (arbitrary), and the number of QTLs considered are 1 with interval (I) of 610,140, 10 QTLs (I = 110,934), 70 QTLs (I = 17,186), 100 QTLs (I = 12,081), 300 QTLs (I = 4,053).
