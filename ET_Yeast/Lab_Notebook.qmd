@@ -7,15 +7,21 @@ editor: visual
 
 ## Simulation project
 
-Here are the notes taken while working on the yeast simulation model. Most of these notes are based on the code writing and some additional ideas that might come while working on the project.
+Here are the notes taken while working on the yeast simulation model. Most of these notes are based on code writing and some additional ideas that might come up while working on the project.
 
-## Writting Flow
+## Writing Flow
 
 The most current notes are at the top.
 
+[***May 30th 2023***]{.underline}
+
+The peak frequency can indicate where there is the highest power (spectral density), and that would lead us to how many cycles (signal) are in our dataset (1/peak frequency). The total number of periods divided by the number of cycles will tell us when the signal comes back.
+
+Note that MCMC sampling can be used to validate our peaks. (Review your notes)
+
 [***May 23rd 2023***]{.underline}
 
-Have been working with FFT. I have figured out that the best way to work with them for each QTL position is to use a for loop or a function (Check your current code). While I am still processing data on every QTL along all generation, it would instead be feasible to do the analysis then find the mean Frequency for each generation. From there, we can work on the plots. Despite everything that I have done so far, I need to find the best way for post-processig for Fourier. Also, I need to check if all fourier assumptions are met otherwise I would consider wavelet assumptions. One of the assumption of Fourier is "The sampled signal segment must contain a whole number of [periods](https://www.nti-audio.com/en/support/know-how/fast-fourier-transform-fft#:~:text=In%20the%20Fourier%20transformation%2C%20the%20assumption%20is%20that,segment%20must%20contain%20a%20whole%20number%20of%20periods.). (Does this means that a QTL has to be present for all generations?????)"
+Have been working with FFT. I have figured out that the best way to work with them for each QTL position is to use a for loop or a function (Check your current code). While I am still processing data on every QTL along all generations, it would instead be feasible to do the analysis and then find the mean Frequency for each generation. From there, we can work on the plots. Despite everything that I have done so far, I need to find the best way to post-processing for Fourier. Also, I need to check if all Fourier assumptions are met otherwise I would consider wavelet assumptions. One of the assumptions of Fourier is "The sampled signal segment must contain a whole number of [periods](https://www.nti-audio.com/en/support/know-how/fast-fourier-transform-fft#:~:text=In%20the%20Fourier%20transformation%2C%20the%20assumption%20is%20that,segment%20must%20contain%20a%20whole%20number%20of%20periods.). (Does this means that a QTL has to be present for all generations?????)"
 
 [***March 6th 2023***]{.underline}
 
@@ -35,15 +41,15 @@ Remember that to output the whole genome file, you can use sim.outputFull("path 
 
 [***January 5th 2023***]{.underline}
 
-The tick and cycle events in slim make sense especially when we are considering overlapping population. That is, one person might have a child, grand-child, and grand grand kids. Thefore, for that particular person, we might see one tick, and have multiple cycles. \[That's how I would explain tick and cycle thing\]
+The tick and cycle events in Slim make sense especially when we are considering overlapping populations. That is, one person might have a child, grand-child, and grand grandkids. Therefore, for that particular person, we might see one tick, and have multiple cycles. \[That's how I would explain the tick and cycle thing\]
 
 [***December 23rd 2022***]{.underline}
 
-I today figured out that .tagF wouldn't work until we scale the fitness. Maybe it might be good to read more about it in the Eidos manual. Also, according to the plots, it seemed like the mutation doesn't change much about the frequency over generation when used a genome from dummy population.ed
+I today figured out that .tagF wouldn't work until we scale the fitness. Maybe it might be good to read more about it in the Eidos manual. Also, according to the plots, it seemed like the mutation doesn't change much about the frequency over generation when using a genome from a dummy population
 
 [***December 5th 2022***]{.underline}
 
-Creating an initial genome using a dummy population. In this case we need a sub-population with a single genome that has added mutations and its effect size correspond to the number of QTLs.
+Creating an initial genome using a dummy population. In this case, we need a sub-population with a single genome that has added mutations and its effect size corresponds to the number of QTLs.
 
 ```{r, echo=FALSE}
 library(slimr)
