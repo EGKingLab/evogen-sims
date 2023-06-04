@@ -13,6 +13,17 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***June 4th 2023***]{.underline}
+
+Here are some of the fitness functions to try. The 3rd and 4th functions are pretty much the same and they work very well for scaled phenotype. They are also considered as a strong selection while the 2nd function is a weak selection. The 5th function work with non-scaled phenotypes. The first and last functions might need to be modified.
+
+1.  inds.fitnessScaling = 1 + dnorm(newopt-phenotypes,0,0.25);
+2.  inds.fitnessScaling = 1-(abs(phenotypes - newopt\[sim.cycle\])/200);
+3.  inds.fitnessScaling = exp(-(0.02) \* (phenotypes - newopt\[sim.cycle\])\^2);
+4.  inds.fitnessScaling = exp(-(1/(phenotypes)) \* (phenotypes - newopt\[sim.cycle\])\^2);
+5.  inds.fitnessScaling = exp(-(1/mean(phenotypes)\^2) \* (phenotypes - newopt\[sim.cycle\])\^2); //# This fitness goes with unscaled phenotype
+6.  1.0 + dnorm(100 - phenotypes, 0.0, 5.0);
+
 [***May 30th 2023***]{.underline}
 
 The peak frequency can indicate where there is the highest power (spectral density), and that would lead us to how many cycles (signal) are in our dataset (1/peak frequency). The total number of periods divided by the number of cycles will tell us when the signal comes back.
