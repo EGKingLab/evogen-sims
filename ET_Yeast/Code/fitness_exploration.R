@@ -38,7 +38,7 @@ phenotypes$phenotypes <- (phenotypes$phenotypes/ sd(phenotypes$phenotypes)) + 10
 #phenotypes$phenotypes <- ((phenotypes$phenotypes - mean(phenotypes$phenotypes))/sd(phenotypes$phenotypes)) + 10
 
 #define new optimum
-new_opt <- mean(phenotypes$phenotypes) + sd(phenotypes$phenotypes)*2
+new_opt <- mean(phenotypes$phenotypes) + sd(phenotypes$phenotypes)#*2
 
 phenotypes |>
   ggplot(aes(x=phenotypes)) +
@@ -48,8 +48,8 @@ phenotypes |>
 
 scaling_f <- 100
   
-phenotypes$fitness <- 1 - (abs(phenotypes$phenotypes - new_opt)/scaling_f)
-
+#phenotypes$fitness <- 1 - (abs(phenotypes$phenotypes - new_opt)/scaling_f)
+phenotypes$fitness <- exp(-(1/2) * (phenotypes$phenotypes - new_opt)^2)
 #phenotypes$fitness <- (dnorm(new_opt - phenotypes$phenotypes, 10))
 
 phenotypes |>

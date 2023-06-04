@@ -39,7 +39,7 @@ ft_geno <- geno2 %>%
   mutate(FFT_PowerDensity = abs(fft(Frequency)), #Power
          FFT_Freq = spectrum(Frequency, plot = FALSE)$freq[1:n_distinct(Generation)]) %>% #Freq
         # From here we can print our maximum freq, and can make a plot of power and frequency in which the absobute value of Frequency is greater than a given threshold. We here use indices.
-  mutate(FFT_PowerDensity = case_when(FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0,
+  mutate(FFT_PowerDensity = case_when(FFT_Freq >  0 ~ 0, #< max(FFT_Freq) - sd(FFT_Freq) ~ 0,
          TRUE~ FFT_PowerDensity),
          FFT_back = Re(fft(FFT_PowerDensity, inverse = TRUE))/length(Frequency))
 
@@ -247,8 +247,13 @@ plot(fft_freq[pos_mask], fft_power[pos_mask], type = "l")
 
 ```{r}
 copy_signal_fft = fft_signal
-copy_signal_fft[fft_power > 0.15] <- 0
-signal_back <- Re(fft(copy_signa_fft, inverse = TRUE))
+copy_signal_fft[fft_power < 0.5] <- 0
+signal_back <- Re(fft(copy_signal_fft, inverse = TRUE))
+```
+
+```{r}
+plot(new_d$Frequency, type = "l")
+plot(signal_back, type = "l")
 ```
 
 ## Post Analysis
@@ -269,7 +274,7 @@ get_low_freq <- function(fft_signal, peak_freq, fft_freq, freqs, peak_indx) {
     
     copy_signal_fft[abs(fft_freq) < start_freq] <- 0
     copy_signal_fft[abs(fft_freq) > end_freq] <- 0
-    signal_back = Re(fft(copy_signa_fft, inverse = TRUE))
+    signal_back = Re(fft(copy_signal_fft, inverse = TRUE))
     signals_back[[i]] <- signal_back
   }
   #cat("\n")
