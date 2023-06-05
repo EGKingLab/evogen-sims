@@ -813,3 +813,17 @@ data_processor$fft_filter(df, time_step, plot=TRUE)
 
 
 ```
+
+```{r}
+test_FS <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/genome1_100_H0.5SD3Gen10.csv")
+
+test_CS <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/genome1_100_H0.5SD1Gen10.csv")
+
+test_FS %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position)))+
+  geom_line(linewidth = 0.2)+
+  theme(legend.position = "none")
+
+test_CS %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position)))+
+  geom_line(linewidth = 0.2)+
+  theme(legend.position = "none")
+```

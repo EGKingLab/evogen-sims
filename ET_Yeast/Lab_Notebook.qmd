@@ -13,6 +13,16 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***June 5th 2023***]{.underline}
+
+Running constant and fluctuating selection while considering 100 loci, different selection strength (Optimum having some standard deviations from mean phenotypes), and several levels of intervals.
+
+Standard deviation: 1, 2, 3, and 4
+
+Levels of interval: 10, 20, and 30.
+
+The names of output files having r*eplicate number, loci numbers, heritability value, standard deviations, and generation intervals*. For example: genome5_100_H0.5SD2Gen20.csv
+
 [***June 4th 2023***]{.underline}
 
 Here are some of the fitness functions to try. The 3rd and 4th functions are pretty much the same and they work very well for scaled phenotype. They are also considered as a strong selection while the 2nd function is a weak selection. The 5th function work with non-scaled phenotypes. The first and last functions might need to be modified.
