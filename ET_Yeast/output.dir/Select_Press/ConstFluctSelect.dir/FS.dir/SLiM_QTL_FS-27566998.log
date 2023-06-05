@@ -1906,6 +1906,7 @@ initializeRecombinationRate(1e-08);
 // Starting run at tick <start>:
 1 
 
+<<<<<<< HEAD
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
@@ -3496,3 +3497,5 @@ initializeRecombinationRate(1e-08);
 // Starting run at tick <start>:
 1 
 
+=======
+>>>>>>> 82db291104f58ff35af91647bb769e3635e93844
