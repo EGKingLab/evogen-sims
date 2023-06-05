@@ -1,12 +1,13 @@
 #!/bin/bash
 ##################### Running Different QTL Numbers on Constant Selection and Populaton  #######################################
-#SBATCH -p BioCompute 
+#SBATCH -p BioCompute,Lewis,hpc4 
 #SBATCH -A kinglab
 #SBATCH -J SLiM_CS 
 #SBATCH -c 4
+#SBATCH -t 1-00:00:00
 #SBATCH --mem 120G
-#SBATCH -o ../../output.dir/Select_Press/CS.dir/SLiM_QTL_CS-%j.log
-#SBATCH -e ../../output.dir/Select_Press/CS.dir/SLiM_QTL_CS--%j.err
+#SBATCH -o ../../../output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/SLiM_QTL_CS-%j.log
+#SBATCH -e ../../../output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/SLiM_QTL_CS--%j.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=etb68@mail.missouri.edu
 ##########SCIENCE FOLLOWS HERE ########################
@@ -15,7 +16,7 @@
 
 echo -e "=== Bigining of SLiM run with different QTLs > $(date) ==="
 
-output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Select_Press/CS.dir/genome5_300_0.5.csv"
+output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/genome5_100_0.5.csv"
 if [[ ! -f "$output" ]]
 then
   echo "My file ${output} doesn't exist. Running SLiM QTLs now."

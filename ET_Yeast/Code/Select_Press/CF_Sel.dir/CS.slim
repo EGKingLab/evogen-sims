@@ -80,6 +80,9 @@ mutationEffect(m2) {
 // Define the heritability constant h2 and get the sum of all additive mutations
 1 late() {
 	defineConstant("h2", h);
+	defineConstant("stdv", SD);
+	defineConstant("gener", gen);
+	defineConstant("ranges", rang);
 	inds = sim.subpopulations.individuals;
 	additive = inds.sumOfMutationsOfType(m2);
 	
@@ -95,9 +98,9 @@ mutationEffect(m2) {
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
 	// Define the lower and upper bounds of the optimal phenotype and define a global variable newopt
-	lower_opt = mean(phenotypes) + sd(phenotypes)*SD;
-	upper_opt = mean(phenotypes) + sd(phenotypes)*SD;
-	nopt = rep(c(rep(lower_opt ,genq),rep(upper_opt,gen)), rang);
+	lower_opt = mean(phenotypes) + sd(phenotypes)*stdv;
+	upper_opt = mean(phenotypes) + sd(phenotypes)*stdv;
+	nopt = rep(c(rep(lower_opt ,gener),rep(upper_opt,gener)), ranges);
 	defineGlobal("newopt", nopt);
 	
 	// Get the mutation information and order them by frequency
@@ -109,7 +112,8 @@ mutationEffect(m2) {
 	//q_a = 1 - freq;	
 	//het = 2*q_a*freq;
 	indices = order(freq, F);
-/*	
+	
+/*
 	// Write mutation information to a CSV file
 	for (i in indices)
 		q_a = 1 - freq[i];
