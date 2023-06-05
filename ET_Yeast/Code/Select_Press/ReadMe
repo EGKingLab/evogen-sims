@@ -6,3 +6,9 @@ Note that the directory CS.dir is focusing on constant selection while consideri
  - Generation interval (10, 20, 30 ...)
 
 Heritability remains the same, but I will have to change it later on. 
+
+CF_Sel.dir = Constant and Fluctuating sSelection Folders while considering different fitness function
+ CSCP.QTL.slim  FSCP4sd.QTL.slim  FSFP4sd.1.QTL.slim  = These are from tadopted from old model which was considering only 2sd of optimum from mean phenotype, and we wanted to changed the selection strength 
+Re RunCSCP_SLiM.sh  RunFSCP2sd_SLiM.sh  RunFSFP_4sd_1_SLiM.sh  <- same as the above
+
+trash.dir = This folder contains mostly old models or files that I didn't want to delete completly.
