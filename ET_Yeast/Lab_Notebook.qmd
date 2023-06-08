@@ -13,6 +13,10 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***June 8th 2023***]{.underline}
+
+Now that I have modeled Selection with changing generations & optimum based on standard deviations, I should now think of modeling irregular periodicity (how many generations the optimum should change) or how much the environment should affect the optimum (1sd, 2sd, or even a different number following a given distribution).
+
 [***June 5th 2023***]{.underline}
 
 Running constant and fluctuating selection while considering 100 loci, different selection strength (Optimum having some standard deviations from mean phenotypes), and several levels of intervals.
@@ -30,7 +34,7 @@ Here are some of the fitness functions to try. The 3rd and 4th functions are pre
 1.  inds.fitnessScaling = 1 + dnorm(newopt-phenotypes,0,0.25);
 2.  inds.fitnessScaling = 1-(abs(phenotypes - newopt\[sim.cycle\])/200);
 3.  inds.fitnessScaling = exp(-(0.02) \* (phenotypes - newopt\[sim.cycle\])\^2);
-4.  inds.fitnessScaling = exp(-(1/(phenotypes)) \* (phenotypes - newopt\[sim.cycle\])\^2);
+4.  **inds.fitnessScaling = exp(-(1/(phenotypes)) \* (phenotypes - newopt\[sim.cycle\])\^2);**
 5.  inds.fitnessScaling = exp(-(1/mean(phenotypes)\^2) \* (phenotypes - newopt\[sim.cycle\])\^2); //# This fitness goes with unscaled phenotype
 6.  1.0 + dnorm(100 - phenotypes, 0.0, 5.0);
 

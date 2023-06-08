@@ -1,0 +1,41 @@
+---
+title: "EvoSims_Plan"
+format: html
+editor: visual
+---
+
+## Overall Aims
+
+-   Aim 1: Develop a polygenic evolutionary model that can predict the effects of fluctuating selection, and test the model with an E&R experiment featuring constant and fluctuating selection regimes for thermal stress.
+-   Aim 2: Develop a polygenic evolutionary model that can predict the effects of recurrent bottlenecks, and test the model with an E&R experiment featuring stable and fluctuating demographic regimes.
+
+## Key Model Parameters
+
+-   Number of genetic loci
+-   Effect sizes of genetic loci
+-   Selection gradient
+-   Pattern of fluctuating selection
+    -   generations
+    -   irregular periodicity
+    -   size of shift
+-   Heritability
+-   Population dynamics
+    -   generations
+    -   irregular periodicity
+    -   size of reduction
+-   Life history (asexual, sexual, switching)
+
+## Initial starting point
+
+-   Constant & fluctuating selection
+-   One set number of loci (100)
+-   Different selection strengths (distance between optima, 4 levels of varying strength)
+-   Several generation intervals for the shift (3 different intervals 10, 20, 30)
+-   Even shift high low (same time interval)
+
+1. Run above models (by Th 8)
+    - finalize fitness function
+    - choose parameter values for your 12 combos
+2. Analyze & visualize output
+    - spectral analysis approach
+    - genome-wide visuals
