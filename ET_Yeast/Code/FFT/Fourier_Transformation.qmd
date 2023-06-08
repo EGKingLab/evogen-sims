@@ -28,121 +28,91 @@ theme_set(theme_cowplot())
 geno1 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/CSCP.dir/genome1_100_0.5.csv") #%>% filter(Position == 1006747)
 geno2 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A1_100_0.5.csv")
 
-geno3 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A1_300_0.5.csv")
+geno3 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A1_10_0.5.csv")
 ```
 
 #### First Try
 
 ```{r}
-ft_geno <- geno2 %>%
-  group_by(Position) %>%
-  mutate(FFT_PowerDensity = abs(fft(Frequency)), #Power
-         FFT_Freq = spectrum(Frequency, plot = FALSE)$freq[1:n_distinct(Generation)]) %>% #Freq
-        # From here we can print our maximum freq, and can make a plot of power and frequency in which the absobute value of Frequency is greater than a given threshold. We here use indices.
-  mutate(FFT_PowerDensity = case_when(FFT_Freq >  0 ~ 0, #< max(FFT_Freq) - sd(FFT_Freq) ~ 0,
-         TRUE~ FFT_PowerDensity),
-         FFT_back = Re(fft(FFT_PowerDensity, inverse = TRUE))/length(Frequency))
-
-View(ft_geno)
-
-ft_geno %>% ggplot(aes(Generation, FFT_back, color = factor(Position)))+
-  geom_line()+
-  theme(legend.position = "none")
+# ft_geno <- geno2 %>%
+#   group_by(Position) %>%
+#   mutate(FFT_PowerDensity = abs(fft(Frequency)), #Power
+#          FFT_Freq = spectrum(Frequency, plot = FALSE)$freq[1:n_distinct(Generation)]) %>% #Freq
+#         # From here we can print our maximum freq, and can make a plot of power and frequency in which the absobute value of Frequency is greater than a given threshold. We here use indices.
+#   mutate(FFT_PowerDensity = case_when(FFT_Freq >  0 ~ 0, #< max(FFT_Freq) - sd(FFT_Freq) ~ 0,
+#          TRUE~ FFT_PowerDensity),
+#          FFT_back = Re(fft(FFT_PowerDensity, inverse = TRUE))/length(Frequency))
+# 
+# View(ft_geno)
+# 
+# ft_geno %>% ggplot(aes(Generation, FFT_back, color = factor(Position)))+
+#   geom_line()+
+#   theme(legend.position = "none")
 ```
 
 #### With for loop
 
 ```{r}
-Newdata_geno <- list()
-
-Positions = unique(geno2$Position)
-for(QTL in Positions){
-  geno2_pos <- geno2 %>%
-    filter(Position == QTL)
-  
-  ft_geno1 <- geno2_pos %>%
-    group_by(Generation) %>%
-    summarise(Mu_Freq = mean(Frequency))
-  
-  Mu_Freq_num <- as.numeric(ft_geno1$Mu_Freq)
-
-  FFT_Power = (fft(Mu_Freq_num))
-  FFT_Freq = spectrum(Mu_Freq_num)$freq[seq_len(length(Mu_Freq_num))]
-  FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num)
-  
-  Newdata_geno[[QTL]] <- data.frame(
-    Position = QTL,
-    Generation = ft_geno1$Generation,
-    FFT_Power = FFT_Power,
-    FFT_Freq = FFT_Freq,
-    FFT_back = FFT_back
-  ) %>%
-    mutate(FFT_Power = case_when(
-      FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0,
-      TRUE ~ FFT_Power
-    ),
-    FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num))
-}
+# Newdata_geno <- list()
+# 
+# Positions = unique(geno2$Position)
+# for(QTL in Positions){
+#   geno2_pos <- geno2 %>%
+#     filter(Position == QTL)
+#   
+#   ft_geno1 <- geno2_pos %>%
+#     group_by(Generation) %>%
+#     summarise(Mu_Freq = mean(Frequency))
+#   
+#   Mu_Freq_num <- as.numeric(ft_geno1$Mu_Freq)
+# 
+#   FFT_Power = (fft(Mu_Freq_num))
+#   FFT_Freq = spectrum(Mu_Freq_num, plot = FALSE)$freq[seq_len(length(Mu_Freq_num))]
+#   FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num)
+#   
+#   Newdata_geno[[QTL]] <- data.frame(
+#     Position = QTL,
+#     Generation = ft_geno1$Generation,
+#     FFT_Power = FFT_Power,
+#     FFT_Freq = FFT_Freq,
+#     FFT_back = FFT_back
+#   ) %>%
+#     mutate(FFT_Power = case_when(
+#       FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0,
+#       TRUE ~ FFT_Power
+#     ),
+#     FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num))
+# }
 
 ```
 
 #### With a function
 
-```{r}
-fft_fun <- function(data, pos){
-  data_pos <- data %>%
-    filter(Position == pos)
-  
-  ft_data <- data_pos %>%
-    group_by(Generation) %>%
-    summarise(Mu_Freq = mean(Frequency))
-  
-  Mu_Freq_num <- as.numeric(ft_data$Mu_Freq)
-  
-  FFT_Power = (fft(Mu_Freq_num))
-  FFT_Freq = spectrum(Mu_Freq_num, plot = FALSE)$freq[seq_len(length(Mu_Freq_num))]
-  FFT_back =Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num)
-  
-  mydf <- data.frame(
-    Position = pos,
-    Generation = ft_data$Generation,
-    FFT_Power = FFT_Power,
-    FFT_Freq = FFT_Freq,
-    FFT_back = FFT_back
-  ) %>%
-    mutate(FFT_Power = case_when(
-      FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0,
-      TRUE ~ FFT_Power
-    ),
-    FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num))
-  
-  return(mydf)
-}
-```
+`{# {r} # fft_fun <- function(data, pos){ #   data_pos <- data %>% #     filter(Position == pos) #    #   ft_data <- data_pos %>% #     group_by(Generation) %>% #     summarise(Mu_Freq = mean(Frequency)) #    #   Mu_Freq_num <- as.numeric(ft_data$Mu_Freq) #    #   FFT_Power = (fft(Mu_Freq_num)) #   FFT_Freq = spectrum(Mu_Freq_num, plot = FALSE)$freq[seq_len(length(Mu_Freq_num))] #   FFT_back =Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num) #    #   mydf <- data.frame( #     Position = pos, #     Generation = ft_data$Generation, #     FFT_Power = FFT_Power, #     FFT_Freq = FFT_Freq, #     FFT_back = FFT_back #   ) %>% #     mutate(FFT_Power = case_when( #       FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0, #       TRUE ~ FFT_Power #     ), #     FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num)) #    #   return(mydf) # }`
 
 ```{r}
-Positions = unique(geno2$Position)
-Newdata <- future_map(Positions, fft_fun, data = geno2) %>%  list_rbind()
+# Positions = unique(geno2$Position)
+# Newdata <- future_map(Positions, fft_fun, data = geno2) %>%  list_rbind()
 
 ```
 
 ```{r}
 
-ggplot(geno2, aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line() +
-  labs(x = "Generation", y = "Frequency", color = "Position") +
-  theme(legend.position = "none") 
-
-ggplot(Newdata, aes(x = Generation, y = FFT_back, color = factor(Position))) +
-  geom_line() +
-  labs(x = "Generation", y = "FFT_back", color = "Position") +
-  theme(legend.position = "none") 
-
-ggplot(Newdata, aes(x = Mod(FFT_Power), y = FFT_back, color = factor(Position))) +
-  geom_line() +
-  geom_vline(aes(xintercept = 125), linetype = "dashed") +
-  labs(x = "FFT_Power", y = "FFT_back", color = "Position") +
-  theme(legend.position = "none")
+# ggplot(geno2, aes(x = Generation, y = Frequency, color = factor(Position))) +
+#   geom_line() +
+#   labs(x = "Generation", y = "Frequency", color = "Position") +
+#   theme(legend.position = "none") 
+# 
+# ggplot(Newdata, aes(x = Generation, y = FFT_back, color = factor(Position))) +
+#   geom_line() +
+#   labs(x = "Generation", y = "FFT_back", color = "Position") +
+#   theme(legend.position = "none") 
+# 
+# ggplot(Newdata, aes(x = Mod(FFT_Power), y = FFT_back, color = factor(Position))) +
+#   geom_line() +
+#   geom_vline(aes(xintercept = 125), linetype = "dashed") +
+#   labs(x = "FFT_Power", y = "FFT_back", color = "Position") +
+#   theme(legend.position = "none")
 ```
 
 #### Using a different way for frequency
@@ -166,23 +136,22 @@ fft_fun <- function(data, pos){
     summarise(Mu_Freq = mean(Frequency))
   
   Mu_Freq_num <- as.numeric(ft_data$Mu_Freq)
-  
+  Spect = fft(Mu_Freq_num)
   FFT_Power = abs(fft(Mu_Freq_num))
   FFT_Freq = fftfreq(length(1:length(Mu_Freq_num)))
-  FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num)
+  FFT_back = rep(NA, length(FFT_Freq))
   
   mydf <- data.frame(
     Position = pos,
     Generation = ft_data$Generation,
+    Frequency = Mu_Freq_num, # Remove this if necessary
     FFT_Power = FFT_Power,
     FFT_Freq = FFT_Freq,
+    Spect = Spect,
     FFT_back = FFT_back
   ) %>%
-    mutate(FFT_Power = case_when(
-      FFT_Freq < max(FFT_Freq) - sd(FFT_Freq) ~ 0,
-      TRUE ~ FFT_Power
-    ),
-    FFT_back = Re(fft(FFT_Power, inverse = TRUE))/length(Mu_Freq_num))
+    mutate(Spect = ifelse(FFT_Power < 10, 0, Spect),
+    FFT_back = Re(fft(Spect, inverse = TRUE))/length(Mu_Freq_num))
   
   return(mydf)
 }
@@ -194,7 +163,7 @@ Newdata <- future_map(Positions, fft_fun, data = geno3) %>%  list_rbind()
 ```
 
 ```{r}
-ggplot(geno3, aes(x = Generation, y = Frequency, color = factor(Position))) +
+ggplot(Newdata, aes(x = Generation, y = Frequency, color = factor(Position))) +
   geom_line() +
   labs(x = "Generation", y = "Frequency", color = "Position") +
   theme(legend.position = "none") 
@@ -202,9 +171,9 @@ ggplot(geno3, aes(x = Generation, y = Frequency, color = factor(Position))) +
 ggplot(Newdata, aes(x = Generation, y = FFT_back, color = factor(Position))) +
   geom_line() +
   labs(x = "Generation", y = "FFT_back", color = "Position") +
-  theme(legend.position = "none") 
+  theme(legend.position = "none")
 
-Newdata%>% filter(FFT_back > 0) %>% 
+Newdata%>% filter(FFT_back > 0) %>%
   ggplot(aes(x = FFT_Power, y = FFT_back, color = factor(Position))) +
   geom_line() +
   labs(x = "FFT_Power", y = "FFT_back", color = "Position") +
@@ -212,27 +181,46 @@ Newdata%>% filter(FFT_back > 0) %>%
 ```
 
 ```{r}
-Newdata %>% group_by(Generation) %>% 
-  summarize(Mean_Freq = mean(FFT_Freq)) %>% 
-  #filter(Mean_Freq > 0) %>% 
-  ggplot(aes(x = Generation, y = Mean_Freq)) +
-  geom_line() +
-  labs(x = "Generation", y = "Mean_Freq") +
-  theme(legend.position = "none") 
+# Newdata %>% group_by(Generation) %>% 
+#   summarize(Mean_Freq = mean(FFT_Freq)) %>% 
+#   #filter(Mean_Freq > 0) %>% 
+#   ggplot(aes(x = Generation, y = Mean_Freq)) +
+#   geom_line() +
+#   labs(x = "Generation", y = "Mean_Freq") +
+#   theme(legend.position = "none") 
+
+NNewdata <- Newdata %>% filter(FFT_Power > 5 & FFT_Power < 10) %>% 
+  group_by(Generation)%>% 
+  summarize(Mean_Power = mean(FFT_Power),
+            Mean_Frequency = mean(Frequency),
+            Mean_Freq = mean(FFT_Freq*2000))
+
+  spec_Plot <- NNewdata %>% ggplot(aes(x = abs(Mean_Freq), y = Mean_Power))+
+  geom_line()+
+  labs(x = "Fequency", y = "Spectrum")+
+  theme(legend.position = "none")
+  
+  Freq_Plot <- NNewdata %>% ggplot(aes(x = abs(Mean_Freq), y = Mean_Frequency))+
+  geom_line()+
+  labs(x = "Generation", y = "Allele Freq")+
+  theme(legend.position = "none")
+  
+  plot_grid(spec_Plot, Freq_Plot)
 ```
 
 ### More Trials
 
 ```{r}
-geno <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/FSFP_2sd_1.dir/genomeFSFP2sd_A1_300_0.5.csv")
+geno <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/genome4_100_H0.5SD4Gen30.csv")
 
-new_d <- geno %>% filter(Position == 892706)
+new_d <- geno %>% filter(Position == 628454)
 fft_signal <- fft(new_d$Frequency)
 fft_power <- abs(fft_signal)
 fft_freq <- fftfreq(length(new_d$Frequency))
 cat("The maximum frequency is", "\n", max(fft_freq))
 
-pos_mask = which(fft_freq > 0.05)
+
+pos_mask = which(fft_freq > 0)
 freqs = fft_freq[pos_mask]
 
 peak_indx = which.max(fft_power[pos_mask])
@@ -242,12 +230,12 @@ print (peak_freq)
 
 
 
-plot(fft_freq[pos_mask], fft_power[pos_mask], type = "l")
+plot(2000*(fft_freq[pos_mask]), fft_power[pos_mask], type = "l")
 ```
 
 ```{r}
 copy_signal_fft = fft_signal
-copy_signal_fft[fft_power < 0.5] <- 0
+copy_signal_fft[fft_freq > 0.017] <- 0
 signal_back <- Re(fft(copy_signal_fft, inverse = TRUE))
 ```
 
@@ -263,7 +251,7 @@ signals_back <- list()
 get_low_freq <- function(fft_signal, peak_freq, fft_freq, freqs, peak_indx) {
   max_freq <- max(freqs)
   lf_signals <- list()
-  low_freqs <- c(0, peak_freq/4, peak_freq/2, peak_freq, peak_freq*2, peak_freq*4)
+  low_freqs <- c(0, peak_freq/10, peak_freq/4, peak_freq/2, peak_freq, peak_freq*2, peak_freq*4, peak_freq*10, peak_freq*20, peak_freq*40)
   
   cat("low frequency components", "\n")
   
@@ -288,7 +276,7 @@ multiscale_fft <- function(sign, time_step) {
   fft_power <- abs(fft_signal)
   ## get corresponding frequencies
   fft_freq <- fftfreq(length(sign), d = time_step)
-  pos_mask <- which(fft_freq > 0)
+  pos_mask <- which(fft_freq > 0.015)
   # pos_mask <- which((sample_freq > 0) & (sample_freq < 0.05))
   freqs <- fft_freq[pos_mask]
   # print(max(freqs), which.max(power[pos_mask]))
@@ -320,8 +308,7 @@ df <- data.frame(Frequency = rep(new_d$Frequency, length(low_filtered_sigs)),
 # Plot the data frame using ggplot
 ggplot(df, aes(x = Frequency, y = Signal)) +
   geom_line() +
-  facet_wrap(~ Group) +
-  geom_line(aes(y = sign), col = "red")
+  facet_wrap(~ Group)
 ```
 
 ## Fourier Using Mean Frequency After Transformation

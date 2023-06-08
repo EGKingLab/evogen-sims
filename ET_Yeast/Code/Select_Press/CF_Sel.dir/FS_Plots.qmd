@@ -133,11 +133,6 @@ mon_plots <- function(data, myphenofile, mypath){
    png(filename = Fitness_DensName, width = 6, height = 4, units = "in", res = 300)
   print(FitDens)
   dev.off()
-  
-  # Pheno_Fit <- plot_grid(pheno_plot, Fitness_plot, PhenoDens, FitDens)
-  # 
-  # ggsave(file.path(mypath, paste0(basename(myphenofile), "Pheno_plots.png")), Pheno_Fit, width = 6, height = 4, dpi = 300)
- 
 }
 ```
 
