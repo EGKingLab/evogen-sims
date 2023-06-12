@@ -4,7 +4,7 @@
 #SBATCH -A kinglab
 #SBATCH -J SLiM_FS 
 #SBATCH -c 4
-#SBATCH -t 1-00:00:00
+#SBATCH -t 1-03:00:00
 #SBATCH --mem 120G
 #SBATCH -o ../../../output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/SLiM_QTL_FS-%j.log
 #SBATCH -e ../../../output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/SLiM_QTL_FS--%j.err
