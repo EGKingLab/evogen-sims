@@ -1,0 +1,202 @@
+---
+title: "EvolutionPosterPresentation"
+author: "Esdras Tuyishimire"
+format: revealjs
+editor: visual
+---
+
+## Predicting population evolution under fluctuating environmental conditions
+
+#### Constant Selection
+
+```{r}
+my_theme <- 
+  theme(plot.title = 
+          element_text(hjust = 0.5, margin = margin(b = 20)),
+        panel.border = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.2),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(linewidth = 0.5),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12))
+
+```
+
+```{r}
+geno_file <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/genome1_100_H0.5SD4Gen30.csv")
+
+geno_file2 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/genome1_100_H0.5SD4Gen30.csv")
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Add a column to distinguish the datasets
+geno_file <- geno_file %>% mutate(Selection = 'Constant Selection')
+geno_file2 <- geno_file2 %>% mutate(Selection = 'Fluctuating Selection')
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2)
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line() +
+  facet_grid(Selection~.) +
+  theme(legend.position = "none",axis.title = element_text(face = "bold"))
+
+freqplot
+
+```
+
+```{r}
+ggsave("manuscript_AlleFreqPheno_plot.png", freqplot, width = 8, height = 6, units = "in", dpi = 300)
+
+freqplot
+```
+
+#### Phenotypes
+
+```{r}
+pheno_file <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/MeanPhenotypes1_100_H0.5SD4Gen30.csv")
+
+pheno_file2 <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/MeanPhenotypes1_100_H0.5SD4Gen30.csv")
+```
+
+```{r}
+pheno_file <- pheno_file %>% mutate(Selection = 'Constant Selection')
+pheno_file2 <- pheno_file2 %>% mutate(Selection = 'Fluctuating Selection')
+Phenotype_dataset <- rbind(pheno_file, pheno_file2)
+
+p1.1 <- Phenotype_dataset %>% ggplot(aes(Phenotype))+
+  geom_histogram(bins = 30)+
+  facet_grid(.~Selection) +
+  theme(legend.position = "none", axis.title = element_text(face = "bold"))
+
+p1.2 <- Phenotype_dataset %>% ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  #labs(x = "Generation", y = "Phenotype")+
+  facet_grid(Selection~.) +
+  theme(legend.position = "none", axis.title = element_text(face = "bold")) 
+
+p1.2
+
+p1 <- p1.2 + inset_element(p1.1, 0, 0.3, .5, .5, on_top = FALSE)
+
+
+p1
+```
+
+```{r}
+p2.1 <- pheno_file2 %>% ggplot(aes(Phenotype))+
+  geom_histogram(bins = 30)+
+  theme(axis.text = element_text(size = 5),
+        axis.title = element_text(face = "bold", size = 5))
+
+p2.2 <- pheno_file2 %>% ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  labs(x = "Generation", y = "Phenotype")+
+  theme(axis.title = element_text(face = "bold", size = 16))
+
+p2 <- p2.2 + inset_element(p2.1,  0.7, 0.7, 1.0, 1.0, on_top = FALSE)
+
+histo1 <- (p1 / p2) +
+  plot_annotation(tag_levels = 'A',
+                  tag_suffix = ".",
+                  theme = theme(plot.title = element_text(hjust = 0.5, margin = margin(b = 20))))
+
+histo2 <- (p2) +
+  plot_annotation(tag_level = c("a"),
+                  tag_suffix = ".",
+                  theme = theme(plot.title = element_text(hjust = 0.5, margin = margin(b = 20))))
+
+ggsave("myposter.png",  histo1 + histo2, width = 20, height = 10, dpi = 300)
+```
+
+#### Fluctuating Selection
+
+```{r}
+
+```
+
+```{r}
+x = seq(0, 2000, by = 50)
+y = seq(25, 2025, 50) # x + 25
+myrect <- data.frame(x,y)
+
+x = seq(0, 2000, by = 50)
+y = seq(25, 2025, 50) # x + 25
+myrect <- data.frame(x,y)
+
+GenP <- ggplot()+
+  geom_line(data = pheno_file, aes(x = Generation, y = Phenotype))+
+  theme(axis.title = element_text(face = "bold"))+
+  facet_zoom(xlim = c(700,1025),ylim = c(109, 115), 
+             horizontal = F, zoom.size = 1)+
+  geom_rect(data = myrect,
+            aes(xmin = x, xmax = y,
+                ymin = 115, ymax = Inf), 
+            fill = "grey", alpha = 0.2)
+
+GenP2 <- ggplot()+
+  geom_line(data = pheno_file, aes(x = Generation, y = Phenotype))+
+  theme(axis.title = element_text(face = "bold"))+
+  facet_zoom(xlim = c(700,1025),ylim = c(109, 115), 
+             horizontal = F, zoom.size = 1)+
+  geom_rect(data = myrect,
+            aes(xmin = x, xmax = y,
+                ymin = 115, ymax = Inf), 
+            fill = "grey", alpha = 0.2)
+
+freqplot4 <- (GenP2) + 
+  plot_annotation(tag_levels = 'B',
+                  tag_suffix = ".",theme = theme(plot.title = element_text(hjust = 0.5, margin = margin(b = 20))))
+
+freqplot3
+
+freqplot4
+```
+
+#### Spectral analysis
+
+```{r}
+files <- list.files(path = "/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/", pattern = "^genome.*SD4Gen30\\.csv$", full.names = TRUE)
+
+all_results <- data.frame()
+
+#Iterate files in the directory
+for (file_name in files) {
+  #read in each file
+  file <- read.csv(file_name) %>% dplyr::select(!c(Origin, Effect))
+  
+  # Pivot wider your data to tranform for each generation
+  dat_wide <- pivot_wider(file[,c("Generation","Position","Frequency")], names_from=Position, values_from=Frequency)
+  dat_wide[is.na(dat_wide)] <- 0 
+  ff1 <-dat_wide[,2:101]
+  
+  # Apply spectrum and calculate row means
+  ttest <- spectrum(ff1, spans=2, plot=FALSE)
+  out.spect <- rowMeans(ttest$spec)
+  
+  # Prepare data frame for plot
+  dd <- data.frame("Frequency"= rep((1/ttest$freq)), 
+                   "File"= basename(file_name), # Add a column for file name for color
+                   "sel"=rep("FS",each=1000),
+                   "spec"=out.spect)
+  
+  # Combine with previous results
+  all_results <- rbind(all_results, dd)
+}
+```
+
+```{r}
+fft1 <- all_results %>%
+  filter(Frequency <= 100) %>%
+  ggplot(aes(Frequency, spec, color = File)) +  # Add color = File to aes function
+  geom_line(size=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+
+fft1
+```
