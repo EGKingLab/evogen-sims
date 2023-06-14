@@ -13,6 +13,45 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 
 The most current notes are at the top.
 
+[***June 14th 2023***]{.underline}
+
+I worked on the change in phenotypic optimum which follows sinusoidal function. The optimum is constrained in some standard deviations from the mean.
+
+Also, I tried the changing optimum which change of generation interval. The code I used resulted in more than the expected (4) peaks from spectral analysis. This might be due to so many factors including:
+
+-   Noises
+
+-   Consecutive signals of different periods which can lead to non-stationary behavior (then wavelet would be desirable)
+
+```{=html}
+<!-- -->
+```
+-   Repetition of the signals for 29 times (Look the code below)
+
+    ```{r}
+    t = 1
+    generations = seq(1, 2001,1)
+    Y_hat = c();
+    for (i in c(30, 15, 10, 20)) {
+     y = stdv*sd(phenotypes) * sin(2 * (22/7) * generations[t:i] / i) + mean(phenotypes)
+     t = t + i
+     Y_hat = c(Y_hat, y)
+      }
+    nopt = rep(Y_hat, 29)
+    ```
+
+To correct that, I am going to try the following code as it has been tested in R
+
+```{r}
+generations <- seq(1, 2001,1);
+
+nopt <- rep(0, length(generations));
+
+for (i in c(30, 15, 10, 20)) {
+  nopt <- nopt + stdv*sd(phenotypes) * sin(2 * (22/7) * generations / i) + 100;
+}
+```
+
 [***June 8th 2023***]{.underline}
 
 Now that I have modeled Selection with changing generations & optimum based on standard deviations, I should now think of modeling irregular periodicity (how many generations the optimum should change) or how much the environment should affect the optimum (1sd, 2sd, or even a different number following a given distribution).

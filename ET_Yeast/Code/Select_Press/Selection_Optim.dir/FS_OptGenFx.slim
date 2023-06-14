@@ -93,7 +93,7 @@ mutationEffect(m2) {
 	phenotypes = additive + env;
 	phenotypes = (phenotypes/sd(phenotypes))+100;
 	
-	t = 1;
+/*	t = 1;
 	generations = seq(1, 2001,1);
 	Y_hat = c();
 	for (i in c(30, 15, 10, 20)) {
@@ -102,6 +102,16 @@ mutationEffect(m2) {
   	Y_hat = c(Y_hat, y);
 	}
 	nopt = rep(Y_hat, 29);
+*/
+
+
+	generations <- seq(1, 2001,1);
+
+	nopt <- rep(0, length(generations));
+
+	for (i in c(30, 15, 10, 20)) {
+  	nopt <- nopt + stdv*sd(phenotypes) * sin(2 * (22/7) * generations / i) + 100;
+	}		
 	
 	defineGlobal("newopt", nopt);
 	

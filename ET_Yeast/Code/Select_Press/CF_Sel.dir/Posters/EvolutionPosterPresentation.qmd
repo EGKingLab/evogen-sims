@@ -116,10 +116,6 @@ ggsave("myposter.png",  histo1 + histo2, width = 20, height = 10, dpi = 300)
 #### Fluctuating Selection
 
 ```{r}
-
-```
-
-```{r}
 x = seq(0, 2000, by = 50)
 y = seq(25, 2025, 50) # x + 25
 myrect <- data.frame(x,y)
@@ -193,6 +189,109 @@ for (file_name in files) {
 fft1 <- all_results %>%
   filter(Frequency <= 100) %>%
   ggplot(aes(Frequency, spec, color = File)) +  # Add color = File to aes function
+  geom_line(size=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+
+fft1
+```
+
+#### Sinusoidal function for Optimum (and changing generations)
+
+##### Allele frequency
+
+```{r}
+geno_Opt <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/genome1_100_H0.5SD1Gen30.csv")
+
+geno_OptGen <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/genome1_100_H0.5SD4.csv")
+```
+
+```{r}
+# Add a column to distinguish the datasets
+geno_Opt <- geno_Opt %>% mutate(Opt = 'Opt_Fx')
+geno_OptGen <- geno_OptGen %>% mutate(Opt = 'Opt_FxGen')
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_Opt, geno_OptGen)
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line() +
+  facet_grid(Opt~.) +
+  theme(legend.position = "none",axis.title = element_text(face = "bold"))
+
+freqplot
+
+```
+
+##### Phenotypes
+
+```{r}
+Pheno_Opt <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/MeanPhenotypes1_100_H0.5SD4Gen30.csv")
+
+Pheno_OptGen <- read.csv("/home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/MeanPhenotypes1_100_H0.5SD4.csv")
+```
+
+```{r}
+Pheno_Opt <- Pheno_Opt %>% mutate(Selection = 'Pheno_Opt')
+Pheno_OptGen <- Pheno_OptGen %>% mutate(Selection = 'Pheno_OptGen')
+Phenotype_dataset <- rbind(Pheno_Opt, Pheno_OptGen)
+
+p1.1 <- Phenotype_dataset %>% ggplot(aes(Phenotype))+
+  geom_histogram(bins = 30)+
+  facet_grid(.~Selection) +
+  theme(legend.position = "none", axis.title = element_text(face = "bold"))
+
+p1.2 <- Phenotype_dataset %>% ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  facet_grid(Selection~.) +
+  theme(legend.position = "none", axis.title = element_text(face = "bold")) 
+
+p1.2
+
+#p1 <- p1.2 + inset_element(p1.1, 0, 0.3, .5, .5, on_top = FALSE)
+
+
+#p1
+```
+
+##### Spectral Analysis
+
+```{r}
+files <- list.files(path = "//home/etb68/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/", pattern = "^genome.*SD4\\.csv$", full.names = TRUE)
+
+all_results <- data.frame()
+
+#Iterate files in the directory
+for (file_name in files) {
+  #read in each file
+  file <- read.csv(file_name) %>% dplyr::select(!c(Origin, Effect))
+  
+  # Pivot wider your data to tranform for each generation
+  dat_wide <- pivot_wider(file[,c("Generation","Position","Frequency")], names_from=Position, values_from=Frequency)
+  dat_wide[is.na(dat_wide)] <- 0 
+  ff1 <-dat_wide[,2:101]
+  
+  # Apply spectrum and calculate row means
+  ttest <- spectrum(ff1, spans=2, plot=FALSE)
+  out.spect <- rowMeans(ttest$spec)
+  
+  # Prepare data frame for plot
+  dd <- data.frame("Frequency"= rep((1/ttest$freq)), 
+                   "File"= basename(file_name), # Add a column for file name for color
+                   "sel"=rep("FS",each=1000),
+                   "spec"=out.spect)
+  
+  # Combine with previous results
+  all_results <- rbind(all_results, dd)
+}
+```
+
+```{r}
+fft1 <- all_results %>%
+  filter(Frequency <= 80) %>%
+  ggplot(aes(Frequency, spec, color = File)) + 
   geom_line(size=1.1) +
   theme(legend.position = "none")+
   xlab("Periodicity") +

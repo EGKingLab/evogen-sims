@@ -12,7 +12,7 @@ wavelet_results <- analyze.wavelet(ff1, loess.span = 0)
 # Global wavelet spectrum (time-averaged wavelet power spectrum)
 out.spect <- wavelet_results$global_spectrum
 # Corresponding frequencies
-frequencies <- wavelet_results$frequencies
+frequencies <- wavelet_results$Period
 
 dd <- data.frame("Frequency"= frequencies, 
                  "sel"=rep("CS",each=length(frequencies)),
