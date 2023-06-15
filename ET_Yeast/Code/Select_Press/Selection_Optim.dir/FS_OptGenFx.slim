@@ -32,6 +32,8 @@ initialize() {
 	m2.convertToSubstitution = F;
 	m2.mutationStackPolicy = "l";
 	defineConstant("Q", q);
+	defineConstant("generations", seq(0, 2001, 1));
+	defineConstant("signals", c(5, 30, 10, 15));
 	initializeRecombinationRate(1e-8);
 	
 	// Set colors for mutation types
@@ -93,7 +95,7 @@ mutationEffect(m2) {
 	phenotypes = additive + env;
 	phenotypes = (phenotypes/sd(phenotypes))+100;
 	
-	t = 1;
+/*	t = 1;
 	generations = seq(1, 2001,1);
 	Y_hat = c();
 	for (i in c(30, 15, 10, 20)) {
@@ -102,9 +104,17 @@ mutationEffect(m2) {
   	Y_hat = c(Y_hat, y);
 	}
 	nopt = rep(Y_hat, 29);
+*/
+
+	
+	nopt = rep(0, size(generations));
+	for (i in signals) {
+		nopt =  nopt + 4*sd(phenotypes) * sin(2 * (22/7) * generations / i) +  mean(phenotypes);
+	}
+	nopt = nopt/4;
 	
 	defineGlobal("newopt", nopt);
-	
+
 	// Get the mutation information and order them by frequency
 	qtls = sim.mutationsOfType(m2);
 	freq = sim.mutationFrequencies(NULL, qtls);

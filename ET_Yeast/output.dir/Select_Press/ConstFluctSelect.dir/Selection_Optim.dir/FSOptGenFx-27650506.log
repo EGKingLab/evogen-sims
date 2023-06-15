@@ -1,7 +1,7 @@
-=== Bigining of SLiM run with different QTLs > Tue Jun 13 23:45:55 CDT 2023 ===
+=== Bigining of SLiM run with different QTLs > Wed Jun 14 17:51:31 CDT 2023 ===
 My file /storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/genome5_100_0.5.csv doesn't exist. Running SLiM QTLs now.
 // Initial random seed:
-2105387955651
+2091063091883
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -319,7 +319,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2111718100673
+2104673303775
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -637,7 +637,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2112098239319
+2115183469334
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -955,7 +955,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2120848377757
+2125443634074
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -1273,7 +1273,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2121308529978
+2136293804912
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -1591,7 +1591,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2124038674612
+2147143975742
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -1909,7 +1909,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2130328815375
+2157814145469
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -2227,7 +2227,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2131218962839
+2167964309779
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -2545,7 +2545,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2139409098519
+2178474474981
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -2863,7 +2863,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2140499246804
+2188774641450
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -3181,7 +3181,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2143329389925
+2199234805067
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -3499,7 +3499,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2156639532124
+2209984975050
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -3817,7 +3817,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2157219684580
+2220635145882
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -4135,7 +4135,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2165949820628
+2230925309106
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -4453,7 +4453,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2166339972184
+2241305475241
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -4771,7 +4771,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2169110109733
+2251975644286
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -5089,7 +5089,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2175460246879
+1692305810110
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -5407,7 +5407,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2175780402375
+1703125976639
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -5725,7 +5725,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2184010537555
+1714226146057
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -6043,7 +6043,7 @@ initializeRecombinationRate(1e-08);
 #OUT: 2001 2001 F
 Mutations:
 // Initial random seed:
-2185130679550
+1726146315110
 
 // RunInitializeCallbacks():
 initializeSLiMOptions(keepPedigrees = T);
@@ -6360,4 +6360,4 @@ initializeRecombinationRate(1e-08);
 
 #OUT: 2001 2001 F
 Mutations:
-=== Fini finito! End of SLiM QTLs Constant Selection run > Wed Jun 14 00:33:42 CDT 2023
+=== Fini finito! End of SLiM QTLs Constant Selection run > Wed Jun 14 18:48:01 CDT 2023

@@ -6,8 +6,8 @@
 #SBATCH -c 4
 #SBATCH -t 1-03:00:00
 #SBATCH --mem 120G
-#SBATCH -o ../../../output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/FSOptGenFx-%j.log
-#SBATCH -e ../../../output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/FSOptGenFx--%j.err
+#SBATCH -o ../../../output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/FSOptGenFx-%j.log
+#SBATCH -e ../../../output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/FSOptGenFx--%j.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=etb68@mail.missouri.edu
 ##########SCIENCE FOLLOWS HERE ########################
