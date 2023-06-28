@@ -1,0 +1,420 @@
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.5SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.1SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome1_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome2_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome3_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome4_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
+#WARNING (Genome_Class::ExecuteMethod_addNewMutation): addNewMutation() should probably not be called from a first() or early() event in a WF model; the added mutation will not influence fitness values during offspring generation.
+#ERROR (Eidos_WriteToFile): could not write to file at path ../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome5_300_H0.8SD4Gen20.csv.
+
+Error on script line 72, character 1:
+
+   writeFile(paste0("../../../output.dir/Select_Press/ConstCluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+   ^^^^^^^^^
