@@ -8,7 +8,8 @@ Trash*
 trash*
 Example*
 *vcf
-*csv
+*.csv
+*.pdf
 test*
 #regenerated files
 output/SLiM/
