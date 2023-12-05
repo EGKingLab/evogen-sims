@@ -1,0 +1,306 @@
+---
+title: "Preliminary Report"
+author: "Esdras Tuyishimire"
+format: pdf
+---
+
+# Project report
+```{r, echo=FALSE, message=FALSE}
+library(tidyverse)
+library(stringr)
+library(cowplot)
+theme_set(theme_cowplot())
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+mytheme <- function(){
+  theme_set(theme_cowplot())+
+    theme(axis.title = element_text(face = "bold"),
+          axis.text = element_text(face = "italic"),
+          plot.title = element_text(hjust = 0.5),
+          legend.position = "none")
+}
+```
+
+For the first round we have considered a couple of parameters - for both constant and fluctuating selection - like:
+
+-   heritability
+
+-   number of loci
+
+-   generation interval
+
+-   standard deviations from individual fitness
+
+> For Heritability we have : 0.1, 0.5, and 0.8 For number of loci we have: 1, 10, 70, 100 Generations: 10, 20, 30 Standard deviations: 1, 2, 3, 4 Sinusoidal optimum: Changing vs Constant generation (20 Gen interval & 5, 30, 10, 15 respectively)
+
+-   We're considering 5 replicates for each parameter.
+
+-   Phenotypes are based on the sum of additive and environmental effects, and they are scaled to be the actual phenotype divided by standard deviation then we add a constant which is 100.
+
+_   Here is also the used fitness function: inds.fitnessScaling = exp(-(1/(phenotypes)) * (phenotypes - optimum)^2)
+
+
+
+> Also, we still need to run the model that considers qtl effect that follows uniform distribution.
+
+> At some point, we will need to extract a full genome file for analysis. We can also check if the proportion of fixed loci is dependent on the total  genomic qtl number.
+
+## Directories
+
+Sub-directories in Code and output directories are mostly the same and match related analysis.
+
+Select_Press with CF_Sel.dir is a directory that I created when I was getting ready with the conference poster, and it considered only 100 loci. After working on its models, I came with an idea of working on different values of heritabilities; hence, I created ConstantFluctSelect_Hert.dir folder. That was followed by other folders like ConstFluctSelectLoci.dir for different number of loci, and Selection_Optim.dir. 
+
+All those models were considering a few parameters i.e not a combination of all parameters.
+
+Realizing how models were scarce, I decided to put all the parameters together and run different type of models in which their analysis is reported in here.  The parent directory is: Code/Selection_Models/WF.dir
+
+Note that, there are some other models that I ran, and they helped with the learning process and they might embed some code chunk to use, especially when considering different parameters. Among those, there is models for fluctuating population, changing genome size, different qtl number with a few having mutation at the start of evolutionary process.
+
+## Plots
+
+We need to consider one variable at time and facet plots based the replicates. 
+> For the first round, we will be considering a heritability of 0.5, standard deviation of 3 for optimum change for every 20 generations 
+
+### Neutral selection plots (Fitness = 1):
+
+#### Allele frequency
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+plot_files(dir_path, pattern, ncol = ncol)
+```
+
+#### Phenotypes:
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^MeanPhenotypes.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+Pheno_files(dir_path, pattern, ncol)
+```
+
+#### Spectral Density
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+spectrum_span <- 2
+
+all_results <- fft_fx(dir_path, pattern, spectrum_span)
+
+fft1 <- all_results %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+  ggplot(aes(Frequency, spec, color = file))+
+  geom_line(linewidth = 1)+
+  facet_wrap(~myloci, scales = "free")+
+  theme(legend.position = "none")+
+  xlab("Periodicity")+
+  ylab("Spectral Density")
+
+fft1
+```
+
+### Constant selection plots:
+
+#### Allele frequency
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+plot_files(dir_path, pattern, ncol = ncol)
+```
+
+#### Phenotypes:
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^MeanPhenotypes.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+Pheno_files(dir_path, pattern, ncol)
+```
+
+#### Spectral Density
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+spectrum_span <- 2
+
+all_results <- fft_fx(dir_path, pattern, spectrum_span)
+
+fft1 <- all_results %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+  ggplot(aes(Frequency, spec, color = file))+
+  geom_line(linewidth = 1)+
+  facet_wrap(~myloci, scales = "free")+
+  theme(legend.position = "none")+
+  xlab("Periodicity")+
+  ylab("Spectral Density")
+
+fft1
+```
+
+### Fluctuating Selection plots (Linear):
+
+#### Allele frequency
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~//YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+plot_files(dir_path, pattern, ncol)
+```
+
+#### Phenotypes:
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~//YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+Pheno_files(dir_path, pattern, ncol)
+```
+
+#### Spectral Density
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+spectrum_span <- 2
+
+all_results <- fft_fx(dir_path, pattern, spectrum_span)
+
+fft1 <- all_results %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+  ggplot(aes(Frequency, spec, color = file))+
+  geom_line(linewidth = 1)+
+  facet_wrap(~myloci, scales = "free")+
+  theme(legend.position = "none")+
+  xlab("Periodicity")+
+  ylab("Spectral Density")
+
+fft1
+```
+
+
+### Fluctuating selection plots (Sinusoidal opt and same generation):
+
+#### Allele frequency
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+plot_files(dir_path, pattern, ncol)
+```
+
+#### Phenotypes:
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~//YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^MeanPhenotypes.*0\\.5SD3Gen20\\.csv$"
+ncol <- 3
+
+Pheno_files(dir_path, pattern, ncol)
+```
+
+#### Spectral Density
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome.*0\\.5SD3Gen20\\.csv$"
+spectrum_span <- 2
+
+all_results <- fft_fx(dir_path, pattern, spectrum_span)
+
+fft1 <- all_results %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  filter(Frequency < 40) %>% 
+  ggplot(aes(Frequency, spec, color = file))+
+  geom_line(linewidth = 1)+
+  facet_wrap(~myloci, scales = "free")+
+  theme(legend.position = "none")+
+  xlab("Periodicity")+
+  ylab("Spectral Density")
+
+fft1
+```
+
+
+### Fluctuating selection plots (Sinusoidal opt and changing genration):
+
+#### Allele frequency
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~//YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome.*0\\.5SD3\\.csv$"
+ncol <- 3
+
+plot_files(dir_path, pattern, ncol)
+```
+
+#### Phenotypes:
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~//YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^MeanPhenotypes.*0\\.5SD3\\.csv$"
+ncol <- 3
+
+Pheno_files(dir_path, pattern, ncol)
+```
+
+#### Spectral Density
+
+```{r, echo=FALSE, message=FALSE}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Code/Selection_Models/WF.dir/Plotting/PrelimVisualSelect.R")
+dir_path <- "~//YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome.*0\\.5SD3\\.csv$"
+spectrum_span <- 2
+
+all_results <- fft_fx(dir_path, pattern, spectrum_span)
+
+fft1 <- all_results %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  filter(Frequency < 40) %>% 
+  ggplot(aes(Frequency, spec, color = file))+
+  geom_line(linewidth = 1)+
+  facet_wrap(~myloci, scales = "free")+
+  theme(legend.position = "none")+
+  xlab("Periodicity")+
+  ylab("Spectral Density")
+
+fft1
+```
+
+
