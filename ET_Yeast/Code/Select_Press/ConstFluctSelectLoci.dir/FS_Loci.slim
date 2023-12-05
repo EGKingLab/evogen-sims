@@ -6,7 +6,7 @@ initialize() {
 	// Define constants and mutation types
 	
 	initializeSex("A");
-	initializeMutationRate(0);
+	initializeMutationRate(1e-7);
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeGenomicElementType("g1", m1, 1.0);
 	// Define script for QTLs and initialize genomic element types
@@ -69,8 +69,8 @@ initialize() {
 	p1.setSelfingRate(0);
 	
 	// Create FSV file for genome data and mean phenotype data
-	writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
-	writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/MeanPhenotypes",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,meanFitness,Phenotype,Optimum"));
+	writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"myqtl",mysample,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
+	writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/MeanPhenotypes",repl,"_",loci,"_H",h,"myqtl",mysample,"SD",SD,"Gen",gen,".csv"), paste0("Generation,meanFitness,Phenotype,Optimum"));
 }
 
 // Function to calculate mutation effect
@@ -120,11 +120,11 @@ mutationEffect(m2) {
 	for (i in indices)
 		q_a = 1 - freq[i];
 		het = 2*q_a*freq[i];
-		writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
+		writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"myqtl",mysample,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]), ",", origin[i]), append = T);
 	
 	// Get the mean phenotype and write it to a FSV file
 		meanPhenotype = mean(phenotypes);
-		writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/MeanPhenotypes",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", 1, ",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+		writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/MeanPhenotypes",repl,"_",loci,"_H",h,"myqtl",mysample,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", 1, ",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 */
 }
 
@@ -177,13 +177,13 @@ mutationEffect(m2) {
                // q_a = 1 - freq[i];
                // het = 2*q_a*freq[i];
 
-		writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
+		writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/genome",repl,"_",loci,"_H",h,"myqtl",mysample,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
 	
 	// Calculate mean phenotype for the population
 	meanPhenotype = mean(phenotypes);
 	
 	// Output information about mean phenotype and mean fitness to a FSV file (MeanPhenotypes_singl.csv)
-	writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/MeanPhenotypes",repl,"_",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+	writeFile(paste0("../../../output.dir/Select_Press/ConstFluctSelectLoci.dir/FS_Loci.dir/MeanPhenotypes",repl,"_",loci,"_H",h,"myqtl",mysample,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 2001 late(){

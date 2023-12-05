@@ -1,0 +1,19 @@
+---
+title: "Proposed Question and Thoughts"
+format: html
+editor: visual
+---
+
+## Thoughts/Questions
+
+1.  Can we show or prove that our SNP/ Loci are under fluctuating slection?? Maybe Grahm and Vince paper & some other papers that demonstrate how some loci experienced natural selection. (idea from "Balancing Selection: Walking a Tightrope)
+
+2.  Bergland et al. (From Petrov lab) - Genomic evidence of rapid and stable adaptive oscillations over seasonal time scales in Drosophila - can be use for the introduction to talk a bit about fluctuating selection and the idea of building prediction models.
+
+3.  How about assessing the number of fixed alleles and whether the ratio depends on the number of loci??? What implication can we get from that??? In short, how can we differentiate drift and selection effect based on the ratio of fixed allele? (I GUESS)
+
+4.  Calculating whole genome heterozygosity would tell us also about the selection pressure. Reduction in heterozygosity would imply high selection pressure...
+
+5.  So far, I have modeled linear and sinusoïdal optimum change, but what about modelling stochastic optimum? For example:
+
+    -   Following normal, exponential, and uniform distribution. What can we observe if we do that? Allele Freq? Phenotype? Spectral Analysis?

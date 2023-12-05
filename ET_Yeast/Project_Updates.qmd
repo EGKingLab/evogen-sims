@@ -1,0 +1,513 @@
+---
+title: "Project_Updates"
+author: "Esdras T"
+format: html
+editor: visual
+---
+
+## Constant and Fluctuating Selection
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(cowplot)
+theme_set(theme_cowplot())
+```
+
+Here is the list of the parameters considered:
+
+-   Heritability
+
+-   Number of loci
+
+-   Fitness function (First fitness considers the change between phenotype and optimum divided by the scaling factor which is 100. The second function considers the exponent of the distance and scaling factor)
+
+-   Changing generation for Optimum
+
+-   Shift in Optimum based on standard deviations and,
+
+-   The consideration of sinusoidal function for optimum. This also considers unequal generations when shifting the optimum.
+
+### Constant Selection: Heritability for 100 loci
+
+> Note that heritability was considered for the second model that included mutation rate of 1e-7
+
+```{r}
+#| echo: false
+
+cs_genome_0.1 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/CS.dir/genome1_100_H0.1SD2Gen20.csv")
+cs_genome_0.1_wide <- cs_genome_0.1 %>% dplyr::select(!c(Origin, Effect)) 
+cs_genome_0.1_wide <- pivot_wider(cs_genome_0.1_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+cs_genome_0.1_wide[is.na(cs_genome_0.1_wide)] <- 0
+cs_genome_0.1_test <- spectrum(cs_genome_0.1_wide, spans=2, plot=FALSE)
+cs_genome_0.1.spect <- rowMeans(cs_genome_0.1_test$spec)
+  
+  # Prepare data frame for plot
+ ff_cs_genome01 <- data.frame("Frequency"= rep(cs_genome_0.1_test$freq), 
+                   "spec"=cs_genome_0.1.spect)
+ 
+ ff_cs_genome01 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 40) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+  
+
+
+
+cs_genome_0.5 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/CS.dir/genome1_100_H0.5SD2Gen20.csv")
+cs_genome_0.5_wide <- cs_genome_0.5 %>% dplyr::select(!c(Origin, Effect)) 
+cs_genome_0.5_wide <- pivot_wider(cs_genome_0.5_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+cs_genome_0.5_wide[is.na(cs_genome_0.5_wide)] <- 0
+cs_genome_0.5_test <- spectrum(cs_genome_0.5_wide, spans=2, plot=FALSE)
+cs_genome_0.5.spect <- rowMeans(cs_genome_0.5_test$spec)
+  
+  # Prepare data frame for plot
+ ff_cs_genome05 <- data.frame("Frequency"= rep(cs_genome_0.5_test$freq), 
+                   "spec"=cs_genome_0.5.spect)
+ 
+ ff_cs_genome05 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 40) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+
+cs_genome_0.8 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/CS.dir/genome1_100_H0.8SD2Gen20.csv")
+cs_genome_0.8_wide <- cs_genome_0.8 %>% dplyr::select(!c(Origin, Effect)) 
+cs_genome_0.8_wide <- pivot_wider(cs_genome_0.8_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+cs_genome_0.8_wide[is.na(cs_genome_0.8_wide)] <- 0
+cs_genome_0.8_test <- spectrum(cs_genome_0.8_wide, spans=2, plot=FALSE)
+cs_genome_0.8.spect <- rowMeans(cs_genome_0.8_test$spec)
+  
+  # Prepare data frame for plot
+ ff_cs_genome08 <- data.frame("Frequency"= rep(cs_genome_0.8_test$freq), 
+                   "spec"=cs_genome_0.8.spect)
+ 
+ ff_cs_genome08 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 40) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+
+
+```
+
+```{r}
+#| echo: false
+cs_gp1 <- cs_genome_0.1 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+cs_gp2 <- cs_genome_0.5 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+cs_gp3 <- cs_genome_0.8 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+cs_gp1; cs_gp2; cs_gp3
+```
+
+```{r}
+#| echo: false
+cs_pheno_0.1 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/CS.dir/MeanPhenotypes1_10_H0.1SD2Gen20.csv")
+
+cs_pheno_0.5 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/CS.dir/MeanPhenotypes1_10_H0.5SD2Gen20.csv")
+
+cs_pheno_0.8 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/CS.dir/MeanPhenotypes1_10_H0.8SD2Gen20.csv")
+```
+
+```{r}
+#| echo: false
+pheno_0.1 <- cs_pheno_0.1 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pheno_0.5 <- cs_pheno_0.5 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pheno_0.8 <- cs_pheno_0.8 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pheno_0.1 ; pheno_0.5; pheno_0.8
+```
+
+### Fluctuating Selection: Heritability for 100 loci
+
+```{r}
+#| echo: false
+fs_genome_0.1 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/FS.dir/genome3_100_H0.1SD2Gen20.csv")
+
+fs_genome_0.1_wide <- fs_genome_0.1 %>% dplyr::select(!c(Origin, Effect)) 
+fs_genome_0.1_wide <- pivot_wider(fs_genome_0.1_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+fs_genome_0.1_wide[is.na(fs_genome_0.1_wide)] <- 0
+fs_genome_0.1_test <- spectrum(fs_genome_0.1_wide, spans=2, plot=FALSE)
+fs_genome_0.1.spect <- rowMeans(fs_genome_0.1_test$spec)
+  
+  # Prepare data frame for plot
+ ff_fs_genome01 <- data.frame("Frequency"= rep(fs_genome_0.1_test$freq), 
+                   "spec"=fs_genome_0.1.spect)
+ 
+ ff_fs_genome01 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+
+fs_genome_0.5 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/FS.dir/genome3_100_H0.5SD2Gen20.csv")
+
+fs_genome_0.5_wide <- fs_genome_0.5 %>% dplyr::select(!c(Origin, Effect)) 
+fs_genome_0.5_wide <- pivot_wider(fs_genome_0.5_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+fs_genome_0.5_wide[is.na(fs_genome_0.5_wide)] <- 0
+fs_genome_0.5_test <- spectrum(fs_genome_0.5_wide, spans=2, plot=FALSE)
+fs_genome_0.5.spect <- rowMeans(fs_genome_0.5_test$spec)
+  
+  # Prepare data frame for plot
+ ff_fs_genome05 <- data.frame("Frequency"= rep(fs_genome_0.5_test$freq), 
+                   "spec"=fs_genome_0.5.spect)
+ 
+ ff_fs_genome05 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+
+fs_genome_0.8 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/FS.dir/genome3_100_H0.8SD2Gen20.csv")
+
+fs_genome_0.8_wide <- fs_genome_0.8 %>% dplyr::select(!c(Origin, Effect)) 
+fs_genome_0.8_wide <- pivot_wider(fs_genome_0.8_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+fs_genome_0.8_wide[is.na(fs_genome_0.8_wide)] <- 0
+fs_genome_0.8_test <- spectrum(fs_genome_0.8_wide, spans=2, plot=FALSE)
+fs_genome_0.8.spect <- rowMeans(fs_genome_0.8_test$spec)
+  
+  # Prepare data frame for plot
+ ff_fs_genome08 <- data.frame("Frequency"= rep(fs_genome_0.8_test$freq), 
+                   "spec"=fs_genome_0.8.spect)
+ 
+ ff_fs_genome08 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+```
+
+```{r}
+#| echo: false
+fs_gp1 <- fs_genome_0.1 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+fs_gp2 <- fs_genome_0.5 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+fs_gp3 <- fs_genome_0.8 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+fs_gp1; fs_gp2; fs_gp3
+```
+
+```{r}
+#| echo: false
+fs_pheno_0.1 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/FS.dir/MeanPhenotypes1_100_H0.1SD2Gen20.csv")
+
+fs_pheno_0.5 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/FS.dir/MeanPhenotypes1_100_H0.5SD2Gen20.csv")
+
+fs_pheno_0.8 <- read.csv("./output.dir/Select_Press/ConstantFluctSelect_Hert.dir/FS.dir/MeanPhenotypes1_100_H0.8SD2Gen20.csv")
+```
+
+```{r}
+#| echo: false
+fs_pheno_0.1 <- fs_pheno_0.1 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+fs_pheno_0.5 <- fs_pheno_0.5 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+fs_pheno_0.8 <- fs_pheno_0.8 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+fs_pheno_0.1 ; fs_pheno_0.5; fs_pheno_0.8
+```
+
+### Constant Selection: Number of loci, and fitness function
+
+> The shown plots will show only one replicate for each parameter and they are for allele frequency and phenotypes. Only 10, 70, and 100 are shown on the plots
+
+#### Constant selection and linear fitness function (distance from optimum and a scaling factor) and linear fitness function (exponential and scaling factor)
+
+```{r}
+#| echo: false
+gcs1 <- read.csv("./output.dir/Selection_Models/CSCP.dir/genome1_100_0.5.csv")
+gcs1_wide <- gcs1 %>% dplyr::select(!c(Origin, Effect)) 
+gcs1_wide <- pivot_wider(gcs1_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+gcs1_wide[is.na(gcs1_wide)] <- 0
+gcs1_test <- spectrum(gcs1_wide, spans=2, plot=FALSE)
+gcs1.spect <- rowMeans(gcs1_test$spec)
+  
+  # Prepare data frame for plot
+ ff_gcs1 <- data.frame("Frequency"= rep(gcs1_test$freq), 
+                   "spec"=gcs1.spect)
+ 
+ ff_gcs1 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+pcs1 <- read.csv("./output.dir/Selection_Models/CSCP.dir/MeanPhenotypes1_100_0.5.csv")
+
+gcs2 <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/genome1_100_H0.5SD2Gen20.csv")
+gcs2_wide <- gcs2 %>% dplyr::select(!c(Origin, Effect)) 
+gcs2_wide <- pivot_wider(gcs2_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+gcs2_wide[is.na(gcs2_wide)] <- 0
+gcs2_test <- spectrum(gcs2_wide, spans=2, plot=FALSE)
+gcs2.spect <- rowMeans(gcs2_test$spec)
+  
+  # Prepare data frame for plot
+ ff_gcs2 <- data.frame("Frequency"= rep(gcs2_test$freq), 
+                   "spec"=gcs2.spect)
+ 
+ ff_gcs2 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+ 
+pcs2 <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/CS.dir/MeanPhenotypes1_100_H0.5SD2Gen20.csv")
+
+```
+
+```{r}
+#| echo: false
+gcs1_p <- gcs1 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+gcs2_p <- gcs2 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+gcs1_p ; gcs2_p
+```
+
+```{r}
+#| echo: false
+pcs1_p <- pcs1 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pcs2_p <- pcs2 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pcs1_p ; pcs2_p
+```
+
+#### Fluctuating Selection
+
+```{r}
+#| echo: false
+gfs1 <- read.csv("./output.dir/Selection_Models/FSCP2sd.dir/genome2sd1_100_0.5.csv")
+gfs1_wide <- gfs1 %>% dplyr::select(!c(Origin, Effect)) 
+gfs1_wide <- pivot_wider(gfs1_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+gfs1_wide[is.na(gfs1_wide)] <- 0
+gfs1_test <- spectrum(gfs1_wide, spans=2, plot=FALSE)
+gfs1.spect <- rowMeans(gfs1_test$spec)
+  
+# Prepare data frame for plot
+
+ff_gfs1 <- data.frame("Frequency"= rep(gfs1_test$freq), 
+                   "spec"=gfs1.spect)
+ 
+ ff_gfs1 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 70) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+pfs1 <- read.csv("./output.dir/Selection_Models/FSCP2sd.dir/MeanPhenotypes2sd1_100_0.5.csv")
+
+gfs2 <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/genome1_100_H0.5SD2Gen20.csv")
+gfs2_wide <- gfs2 %>% dplyr::select(!c(Origin, Effect)) 
+gfs2_wide <- pivot_wider(gfs2_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+gfs2_wide[is.na(gfs2_wide)] <- 0
+gfs2_test <- spectrum(gfs2_wide, spans=2, plot=FALSE)
+gfs2.spect <- rowMeans(gfs2_test$spec)
+  
+  # Prepare data frame for plot
+ ff_gfs2 <- data.frame("Frequency"= rep(gfs2_test$freq), 
+                   "spec"=gfs2.spect)
+ 
+ ff_gfs2 %>% mutate(Frequency= 1/Frequency) %>% 
+  filter(Frequency < 60) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+pfs2 <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/FS.dir/MeanPhenotypes1_100_H0.5SD2Gen20.csv")
+```
+
+```{r}
+#| echo: false
+gfs1_p <- gfs1 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+gfs2_p <- gfs2 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+gfs1_p ; gfs2_p
+```
+
+```{r}
+#| echo: false
+pfs1_p <- pfs1 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pfs2_p <- pfs2 %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pfs1_p ; pfs2_p
+```
+
+### Changing Optimum with sinusoidal fx and generation change (displayed of 20 generations & 2sd)
+
+```{r}
+#| echo: false
+gfs_opt1 <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/genome1_100_H0.5SD2Gen20.csv")
+
+gfs_opt1_wide <- gfs_opt1 %>% dplyr::select(!c(Origin, Effect)) 
+gfs_opt1_wide <- pivot_wider(gfs_opt1_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+gfs_opt1_wide[is.na(gfs_opt1_wide)] <- 0
+gfs_opt1_test <- spectrum(gfs_opt1_wide, spans=2, plot=FALSE)
+gfs_opt1.spect <- rowMeans(gfs_opt1_test$spec)
+  
+# Prepare data frame for plot
+
+ff_gfs_opt1 <- data.frame("Frequency"= rep(gfs_opt1_test$freq), 
+                   "spec"=gfs_opt1.spect)
+ 
+ ff_gfs_opt1 %>%# mutate(Frequency= 1/Frequency) %>% 
+  #filter(Frequency < 40) %>% 
+    filter(Frequency > 0.04) %>%
+  mutate(Frequency= 1/Frequency) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=1.1) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+ 
+pfs1_opt <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/Selection_Optim.dir/MeanPhenotypes1_100_H0.5SD2Gen20.csv")
+
+gfs_opt2 <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/genome1_100_H0.5SD2.csv")
+
+gfs_opt2_wide <- gfs_opt2 %>% dplyr::select(!c(Origin, Effect)) 
+gfs_opt2_wide <- pivot_wider(gfs_opt2_wide[,c("Generation", "Position", "Frequency")], names_from = Position, values_from = Frequency)  %>%  dplyr::select(!Generation)
+gfs_opt2_wide[is.na(gfs_opt2_wide)] <- 0
+gfs_opt2_test <- spectrum(gfs_opt2_wide, spans=2, plot=FALSE)
+gfs_opt2.spect <- rowMeans(gfs_opt2_test$spec)
+  
+  # Prepare data frame for plot
+ ff_gfs_opt2 <- data.frame("Frequency"= rep(gfs_opt2_test$freq), 
+                   "spec"=gfs_opt2.spect)
+ 
+ ff_gfs_opt2 %>% #mutate(Frequency= 1/Frequency) %>% 
+  #filter(Frequency < 40) %>% 
+    filter(Frequency > 0.03) %>%
+   mutate(Frequency= 1/Frequency) %>% 
+   ggplot(aes(Frequency, spec)) + 
+  geom_line(linewidth=0.5) +
+  theme(legend.position = "none")+
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+ 
+pfs2_opt <- read.csv("./output.dir/Select_Press/ConstFluctSelect.dir/Selection_OptimGen.dir/MeanPhenotypes1_100_H0.5SD2.csv")
+```
+
+```{r}
+#| echo: false
+gfs1_opt.p <- gfs_opt1 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+gfs2_opt.p <- gfs_opt2 %>% 
+  ggplot(aes(x = Generation, y = Frequency, col = factor(Position)))+
+  geom_line()+
+  theme(legend.position = "none")
+
+gfs1_opt.p ; gfs2_opt.p
+```
+
+```{r}
+#| echo: false
+pfs1_opt.p <- pfs1_opt %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pfs2_opt.p <- pfs2_opt %>% 
+  ggplot(aes(x = Generation, y = Phenotype))+
+  geom_line()+
+  theme(legend.position = "none")
+
+pfs1_opt.p ; pfs2_opt.p
+```

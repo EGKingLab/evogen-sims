@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-## Fluctuating Selection 
+## Fluctuating Selection
 
 ##### Optimum following sinusoidal function with a changing generations
 
