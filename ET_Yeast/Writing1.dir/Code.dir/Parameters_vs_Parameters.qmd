@@ -1,0 +1,213 @@
+---
+title: "Parameters_vs_Parameters"
+author: "Esdras T"
+format: html
+editor: visual
+---
+
+In this document, we will be looking for a few parameters, like:
+
+-   Plotting only the generations of choice
+
+-   Small heritability vs High heritability for monogenic, oligogenic, and polygenic models
+
+-   What about high and high
+
+-   Also, I need to sample 10% of the population to see if they can represent the entire population.
+
+### Generations of choice
+
+```{r}
+library(tidyverse)
+library(patchwork)
+library(cowplot)
+library(lme4)
+```
+
+```{r}
+data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n1_H0.8SD4.csv") %>% select(-c(Effect, Origin)) %>%
+  mutate(Position = factor(Position)) #%>% filter(Generation <= 500)
+
+data1 <-  data %>% 
+  filter(Generation == 1 | Generation %% 30 == 0)
+  
+```
+
+```{r}
+
+p <- data %>% 
+  ggplot(aes(Generation, Frequency, color = Position, group = Position))+
+  geom_line(linewidth = 0.2)+
+  theme_minimal()+
+  theme(legend.position = "none")
+
+p1 <- data1 %>% 
+  ggplot(aes(Generation, Frequency, color = Position, group = Position))+
+  geom_line(linewidth = 0.2)+
+  theme_minimal()+
+  theme(legend.position = "none")
+
+p/p1
+```
+
+```{r}
+# Calculate moving average
+data <- data %>%
+  group_by(Position) %>%
+  mutate(MA_Frequency = rollmean(Frequency, k=5, fill=NA))
+
+# Plot
+pm <- ggplot(data, aes(Generation, MA_Frequency, color = Position, group = Position)) +
+  geom_line(linewidth = 0.2) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+p/pm+p1
+```
+
+```{r}
+renew <- data %>% drop_na()
+plot1 <- renew %>% 
+  ggplot(aes(Generation, MA_Frequency, color = Position, group = Position)) +
+  geom_line(linewidth = 0.2) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+plot2 <- renew %>% 
+  ggplot(aes(Generation, Frequency, color = Position, group = Position)) +
+  geom_line(linewidth = 0.2) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+plot1 / plot2
+```
+
+```{r}
+all_freq <- renew %>% 
+  dplyr::select(c(Generation, Position, MA_Frequency)) %>% 
+  rename(Frequency = MA_Frequency) %>% 
+  pivot_wider(names_from = Position, values_from = Frequency) %>% 
+  mutate(across(everything(), ~replace_na(., 0)))
+
+all_freq_mean <- rowMeans(all_freq[-1])
+
+spects <- spectrum(all_freq_mean, spans = 2, plot = F)
+
+spec <- spects$spec
+fre <- spects$freq
+
+newfft <- data.frame(Amplitude = spects$spec, Frequency = fre)
+
+newfft %>% filter(Frequency > 0.02) %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  ggplot(aes(x = Frequency, y = Amplitude)) +
+  geom_line() +
+  labs(x = "Frequency",
+       y = "Amplitude") +
+  theme_bw()+
+  theme(legend.position = "none")
+```
+
+```{r}
+all_freq <- data1 %>% 
+  dplyr::select(c(Generation, Position, Frequency))  %>% 
+  pivot_wider(names_from = Position, values_from = Frequency) %>% 
+  mutate(across(everything(), ~replace_na(., 0)))
+
+all_freq_mean <- rowMeans(all_freq[-1])
+
+spects <- spectrum(all_freq_mean, spans = 2, plot = F)
+
+spec <- spects$spec
+fre <- spects$freq
+
+newfft <- data.frame(Amplitude = spects$spec, Frequency = fre)
+
+newfft %>% filter(Frequency > 0.01 & Frequency < 0.80) %>% 
+  mutate(Frequency = 1/Frequency) %>% 
+  ggplot(aes(x = Frequency, y = Amplitude)) +
+  geom_line() +
+  labs(x = "Frequency",
+       y = "Amplitude") +
+  theme_minimal()+
+  theme(legend.position = "none")
+```
+
+### Parameters combination
+
+#### Small-High for Linear Fluctuating (1, 10, and 70 loci)
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1_n(1|10|70)_H0.(1|8|5)SD(1|4)Gen(10|30).csv" # ^genome1_n(1|10|70)_H0.(1|8)SD(1|4)Gen(10|30).csv // ^genome1_n(1|10|70)_.*
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+data <- read.csv(file, header = TRUE) %>% 
+  select(Generation, Position, Frequency) %>% 
+  mutate(Position = factor(Position))
+
+data$herit <- rep(herit, nrow(data))
+data$loci <- rep(loci, nrow(data))
+data$sd <- rep(sd, nrow(data))
+data$gen <- rep(gen, nrow(data))
+
+dataframes[[file]] <- data
+}
+```
+
+```{r}
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_h2_sd = paste("loci = ", loci," ", "h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_sd = paste("loci = ", loci," ", "sd = ", sd, sep = ""),
+         loci_h2 = paste("loci = ", loci," ", "h2 = ", herit, sep = ""),
+         sd_gen = paste("sd = ", sd," ", "gen = ", gen, sep = ""))
+```
+
+```{r}
+plots <- list()
+#loci_gens <- unique(combined_data$loci_gen)
+locis <- unique(combined_data$loci)
+#loci_h2_sds <- unique(combined_data$loci_h2_sd)
+for(locus in locis){
+  locus_data <- combined_data %>% 
+    filter(gen ==30) %>% 
+    filter(loci == locus)
+  plots[[locus]] <- locus_data %>% 
+    ggplot(aes(Generation, Frequency, group = Position, color = Position))+
+    geom_line(linewidth = 0.1)+
+    facet_wrap(~h2_sd, ncol = 2)+
+    ylim(min = 0, max = 1)+
+    theme_bw()+
+    theme(legend.position = "none")
+  #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
+  #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+}
+plots
+```
+
+```{r}
+plots <- list()
+sd_gens <- unique(combined_data$sd_gen)
+for(sd_geni in sd_gens){
+  locus_data <- combined_data %>% 
+    filter(sd_gen == sd_geni)
+  plots[[sd_geni]] <- locus_data %>% 
+    ggplot(aes(Generation, Frequency, group = Position, color = Position))+
+    geom_line(linewidth = 0.1)+
+    facet_wrap(~loci_h2, ncol = 3)+
+    ylim(min = 0, max = 1)+
+    theme_bw()+
+    theme(legend.position = "none")
+  #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
+  #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+}
+plots
+```
