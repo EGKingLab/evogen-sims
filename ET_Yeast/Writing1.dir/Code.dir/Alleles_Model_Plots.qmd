@@ -223,7 +223,7 @@ combined_data %>%
 
 #### Linear
 
-```{r}
+```{r, warning=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -254,7 +254,7 @@ combined_data <- bind_rows(dataframes) %>%
          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-```{r}
+```{r, fig.width = 12, fig.height = 8}
 #path <- "~/OneDrive - University of Missouri/Test_Test/LinFS.dir/Plots/"
 
 plots <- list()
@@ -290,7 +290,7 @@ combined_data %>%
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
-pattern <- "^genome15\\D" #(\\D|$)
+pattern <- "^genome12\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
 dataframes <- list()
@@ -319,7 +319,7 @@ combined_data <- bind_rows(dataframes) %>%
          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-```{r}
+```{r, fig.width = 12, fig.height = 8}
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFS.dir/Plots/"
 
 plots <- list()
@@ -342,7 +342,7 @@ plots
 
 #### Sinusoidal II
 
-```{r}
+```{r, fig.width = 12, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -370,7 +370,7 @@ combined_data <- bind_rows(dataframes) %>%
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r}
+```{r, fig.width = 12, fig.height = 8}
 
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFSGen.dir/Plots/"
 
@@ -393,7 +393,7 @@ for(locus in loci){
 plots
 ```
 
-```{r}
+```{r, fig.width = 12, fig.height = 8}
 combined_data %>%
     filter(loci == 70) %>%
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
