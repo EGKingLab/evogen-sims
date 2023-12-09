@@ -25,7 +25,7 @@ library(lme4)
 ```
 
 ```{r}
-data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n1_H0.8SD4.csv") %>% select(-c(Effect, Origin)) %>%
+data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n10_H0.8.csv") %>% select(-c(Effect, Origin)) %>%
   mutate(Position = factor(Position)) #%>% filter(Generation <= 500)
 
 data1 <-  data %>% 
