@@ -1,0 +1,213 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(stringr)
+# 
+# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+# pattern <- "^genome15\\D" #(\\D|$)
+# files <- list.files(dirpath, pattern, full.names = TRUE)
+# 
+# dataframes <- list()
+# for(file in files){
+#   replicate_id <- basename(file) # Or any other way to uniquely identify replicates
+#   herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+#   loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+#   sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+#   gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+# 
+#   data <- read.csv(file, header = TRUE) %>% 
+#     select(Generation, Position, Frequency) %>% 
+#     mutate(Position = factor(Position),
+#            replicate = replicate_id)
+# 
+#   data$herit <- rep(herit, nrow(data))
+#   data$loci <- rep(loci, nrow(data))
+#   data$sd <- rep(sd, nrow(data))
+#   data$gen <- rep(gen, nrow(data))
+# 
+#   dataframes[[file]] <- data
+# }
+# 
+# combined_data <- bind_rows(dataframes) %>% 
+#   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+#          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+# 
+# plots <- list()
+# loci_gens <- unique(combined_data$loci_gen)
+# for(loci_geni in loci_gens){
+#   locus_data <- combined_data %>% 
+#     filter(loci_gen == loci_geni)
+#   plots[[loci_geni]] <- locus_data %>% 
+#     ggplot(aes(Generation, Frequency, group = interaction(Position, replicate), color = interaction(Position, replicate)))+
+#     geom_line(linewidth = 0.1)+
+#     facet_wrap(~h2_sd, ncol = 4)+
+#     theme_bw()+
+#     theme(legend.position = "none")
+# }
+# plots
+
+```
+
+### Linear Fluctuating
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome(1|2|3|4|5|6|7|8|9|10)_n1_.*\\.csv$"  #"^genome[1-10]_n(1|1)($|[^0-9])"  # ^genome[1-3]($|[^0-9]) This will match files starting with 'genome' followed by any number
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+```
+
+```{r}
+dataframes <- list()
+for(file in files){
+  replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))  # Extract replicate number
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+  data <- read.csv(file, header = TRUE) %>% 
+    select(Generation, Position, Frequency) %>% 
+    mutate(Position = factor(Position),
+           replicate = replicate_id)
+
+  data$herit <- rep(herit, nrow(data))
+  data$loci <- rep(loci, nrow(data))
+  data$sd <- rep(sd, nrow(data))
+  data$gen <- rep(gen, nrow(data))
+
+  dataframes[[file]] <- data
+}
+
+```
+
+```{r}
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+
+plots <- list()
+loci_gens <- unique(combined_data$loci_gen)
+for(loci_geni in loci_gens){
+  locus_data <- combined_data %>% 
+    filter(loci_gen == loci_geni)
+  plots[[loci_geni]] <- locus_data %>% 
+    ggplot(aes(Generation, Frequency, group = interaction(Position, replicate), color = factor(replicate)))+ #color = interaction(Position, replicate)
+    geom_line(linewidth = 0.1)+
+    facet_wrap(~h2_sd, ncol = 4)+
+    theme_bw()+
+    theme(legend.position = "none")
+}
+plots
+```
+
+### Sinusoidal I Fluctuating
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome(1|2|3|4|5|6|7|8|9|10)_n1_.*\\.csv$"  # This will match files starting with 'genome' followed by any number
+files <- list.files(dirpath, pattern, full.names = TRUE)
+```
+
+```{r}
+dataframes <- list()
+for(file in files){
+  replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))  # Extract replicate number
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+  data <- read.csv(file, header = TRUE) %>% 
+    select(Generation, Position, Frequency) %>% 
+    mutate(Position = factor(Position),
+           replicate = replicate_id)
+
+  data$herit <- rep(herit, nrow(data))
+  data$loci <- rep(loci, nrow(data))
+  data$sd <- rep(sd, nrow(data))
+  data$gen <- rep(gen, nrow(data))
+
+  dataframes[[file]] <- data
+}
+
+```
+
+```{r}
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+
+plots <- list()
+loci_gens <- unique(combined_data$loci_gen)
+for(loci_geni in loci_gens){
+  locus_data <- combined_data %>% 
+    filter(loci_gen == loci_geni)
+  plots[[loci_geni]] <- locus_data %>% 
+    ggplot(aes(Generation, Frequency, group = interaction(Position, replicate), color = factor(replicate)))+ #color = interaction(Position, replicate)
+    geom_line(linewidth = 0.1)+
+    facet_wrap(~h2_sd, ncol = 4)+
+    theme_bw()+
+    theme(legend.position = "none")
+}
+plots
+```
+
+### Sinusoidal II Fluctuation
+
+```{r, fig.width = 12, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome(1|2|3|4|5|6|7|8|9|10)_n1_.*\\.csv$"
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+")) 
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+
+data <- read.csv(file, header = TRUE) %>% 
+  select(Generation, Position, Frequency) %>% 
+  mutate(Position = factor(Position),
+           replicate = replicate_id,
+         herit = herit,
+         loci = loci,
+         sd = sd)
+# 
+# data$herit <- rep(herit, nrow(data))
+# data$loci <- rep(loci, nrow(data))
+# data$sd <- rep(sd, nrow(data))
+
+dataframes[[file]] <- data
+}
+```
+
+```{r}
+
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
+
+plots <- list()
+loci <- unique(combined_data$loci)
+for(locus in loci){
+  locus_data <- combined_data %>% 
+    filter(loci == locus, Generation <= 2000)
+  plots[[locus]] <- locus_data %>% 
+    ggplot(aes(Generation, Frequency, group = interaction(Position, replicate), color = factor(replicate)))+
+    geom_line(linewidth = 0.1)+
+    facet_wrap(~h2_sd, ncol = 4)+
+    ylim(min = 0, max = 1)+
+    theme_bw()+
+    theme(legend.position = "none")
+  #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
+  #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+}
+plots
+```
