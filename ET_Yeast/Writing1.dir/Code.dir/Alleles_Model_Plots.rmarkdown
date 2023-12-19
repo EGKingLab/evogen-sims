@@ -22,7 +22,9 @@ mytheme <- function() {
   }
 ```
 
+
 ### Neutral Selection
+
 
 ```{r, fig.width = 16, fig.height = 8}
 file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n100_H0.5.csv"
@@ -72,7 +74,7 @@ library(stringr)
 library(patchwork)
 
 # Define the path to genome files
-genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^genome15", full.names = TRUE)
+genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^genome19", full.names = TRUE)
 
 # Create an empty list to store plots
 plots <- list()
@@ -153,7 +155,9 @@ allele_data %>% filter(loci==70) %>%
        mytheme()
 ```
 
+
 ### Constant Selection
+
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
@@ -217,9 +221,11 @@ combined_data %>%
     theme(legend.position = "none")
 ```
 
+
 ### Fluctuating Selection
 
 #### Linear
+
 
 ```{r, warning=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
@@ -286,7 +292,9 @@ combined_data %>%
     theme(legend.position = "none")
 ```
 
+
 #### Sinusoidal I
+
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
@@ -341,7 +349,9 @@ for(loci_geni in loci_gens){
 plots
 ```
 
+
 #### Sinusoidal II
+
 
 ```{r, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
@@ -355,14 +365,12 @@ for(file in files){
   sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
 
 data <- read.csv(file, header = TRUE) %>% 
-  select(Generation, Position, Frequency, Effect) %>%
-  group_by(Position) %>% 
-  mutate(Position = factor(Position),
-         Effect = round(Effect, 3),
-         Init_Freq = round(Frequency[Generation == 1], 3),
-         herit =herit,
-         loci = loci,
-         sd = sd)
+  select(Generation, Position, Frequency) %>% 
+  mutate(Position = factor(Position))
+
+data$herit <- rep(herit, nrow(data))
+data$loci <- rep(loci, nrow(data))
+data$sd <- rep(sd, nrow(data))
 
 dataframes[[file]] <- data
 }
@@ -375,33 +383,28 @@ combined_data <- bind_rows(dataframes) %>%
 
 ```{r, fig.width = 16, fig.height = 8}
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFSGen.dir/Plots/"
-set.seed(1234)
+
 plots <- list()
 loci <- unique(combined_data$loci)
 for(locus in loci){
   locus_data <- combined_data %>% 
-    filter(loci == locus, Generation <= 2000)
-  
-  # Select 10 random positions
-  selected_positions <- sample(locus_data$Position, size = min(15, nrow(locus_data)), replace = F)
-  
-  # Filter the data for the selected positions
-  locus_data <- locus_data %>% 
-    filter(Position %in% selected_positions)
-  
+    filter(loci == locus, Generation <= 2000) %>% 
+    group_by(Position) %>% 
+    sample_n(10, replace = F)
   p <- locus_data %>% 
-    ggplot(aes(Generation, Frequency, group = interaction(Position,Effect, Init_Freq), color = interaction(Position,Effect, Init_Freq)))+
+    ggplot(aes(Generation, Frequency, group = Position, color = Position))+
+    #geom_point(size = 0.2)+
     geom_line(linewidth = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
     theme(legend.position = "none")
+  #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
+  #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
   
-  plots[[locus]] <- ggplotly(p)
+  plots[[locus]] <- (p)#ggplotly
 }
 plots
-
-
 ```
 
 ```{r, fig.width = 16, fig.height = 8}
@@ -415,3 +418,4 @@ pr <- combined_data %>%
 ggplotly(pr)
 
 ```
+

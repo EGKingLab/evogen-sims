@@ -3,13 +3,13 @@ title: "Phenotype Model's Plots"
 author: "Esdras"
 format: html
 editor: visual
----R
 ---
 
 ```{r}
 library(tidyverse)
 library(stringr)
 library(cowplot)
+library(patchwork)
 theme_set(theme_cowplot())
 ```
 
@@ -26,20 +26,46 @@ mytheme <- function() {
 ### Neutral Selection
 
 ```{r}
-file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/MeanPhenotypes10_n100_H0.1.csv"
 
-pheno_file <- read.csv(file_path) 
+file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n1_H0.8SD1.csv"
 
-#replicate <- as.numeric(str_extract(file_path, "(?<=MeanPhenotypes)[0-9]+"))
+pheno_file <- read.csv(file_path) %>% 
+  mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
+
+# replicate <- as.numeric(str_extract(file_path, "(?<=MeanPhenotypes)[0-9]+"))
 heritability <- as.numeric(str_extract(file_path, "(?<=H0\\.)\\d+"))
 Loci_n <- as.numeric(str_extract(file_path, "(?<=_n)\\d+"))
 
-pheno_file %>% 
-  ggplot(aes(Generation, Phenotype))+
-  geom_line(linewidth = 0.2)+
-  ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = ""))+
+ggplot(pheno_file, aes(Generation, Phenotype)) +
+  geom_line(linewidth = 0.2) +
+  geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  geom_point(data = filter(pheno_file, Generation == 1), aes(y = Optimum), size = 3, color = "magenta") +
+  ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = "")) +
   mytheme()
 ```
+
+
+
+```{r}
+file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n100_H0.8SD1Gen10.csv"
+
+pheno_file <- read.csv(file_path) %>% 
+  mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
+
+# replicate <- as.numeric(str_extract(file_path, "(?<=MeanPhenotypes)[0-9]+"))
+heritability <- as.numeric(str_extract(file_path, "(?<=H0\\.)\\d+"))
+Loci_n <- as.numeric(str_extract(file_path, "(?<=_n)\\d+"))
+
+pheno_file <- pheno_file %>% filter(Generation < 200)
+
+ggplot(pheno_file, aes(Generation, Phenotype)) +
+  geom_line(linewidth = 0.2) +
+  geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  geom_point(data = filter(pheno_file, Generation == 1), aes(y = Optimum), size = 3, color = "magenta") +
+  ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = "")) +
+  mytheme()
+```
+
 
 ```{r}
 
@@ -49,8 +75,8 @@ plots <- list()
 for (pheno_file in pheno_files){
   df <- read.csv(pheno_file) 
   
-  heritability <- as.numeric(str_extract(file_path, "(?<=H0\\.)\\d+"))
-  Loci_n <- as.numeric(str_extract(file_path, "(?<=_n)\\d+"))
+  heritability <- as.numeric(str_extract(pheno_file, "(?<=H0\\.)\\d+"))
+  Loci_n <- as.numeric(str_extract(pheno_file, "(?<=_n)\\d+"))
   
   plots[[pheno_file]] <- df %>% 
   ggplot(aes(Generation,Phenotype))+
@@ -59,7 +85,8 @@ for (pheno_file in pheno_files){
   mytheme()
 }
 
-plot_grid(plots)
+plot_grid(plotlist = plots)
+
 ```
 
 ```{r}
@@ -94,57 +121,9 @@ for (pheno_file in pheno_files) {
 combined_plot <- wrap_plots(plots, ncol = 3)
 
 # Print the combined plot
-print(combined_plot)
+ggplotly(combined_plot)
+combined_plot
 
-```
-
-```{r}
-dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
-pattern = "^genome19"
-file_list <- list.files(dir_path, pattern = pattern, full.names = TRUE)
-
-# Create an empty list to store the data frames
-data_frames <- list()
-
-for (file_name in file_list) {
-  herit <- as.numeric(str_extract(file_name, "(?<=H0\\.)\\d+"))
-  loci <- as.numeric(str_extract(file_name, "(?<=_n)\\d+"))
-  
-  # Read the file 
-  data <- read.csv(file_name, header = TRUE) %>%
-    select(Generation, Position, Frequency) %>%
-    mutate(Position = as.factor(Position))
-  
-  # Add the "replicate", "herititability", and "loci" columns
-  data$herit <- rep(herit, nrow(data))
-  data$loci <- rep(loci, nrow(data))
-  
-  # Add the data frame to the list
-  data_frames[[file_name]] <- data
-}
-# Combine all the data frames into one
-combined_data <- bind_rows(data_frames)
-
-allele_data <- combined_data %>% 
-  mutate(loci_herit = paste(loci, herit, sep = "_")) 
-
-mytheme <- function(){
-  theme_set(theme_cowplot())+
-    theme(axis.title = element_text(face = "bold"),
-          axis.text = element_text(face = "italic"),
-          plot.title = element_text(hjust = 0.5),
-          legend.position = "none",
-          plot.background = element_rect(fill = "white"))
-}
-
-#loci.heritabilities = unique(allele_data$loci_herit)
-
-allele_data %>% filter(loci==70, Generation <= 1000) %>%
-       ggplot(aes(x = Generation, y = Frequency, color = Position)) +
-       geom_line(linewidth = 0.2) +
-       facet_wrap(~loci_herit, ncol = 3) +
-       labs(y = "Mean Frequency")+
-       mytheme()
 ```
 
 ### Constant Selection
@@ -185,16 +164,19 @@ loci <- unique(combined_data$loci)
 for(locus in loci){
   locus_data <- combined_data %>% 
     filter(loci == locus)
-  plots[[locus]] <- locus_data %>% 
+  p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
     #geom_point(size = 0.2)+
     geom_line(linewidth = 0.1)+
+  geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+  plots[[locus]] <- ggplotly(p)
 }
 plots
 ```
@@ -213,6 +195,31 @@ combined_data %>%
 ### Fluctuating Selection
 
 #### Linear
+
+```{r}
+data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen30.csv")%>% 
+  mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
+
+p <- plot_ly(data, x= ~Generation, y = ~round(Phenotype, 3), z = ~ round(meanFitness, 3), color = ~factor(round(Optimum, 0)), type = "scatter3d", mode = "markers", marker = list(size = 2))
+p <- p %>% layout(scene = list(yaxis = list(title = "Phenotype"), xaxis = list(title = "Generation"), zaxis = list(title = "Mean Fitness")), 
+                  showlegend = TRUE, legend = list(font = list(size = 16), orientation = "v", x = 1.02, y = 0.5))
+p 
+
+```
+
+
+```{r}
+plt <- data %>% 
+  ggplot(aes((round(meanFitness, 3)), round(Phenotype, 3), 
+             color = factor(round(Optimum, 0))))+
+  geom_boxplot()+
+  geom_hline(yintercept = mean(data$Phenotype), color = "darkred")+
+  labs(x = "Mean Fitness", y = "Phenotype", color = "Optimum")
+
+ggplotly(plt, tooltip = "all")
+
+```
+
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
@@ -251,15 +258,18 @@ loci_gens <- unique(combined_data$loci_gen)
 for(loci_geni in loci_gens){
   locus_data <- combined_data %>% 
     filter(loci_gen == loci_geni)
-  plots[[loci_geni]] <- locus_data %>% 
+  p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
     geom_line(linewidth = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
-    ylim(min = 100, max = 125)+
+    geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
+    #ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+  plots[[loci_geni]] <- ggplotly(p)
 }
 plots
 ```
@@ -314,7 +324,7 @@ loci_gens <- unique(combined_data$loci_gen)
 for(loci_geni in loci_gens){
   locus_data <- combined_data %>% 
     filter(loci_gen == loci_geni)
-  plots[[loci_geni]] <- locus_data %>% 
+  p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
     geom_line(linewidth = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
@@ -323,11 +333,14 @@ for(loci_geni in loci_gens){
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+  
+  plots[[loci_geni]]
 }
 plots
 ```
 
 #### Sinusoidal II
+
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
@@ -340,8 +353,7 @@ for(file in files){
   loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
   sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
 
-data <- read.csv(file, header = TRUE) %>% 
-  mutate(Phenotype = Phenotype - 100)
+data <- read.csv(file, header = TRUE)
 
 data$herit <- rep(herit, nrow(data))
 data$loci <- rep(loci, nrow(data))
@@ -357,34 +369,26 @@ combined_data <- bind_rows(dataframes) %>%
 ```
 
 ```{r}
-
-#path <- "~/OneDrive - University of Missouri/Test_Test/SinFSGen.dir/Plots/"
+#path <- "~/OneDrive - University of Missouri/Test_Test/CS.dir/Plots/"
 
 plots <- list()
 loci <- unique(combined_data$loci)
 for(locus in loci){
   locus_data <- combined_data %>% 
     filter(loci == locus)
-  plots[[locus]] <- locus_data %>% 
+  p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
     #geom_point(size = 0.2)+
     geom_line(linewidth = 0.1)+
+  #geom_line(aes(y = Optimum), color = "darkred", size = 0.1, linewidth = 0.2) +
+  #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 0.1, color = "magenta") +
     facet_wrap(~h2_sd, ncol = 4)+
-    #ylim(min = 0, max = 1)+
+    #ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+  plots[[locus]] <- ggplotly(p)
 }
 plots
-```
-
-```{r}
-combined_data %>%
-    filter(loci == 70) %>%
-    ggplot(aes(Generation, Frequency, group = Position, color = Position))+
-    geom_line(linewidth = 0.2)+
-    facet_wrap(~h2_sd, ncol = 4)+
-    theme_bw()+
-    theme(legend.position = "none")
 ```
