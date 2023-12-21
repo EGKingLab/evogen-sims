@@ -21,9 +21,9 @@ mytheme <- function(){
 
 ## Fluctuation
 
-This file was created to check if we can fluctuating loci from non-fluctuating.
+This file was created to check if we can identify fluctuating loci from non-fluctuating loci.
 
-The chuck below helps us to set a threshold
+The chuck below helps us set a threshold
 
 ```{r}
 
@@ -51,7 +51,7 @@ afm <- af  %>% filter(mu_fr > mean(mu_fr) - sd(mu_fr)/sqrt(length(mu_fr))) # (mu
 
 ```
 
-Form this chunk, we use the threshold to select loci that are fluctuating over time
+In this chunk, we use the threshold to select loci that are fluctuating over time
 
 ```{r}
 #| echo: false

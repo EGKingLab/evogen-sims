@@ -6,7 +6,7 @@ rm(list = ls())
 set.seed(7711)
 
 #how many loci
-nloci <- 10
+nloci <- 100
 
 #how many individuals
 ninds <- 10000
@@ -35,8 +35,12 @@ V_E <- (V_A/h2)- V_A
 env <- rnorm(ninds, 0.0, sqrt(V_E))
 
 phenotypes <- tibble(phenotypes = additive + env)
-phenotypes$phenotypes <- (phenotypes$phenotypes/ sd(phenotypes$phenotypes))  + 100
+#phenotypes$phenotypes <- (phenotypes$phenotypes/ sd(phenotypes$phenotypes))  + 100
 #phenotypes$phenotypes <- ((phenotypes$phenotypes - mean(phenotypes$phenotypes))/sd(phenotypes$phenotypes)) + 100
+#phenotypes$phenotypes <- (phenotypes$phenotypes/ max(phenotypes$phenotypes))  + 100
+#phenotypes$phenotypes <- quantile(phenotypes$phenotypes, rank(phenotypes$phenotypes)/ length(phenotypes$phenotypes))
+ #phenotypes$phenotypes <- (phenotypes$phenotypes - mean(phenotypes$phenotypes))/ sd(phenotypes$phenotypes) 
+ phenotypes$phenotypes <- ((phenotypes$phenotypes - min(phenotypes$phenotypes))/ (max(phenotypes$phenotypes) - min(phenotypes$phenotypes)))
 
 #define new optimum
 new_opt <- mean(phenotypes$phenotypes) + sd(phenotypes$phenotypes)*2
@@ -50,10 +54,10 @@ phenotypes |>
 scaling_f <- mean(phenotypes$phenotypes)
   
 #phenotypes$fitness <- 1 - ((phenotypes$phenotypes - new_opt)^2/phenotypes$phenotypes) #Quadratic
-#phenotypes$fitness <- exp(-(1/10) * (phenotypes$phenotypes - new_opt)^2)# we can alsp try 1/
-#phenotypes$fitness <- exp(-(1/(phenotypes$phenotypes)) * (phenotypes$phenotypes - new_opt)^2)
+phenotypes$fitness <- exp(-(1/10) * (phenotypes$phenotypes - new_opt)^2)# we can alsp try 1/
+#phenotypes$fitness <- exp(-(1/(phenotypes$phenotypes)) * ((phenotypes$phenotypes - new_opt))^2)
 
-phenotypes$fitness <- exp(-(3/(scaling_f)) * (phenotypes$phenotypes - new_opt)^2)
+#phenotypes$fitness <- exp(-(3/(scaling_f)) * (phenotypes$phenotypes - new_opt)^2)
 #phenotypes$fitness <- (dnorm(new_opt - phenotypes$phenotypes, 10))
 
 phenotypes |>
