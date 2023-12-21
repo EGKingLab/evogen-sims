@@ -1,0 +1,86 @@
+---
+title: "Phenotype plots"
+format: html
+author: "Esdras T"
+editor: visual
+---
+
+## Source Code
+
+```{r}
+rm(list = ls())
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/PhenotypePlotCode.R')
+```
+
+### Neutral selection
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^MeanPhenotypes(1|2|3|10|15|20|30)_n*"
+# "^MeanPhenotypes15\\D" #(\\D|$).    (1|2|3|10|13|17|21)_n
+result <- process_files(dirpath, pattern, "loci")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
+```
+
+```{r}
+pheno1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/MeanPhenotypes1_n300_H0.8.csv")
+p1 <- pheno1 %>% ggplot(aes(Generation, Phenotype))+
+  geom_line()
+
+pheno2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n300_H0.8SD2.csv")
+p2 <- pheno2 %>% ggplot(aes(Generation, Phenotype))+
+  geom_line()
+
+pheno3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/MeanPhenotypes1_n300_H0.8SD2.csv")
+p3 <- pheno3 %>% ggplot(aes(Generation, Phenotype))+
+  geom_line()
+
+p1/p2/p3
+```
+
+### Constant selection
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^MeanPhenotypes(1|2|3|10|15|20|30)_n*"
+# "^MeanPhenotypes15\\D" #(\\D|$).    (1|2|3|10|13|17|21)_n
+result <- process_files(dirpath, pattern, "loci")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
+```
+
+### Fluctuating Linear
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes(1|2|3|10|15|20|30)_n*"
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
+```
+
+### Fluctuating Sinusoidal I
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^MeanPhenotypes(1|2|3|10|15|20|30)_n*"
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots 
+plots
+```
+
+### Fluctuating Sinusoidal II
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
+pattern <- "^MeanPhenotypes(1|2|3|10|15|20|30)_n*" 
+result <- process_files(dirpath, pattern, "loci") 
+combined_data <- result$combined_data 
+plots <- result$plots 
+plots
+```

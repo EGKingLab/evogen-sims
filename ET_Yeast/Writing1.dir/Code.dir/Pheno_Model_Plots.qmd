@@ -44,8 +44,6 @@ ggplot(pheno_file, aes(Generation, Phenotype)) +
   mytheme()
 ```
 
-
-
 ```{r}
 file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n100_H0.8SD1Gen10.csv"
 
@@ -65,7 +63,6 @@ ggplot(pheno_file, aes(Generation, Phenotype)) +
   ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = "")) +
   mytheme()
 ```
-
 
 ```{r}
 
@@ -207,7 +204,6 @@ p
 
 ```
 
-
 ```{r}
 plt <- data %>% 
   ggplot(aes((round(meanFitness, 3)), round(Phenotype, 3), 
@@ -219,7 +215,6 @@ plt <- data %>%
 ggplotly(plt, tooltip = "all")
 
 ```
-
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
@@ -340,7 +335,6 @@ plots
 ```
 
 #### Sinusoidal II
-
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
