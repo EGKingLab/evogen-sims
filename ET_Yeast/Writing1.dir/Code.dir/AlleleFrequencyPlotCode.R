@@ -119,6 +119,7 @@ process_files <- function(dirpath, pattern, plot_type) {
 
   dataframes <- list()
   for(file in files){
+    replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
     herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
     loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
     sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
@@ -128,6 +129,7 @@ process_files <- function(dirpath, pattern, plot_type) {
       select(Generation, Position, Frequency, Effect) %>%
       group_by(Position) %>%
       mutate(Position = factor(Position),
+             replicate = replicate_id,
              herit = herit,
              loci = loci,
              sd = sd,
@@ -136,7 +138,8 @@ process_files <- function(dirpath, pattern, plot_type) {
              postion_effect_init = paste("position = ", Position," ",
                                          "Effect = ", round(Effect, 2)," ", 
                                          "Initial Freq = ", 
-                                         round(initFreq, 2) , sep = ""))
+                                         round(initFreq, 2)," ",
+                                         "repl = ", " ",replicate, sep = ""))
 
 
     # argument for linear and sinusoidal I selections
@@ -167,10 +170,20 @@ process_files <- function(dirpath, pattern, plot_type) {
       # Filter the data for the selected positions
       #locus_data <- locus_data %>%
         #filter(Position %in% selected_positions)
+      
+      # Select 10 random positions
+      #set.seed(12345)
+      #selected_positions <- sample(locus_data$Position, 
+       #                            size = min(5, nrow(locus_data)), replace = F)
+      
+      # Filter the data for the selected positions
+      #locus_data <- locus_data %>% 
+       # filter(Position %in% selected_positions)
+      
+      
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init,
-                   color = postion_effect_init,
-                   linetype = postion_effect_init))+#ostion_effect_init
+                   color = postion_effect_init))+#ostion_effect_init
         geom_line(linewidth = 0.2)+
         facet_wrap(~h2_sd, ncol = 4)+
         ylim(min = 0, max = 1)+
@@ -199,13 +212,12 @@ process_files <- function(dirpath, pattern, plot_type) {
       
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init, #postion_effect_init 
-                   color = postion_effect_init,
-                   linetype = postion_effect_init))+
+                   color = postion_effect_init))+
         geom_line(linewidth = 0.2)+
         facet_wrap(~h2_sd, ncol = 4)+
         ylim(min = 0, max = 1)+
-        theme_bw()+
-        theme(legend.position = "none")
+        theme_bw()#+
+        #theme(legend.position = "none")
       plots[[locus]] <- ggplotly(p) #ggplotly
     }
   }

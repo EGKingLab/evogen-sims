@@ -1,0 +1,87 @@
+---
+title: "Spectral II"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(lubridate)
+
+# Function to perform FFT and return results
+fft_fx <- function(dir_path, pattern, spectrum_span) {
+  files <- list.files(dir_path, pattern = pattern, full.names = TRUE)
+
+  # Extracting parameters from file names
+  files_df <- data.frame(file_name = files) %>%
+    mutate(
+      loci = as.numeric(str_extract(file_name, "(?<=_n)\\d+")),
+      herit = as.numeric(str_extract(file_name, "(?<=H)0\\.\\d+")),
+      sd = as.numeric(str_extract(file_name, "(?<=SD)\\d+")),
+      gen = as.numeric(str_extract(file_name, "(?<=Gen)\\d+")),
+      group_id = paste(loci, herit, sd, gen, sep = "_")
+    )
+
+  all_results <- data.frame()
+
+  for (file_info in split(files_df, files_df$group_id)) {
+    for (file_name in file_info$file_name) {
+      data <- read.csv(file_name) %>%
+        select(Generation, Position, Frequency) %>%
+        mutate(Position = factor(Position))
+
+      # Wide format transformation
+      data_wide <- pivot_wider(data, names_from = Position, values_from = Frequency)
+      data_wide[is.na(data_wide)] <- 0
+
+      # Applying FFT
+      ff1 <- as.matrix(data_wide[, -1])
+      ttest <- spectrum(ff1, spans = spectrum_span, plot = FALSE)
+
+      if (!is.matrix(ttest$spec)) {
+        next
+      }
+
+      out.spect <- rowMeans(ttest$spec)
+
+      # Prepare data for plotting
+      group_results <- data.frame(
+        Frequency = rep(ttest$freq, length(out.spect)),
+        spec = out.spect,
+        group_id = file_info$group_id[1]
+      )
+
+      all_results <- rbind(all_results, group_results)
+    }
+  }
+
+  return(all_results)
+}
+```
+
+```{r}
+
+# Define parameters
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome[1-9]_n(1|10|70|100|300)_H0.(1|8|5)SD(1|4)Gen(10|30).csv"
+spectrum_span <- 2
+
+# Run FFT function
+all_results <- fft_fx(dirpath, pattern, spectrum_span)
+
+# Plotting
+fft_plot <- all_results %>%
+  mutate(Frequency = 1 / Frequency) %>%
+  filter(Frequency < 40) %>%
+  ggplot(aes(Frequency, spec, color = group_id)) +
+  geom_line(linewidth = 1.1) +
+  facet_wrap(~group_id, scales = "free") +
+  theme(legend.position = "none") +
+  xlab("Periodicity") +
+  ylab("Spectral Density")
+
+# Display plot
+print(fft_plot)
+```
+

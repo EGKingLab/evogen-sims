@@ -17,8 +17,8 @@ mytheme <- function() {
   theme_set(theme_cowplot()) +
     theme(axis.title = element_text(face = "bold"),
           axis.text = element_text(face = "italic"),
-          plot.title = element_text(hjust = 0.5),
-          legend.position = "none")
+          plot.title = element_text(hjust = 0.5), 
+          legend.position = "none")# 
   }
 ```
 
@@ -72,35 +72,45 @@ library(stringr)
 library(patchwork)
 
 # Define the path to genome files
-genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^genome15", full.names = TRUE)
+genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^genome(1)_n(10|1|100|300)_.*\\.csv$", full.names = TRUE)
 
 # Create an empty list to store plots
 plots <- list()
 
 # Loop through genome files and create plots
 for (genome_file in genome_files) {
-  df <- read.csv(genome_file) %>%
-    select(Generation, Position, Frequency) %>%
-    mutate(Position = factor(Position))
+
+   replicate_id <- as.numeric(str_extract(genome_file, "(?<=genome)\\d+"))
+   heritability <- as.numeric(str_extract(genome_file, "(?<=H0\\.)\\d+"))
+  # Loci_n <- as.numeric(str_extract(genome_file, "(?<=_n)\\d+"))
   
-  heritability <- as.numeric(str_extract(genome_file, "(?<=H0\\.)\\d+"))
-  Loci_n <- as.numeric(str_extract(genome_file, "(?<=_n)\\d+"))
+  df <- read.csv(genome_file, header = TRUE) %>% 
+    select(Generation, Position, Frequency, Effect) %>% 
+    group_by(Position) %>% 
+    mutate(Position = factor(Position),
+           replicate = replicate_id,
+           herit = heritability,
+           initFreq = Frequency[Generation == 1],
+           postion_effect_init = 
+             paste("position = ", Position," ","Effect = ", 
+                   round(Effect, 2)," ", "Initial Freq = ", 
+                   round(initFreq, 2) , sep = ""))
   
   # Create a ggplot and add it to the list of plots
-  plots[[genome_file]] <- df %>%
-    ggplot(aes(Generation, Frequency, color = Position)) +
+  plots[[genome_file]] <- ggplotly(df %>%
+    ggplot(aes(Generation, Frequency, color = interaction(postion_effect_init, replicate))) +
     geom_line(linewidth = 0.2) +
     labs(x = "", y = "") +
     ylim(min = 0, max = 1)+
     #ggtitle(paste(Loci_n, "L", " for 0.", heritability, " H", sep = "")) +
-    mytheme()  # Make sure mytheme() is defined or loaded correctly
+    mytheme())  # Make sure mytheme() is defined or loaded correctly
 }
-
+(plots)
 # Combine the plots into a single plot grid
-combined_plot <- wrap_plots(plots, ncol = 3)
+#combined_plot <- wrap_plots(plots, ncol = 3)
 
 # Print the combined plot
-print(combined_plot)
+#print(combined_plot)
 
 ```
 
@@ -301,7 +311,7 @@ for(file in files){
   gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
 
 data <- read.csv(file, header = TRUE) %>% 
-  select(Generation, Position, Frequency) %>% 
+  select(Generation, Position, Frequency, Effect) %>% 
   mutate(Position = factor(Position))
 
 data$herit <- rep(herit, nrow(data))
@@ -328,7 +338,7 @@ for(loci_geni in loci_gens){
   locus_data <- combined_data %>% 
     filter(loci_gen == loci_geni)
   p <- locus_data %>% 
-    ggplot(aes(Generation, Frequency, group = Position, color = Position))+
+    ggplot(aes(Generation, Frequency, group = interaction(Position, Effect), color = interaction(Position, Effect)))+
     geom_line(linewidth = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+

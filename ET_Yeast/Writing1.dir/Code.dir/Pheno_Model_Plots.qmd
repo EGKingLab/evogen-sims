@@ -5,15 +5,16 @@ format: html
 editor: visual
 ---
 
-```{r}
+```{r, message=FALSE, echo=FALSE}
 library(tidyverse)
 library(stringr)
 library(cowplot)
 library(patchwork)
+library(plotly)
 theme_set(theme_cowplot())
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 mytheme <- function() {
   theme_set(theme_cowplot()) +
     theme(axis.title = element_text(face = "bold"),
@@ -25,7 +26,7 @@ mytheme <- function() {
 
 ### Neutral Selection
 
-```{r}
+```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
 
 file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n1_H0.8SD1.csv"
 
@@ -38,13 +39,13 @@ Loci_n <- as.numeric(str_extract(file_path, "(?<=_n)\\d+"))
 
 ggplot(pheno_file, aes(Generation, Phenotype)) +
   geom_line(linewidth = 0.2) +
-  geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
-  geom_point(data = filter(pheno_file, Generation == 1), aes(y = Optimum), size = 3, color = "magenta") +
+  #geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  #geom_point(data = filter(pheno_file, Generation == 1), aes(y = Optimum), size = 3, color = "magenta") +
   ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = "")) +
   mytheme()
 ```
 
-```{r}
+```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
 file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n100_H0.8SD1Gen10.csv"
 
 pheno_file <- read.csv(file_path) %>% 
@@ -58,15 +59,15 @@ pheno_file <- pheno_file %>% filter(Generation < 200)
 
 ggplot(pheno_file, aes(Generation, Phenotype)) +
   geom_line(linewidth = 0.2) +
-  geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
-  geom_point(data = filter(pheno_file, Generation == 1), aes(y = Optimum), size = 3, color = "magenta") +
+  #geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  #geom_point(data = filter(pheno_file, Generation == 1), aes(y = Optimum), size = 3, color = "magenta") +
   ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = "")) +
   mytheme()
 ```
 
-```{r}
+```{r, echo=FALSE, results='hold'}
 
-pheno_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^MeanPhenotypes15", full.names = TRUE)
+pheno_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern =  "^MeanPhenotypes15_n\\d+_H0.1_*", full.names = TRUE)
 plots <- list()
 
 for (pheno_file in pheno_files){
@@ -86,7 +87,7 @@ plot_grid(plotlist = plots)
 
 ```
 
-```{r}
+```{r, message=FALSE, fig.width = 16, fig.height = 8}
 # Load necessary libraries
 library(dplyr)
 library(ggplot2)
@@ -94,7 +95,7 @@ library(stringr)
 library(patchwork)
 
 # Define the path to genome files
-genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^MeanPhenotypes19", full.names = TRUE)
+genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^MeanPhenotypes15", full.names = TRUE)
 
 plots <- list()
 
@@ -115,17 +116,15 @@ for (pheno_file in pheno_files) {
 }
 
 # Combine the plots into a single plot grid
-combined_plot <- wrap_plots(plots, ncol = 3)
+combined_plot <- wrap_plots(plots, ncol = 3, scales = "free_y")
 
-# Print the combined plot
-ggplotly(combined_plot)
+
 combined_plot
-
 ```
 
 ### Constant Selection
 
-```{r}
+```{r, message=FALSE}
 
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
 pattern <- "^MeanPhenotypes15\\D" #(\\D|$)
@@ -152,7 +151,7 @@ combined_data <- bind_rows(dataframes) %>%
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r}
+```{r, fig.width = 16, fig.height = 8}
 
 #path <- "~/OneDrive - University of Missouri/Test_Test/CS.dir/Plots/"
 
@@ -165,20 +164,20 @@ for(locus in loci){
     ggplot(aes(Generation, Phenotype))+
     #geom_point(size = 0.2)+
     geom_line(linewidth = 0.1)+
-  geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
-  geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
-    facet_wrap(~h2_sd, ncol = 4)+
+  #geom_line(aes(y = Optimum), color = "darkred", linewidth = 0.2) +
+  #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
+    facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
     ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
-  plots[[locus]] <- ggplotly(p)
+  plots[[locus]] <- (p) # ggplotly
 }
 plots
 ```
 
-```{r}
+```{r, echo=FALSE, results='hold'}
 combined_data %>%
     filter(loci == 100) %>%
     ggplot(aes(Generation, Phenotype))+
@@ -193,7 +192,7 @@ combined_data %>%
 
 #### Linear
 
-```{r}
+```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
 data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen30.csv")%>% 
   mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
 
@@ -204,7 +203,7 @@ p
 
 ```
 
-```{r}
+```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
 plt <- data %>% 
   ggplot(aes((round(meanFitness, 3)), round(Phenotype, 3), 
              color = factor(round(Optimum, 0))))+
@@ -216,7 +215,7 @@ ggplotly(plt, tooltip = "all")
 
 ```
 
-```{r}
+```{r, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -239,13 +238,13 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, message=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-```{r}
+```{r, message=FALSE, fig.width = 16, fig.height = 8}
 #path <- "~/OneDrive - University of Missouri/Test_Test/LinFS.dir/Plots/"
 
 plots <- list()
@@ -256,35 +255,35 @@ for(loci_geni in loci_gens){
   p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
     geom_line(linewidth = 0.1)+
-    facet_wrap(~h2_sd, ncol = 4)+
-    geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
-  geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
+    facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
+    #geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+  #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
     #ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
-  plots[[loci_geni]] <- ggplotly(p)
+  plots[[loci_geni]] <- (p) # ggplotly
 }
 plots
 ```
 
-```{r}
-combined_data %>% 
-    filter(loci == 70, gen == 30) %>% 
-    ggplot(aes(Generation, Frequency, group = Position, color = Position))+
-    geom_line(linewidth = 0.1)+
-    facet_wrap(~h2_sd, ncol = 4)+
-    ylim(min = 100, max = 125)+
-    theme_bw()+
-    theme(legend.position = "none")
+```{r, echo=FALSE, results='hide'}
+# combined_data %>% 
+#     filter(loci == 70, gen == 30) %>% 
+#     ggplot(aes(Generation, Phenotype, group = Position, color = Position))+
+#     geom_line(linewidth = 0.1)+
+#     facet_wrap(~h2_sd, ncol = 4)+
+#     ylim(min = 100, max = 125)+
+#     theme_bw()+
+#     theme(legend.position = "none")
 ```
 
 #### Sinusoidal I
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
-pattern <- "^MeanPhenotypes15\\D" #(\\D|$)
+pattern <- "^MeanPhenotypes15\\D" 
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
 dataframes <- list()
@@ -294,42 +293,41 @@ for(file in files){
   sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
   gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
 
-data <- read.csv(file, header = TRUE)
+  data <- read.csv(file, header = TRUE)
 
-data$herit <- rep(herit, nrow(data))
-data$loci <- rep(loci, nrow(data))
-data$sd <- rep(sd, nrow(data))
-data$gen <- rep(gen, nrow(data))
+  data$herit <- rep(herit, nrow(data))
+  data$loci <- rep(loci, nrow(data))
+  data$sd <- rep(sd, nrow(data))
+  data$gen <- rep(gen, nrow(data))
 
-dataframes[[file]] <- data
+  dataframes[[file]] <- data
 }
 ```
 
 ```{r}
-combined_data <- bind_rows(dataframes) %>% 
-  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+combined_data <- bind_rows(dataframes) %>%
+  mutate(h2_sd = paste("h2 = ", herit, " ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci, " ", "gen = ", gen, sep = ""))
 ```
 
-```{r}
+```{r, fig.width = 16, fig.height = 8, message=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFS.dir/Plots/"
 
 plots <- list()
 loci_gens <- unique(combined_data$loci_gen)
 for(loci_geni in loci_gens){
-  locus_data <- combined_data %>% 
+  locus_data <- combined_data %>%
     filter(loci_gen == loci_geni)
-  p <- locus_data %>% 
-    ggplot(aes(Generation, Phenotype))+
-    geom_line(linewidth = 0.1)+
-    facet_wrap(~h2_sd, ncol = 4)+
-   # ylim(min = 100, max = 125)+
-    theme_bw()+
+  p <- locus_data %>%
+    ggplot(aes(Generation, Phenotype)) +
+    geom_line(linewidth = 0.1) +
+    facet_wrap(~h2_sd, ncol = 4, scales = "free_y") +
+    theme_bw() +
     theme(legend.position = "none")
-  #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
+#plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
+  plots[[loci_geni]] <- (p)#ggplotly
   
-  plots[[loci_geni]]
 }
 plots
 ```
@@ -362,7 +360,7 @@ combined_data <- bind_rows(dataframes) %>%
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r}
+```{r, fig.width = 16, fig.height = 8, message=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/CS.dir/Plots/"
 
 plots <- list()
@@ -376,13 +374,13 @@ for(locus in loci){
     geom_line(linewidth = 0.1)+
   #geom_line(aes(y = Optimum), color = "darkred", size = 0.1, linewidth = 0.2) +
   #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 0.1, color = "magenta") +
-    facet_wrap(~h2_sd, ncol = 4)+
+    facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
     #ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
-  plots[[locus]] <- ggplotly(p)
+  plots[[locus]] <- (p) #ggplotly
 }
 plots
 ```

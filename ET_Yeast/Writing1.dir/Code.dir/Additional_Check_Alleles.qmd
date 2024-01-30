@@ -83,6 +83,64 @@ plots_list
 
 ```
 
+### Neutral replicates
+
+```{r, fig.width = 16, fig.height = 8}
+
+#path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Output.dir/Add_Check.dir/NS.dir/"
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome(1|2|3)_n10_.*\\.csv$"
+
+# List the files in the directory that match the pattern
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+# Define the function to process the plots
+process_plots <- function(file) {
+  replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  
+  data <- read.csv(file, header = TRUE) %>% 
+    select(Generation, Position, Frequency, Effect) %>% 
+    group_by(Position) %>% 
+    mutate(Position = factor(Position),
+           replicate = replicate_id,
+           herit = herit,
+           initFreq = Frequency[Generation == 1],
+           postion_effect_init = 
+             paste("position = ", Position," ","Effect = ", 
+                   round(Effect, 2)," ", "Initial Freq = ", 
+                   round(initFreq, 2) , sep = ""))
+
+
+ # Select 10 random positions
+  set.seed(12345)
+  selected_positions <- sample(data$Position, 
+                               size = min(10, nrow(data)), replace = F)
+  
+  # Filter the data for the selected positions
+  data <- data %>% 
+    filter(Position %in% selected_positions)
+  
+ p <- ggplot(data, 
+         aes(Generation, Frequency, group = interaction(postion_effect_init, replicate), color = interaction(postion_effect_init, replicate)))+
+    geom_line(linewidth = 0.5)+
+    labs(x = "", y = "") +
+    ylim(min = 0, max = 1)+
+    theme_bw()#+
+    #theme(legend.position = "none")
+ 
+  #plotname <- paste(path, basename(file), ".png", sep = "")
+  #ggsave(filename = plotname, plot =  (p), width = 12, height = 8, units = "in")
+  (p)
+}
+
+# Apply the function to each file to get a list of plots
+plots_list <- lapply(files, process_plots)
+
+# Now you can use wrap_plots()
+plots_list
+
+```
 
 ## Constant Selection
 
@@ -125,12 +183,12 @@ combined_data <- bind_rows(dataframes)
 
 plots <- lapply(unique(combined_data$loci), function(locus) {
   locus_data <- combined_data %>% 
-    filter(loci == locus,
+    filter(loci == locus)#,
            #Generation %% (gen+1) == 0,
-           Effect > 1.5)
+           #Effect > 1.5)
   
   set.seed(12345)
-  num_positions <- min(10, length(unique(locus_data$Position)))
+  num_positions <- min(30, length(unique(locus_data$Position)))
   selected_positions <- sample(unique(locus_data$Position), size = num_positions)
 
   locus_data <- locus_data %>%
@@ -217,15 +275,13 @@ p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(postion_e
 
 plots
 
-  
 ```
-
 
 ## Fluctuating Selection
 
 ### Linear Selection
 
-```{r, fig.width = 16, fig.height = 8}
+```{r,fig.width = 16, fig.height = 8}
 # Define the directory path and pattern
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome15\\D"
@@ -313,7 +369,6 @@ for(loci_geni in loci_gens){
 
 # Return the list of plots
 plots
-
 ```
 
 #### Exploring 10 loci to check along replicates for Linear Fluctuating selection
@@ -386,127 +441,58 @@ plots
 
 #### Exploration for Linear Fluctuation regarding what drives the most fluctuating loci
 
-> In this section, we can explore the moving difference between inital frequency and other generations then select loci with high fluctuations. 
-After we sample 10 or more of those loci for more exploration
+> In this section, we can explore the sequential difference between of allele frequency, set a threshold, then select loci with high fluctuations. After we sample 10 or more of those loci for more exploration
 
 ```{r, fig.width = 16, fig.height = 8}
-# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-# pattern <- "^genome15_n300_.*\\.csv$"#(15|2|3)
-# files <- list.files(dirpath, pattern, full.names = TRUE)
-# 
-# process_file <- function(file) {
-#   
-# replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
-# herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-# loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-# sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
-# gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
-# 
-# data <- read.csv(file, header = TRUE) %>%
-#   select(Generation, Position, Frequency, Effect)  %>%
-#   mutate(Position = factor(Position))
-# 
-# datadiff <- data %>%
-#   select(-Effect) %>% 
-#   group_by(Position) %>%
-#   mutate(Frequency = Frequency - Frequency[Generation == 1]) %>%
-#   pivot_wider(names_from = Position, values_from = Frequency) %>%
-#   mutate_at(vars(-c(Generation)), ~c(0, diff(.))) %>%
-#   pivot_longer(cols = -Generation, names_to = "Position", values_to = "Frequency") %>%
-#   group_by(Position) %>% 
-#   summarise(mu_fr = mean(abs(Frequency), na.rm = TRUE)) %>% 
-#   arrange(mu_fr) %>% replace_na(list(mu_fr = 0))
-# 
-# 
-# datadiff %>% ggplot(aes(mu_fr, fill = Position))+
-#   geom_histogram(bins = 50)+
-#   geom_vline(xintercept = median(datadiff$mu_fr), color = "magenta")+
-#   geom_vline(xintercept = mean(datadiff$mu_fr), col = "black")+
-#   geom_vline(xintercept = mean(datadiff$mu_fr) - sd(datadiff$mu_fr)/sqrt(length(datadiff$mu_fr)), col = "red")+ # sd(af$mu_fr)/sqrt(length(af$mu_fr)
-#   mytheme()
-# 
-# afm <- datadiff  %>% filter(mu_fr > median(mu_fr))%>%#mean(mu_fr) - sd(mu_fr)/sqrt(length(mu_fr))) 
-#   mutate(Position = factor(Position))
-# 
-# filtered_positions <- (afm$Position)
-# 
-# data <- data %>% group_by(Position) %>% 
-#   dplyr::filter(Position %in% filtered_positions) %>% 
-#   mutate(replicate = replicate_id,
-#        herit = herit,
-#        loci = loci,
-#        sd = sd,
-#        initFreq = Frequency[Generation == 1],
-#        h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-#        loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
-#        position_effect_init = paste("position = ", Position," ",
-#                                     "Effect = ", round(Effect, 2)," ",
-#                                     "Initial Freq = ", round(initFreq, 2) ,
-#                                     sep = ""))
-# 
-#   return(data)
-# }
-# 
-# dataframes <- lapply(files, process_file)
-# combined_data <- bind_rows(dataframes)
-# 
-# #path <- "your/path/here"  # Define your path here
-# plots <- list()
-# 
-# plots <- lapply(unique(combined_data$loci_gen), function(loci_geni) {
-#   locus_data <- combined_data %>%
-#     filter(loci_gen == loci_geni,
-#            Effect > 1.5)
-#   
-#   num_positions <- min(30, length(unique(locus_data$Position)));
-#   
-#    set.seed(12345)
-#   selected_positions <- sample(unique(locus_data$Position), size = num_positions)
-# 
-#   locus_data <- locus_data %>%
-#     filter(Position %in% selected_positions)
-# 
-# p <- ggplot(locus_data, aes(Generation, Frequency, group = position_effect_init, color = position_effect_init))+
-#     geom_line(linewidth = 0.5)+ #interaction(position_effect_init), replicate
-#     facet_wrap(~h2_sd, ncol = 4)+
-#     ylim(min = 0, max = 1)+
-#     theme_bw()
-#   #theme(legend.position = "none")
-# 
-#   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
-# 
-#   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-#   plots[[loci_geni]] <- ggplotly(p)
-# })
-# 
-# plots
 
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome(1|2|3)_n10_.*\\.csv$"
+pattern <- "^genome1_n70_.*\\.csv$"#(15|2|3)
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
 process_file <- function(file) {
-  replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
-  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
-  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
 
-  data <- read.csv(file, header = TRUE) %>%
-    select(Generation, Position, Frequency, Effect)  %>%
-    group_by(Position) %>%
-    mutate(Position = factor(Position),
-           replicate = replicate_id,
-           herit = herit,
-           loci = loci,
-           sd = sd,
-           initFreq = Frequency[Generation == 1],
-           h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
-           postion_effect_init = paste("position = ", Position," ",
-                                       "Effect = ", round(Effect, 2)," ",
-                                       "Initial Freq = ", round(initFreq, 2) ,
-                                       sep = ""))
+replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+data <- read.csv(file, header = TRUE) %>%
+  select(Generation, Position, Frequency, Effect)  %>%
+  mutate(Position = factor(Position))
+
+# Ensure gen is not greater than the size of your data
+#gen <- min(gen, nrow(data) - 1)
+
+datadiff <- data %>%
+  select(-Effect) %>%
+  group_by(Position) %>%
+  pivot_wider(names_from = Position, values_from = Frequency) %>%
+  mutate_at(vars(-c(Generation)), ~c(rep(0, gen), diff(., lag = gen))) %>%
+#  mutate_at(vars(-c(Generation)), ~c(rep(0, gen), diff(.))) %>%
+  pivot_longer(cols = -Generation, names_to = "Position", values_to = "Frequency") %>%
+  group_by(Position) %>%
+  summarise(mu_fr = mean(abs(Frequency), na.rm = TRUE)) %>%
+  arrange(mu_fr) %>% replace_na(list(mu_fr = 0))
+
+afm <- datadiff  %>% filter(mu_fr < mean(mu_fr) - sd(mu_fr)/sqrt(length(mu_fr))) %>% # /sqrt(length(mu_fr))
+  mutate(Position = factor(Position))
+
+filtered_positions <- (afm$Position)
+
+data <- data %>% group_by(Position) %>%
+  dplyr::filter(Position %in% filtered_positions) %>%
+  mutate(replicate = replicate_id,
+       herit = herit,
+       loci = loci,
+       sd = sd,
+       initFreq = Frequency[Generation == 1],
+       h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+       loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+       position_effect_init = paste("position = ", Position," ",
+                                    "Effect = ", round(Effect, 2)," ",
+                                    "Initial Freq = ", round(initFreq, 2) ,
+                                    sep = ""))
 
   return(data)
 }
@@ -519,30 +505,26 @@ plots <- list()
 
 plots <- lapply(unique(combined_data$loci_gen), function(loci_geni) {
   locus_data <- combined_data %>%
-    filter(loci_gen == loci_geni)
-  
-  # If you want to filter by Effect > 1.5, uncomment the line below
-  #locus_data <- locus_data %>% filter(Effect > 1.5)
-  
-  set.seed(12345)
-  # If you want to select a subset of positions, uncomment the lines below
-  
-  #num_positions <- min(10, length(unique(locus_data$Position)))
-  #selected_positions <- sample(unique(locus_data$Position), size = num_positions)
-  #locus_data <- locus_data %>% filter(Position %in% selected_positions)
+    filter(loci_gen == loci_geni)#,
+           #Effect <= 2)
 
-  p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(postion_effect_init, replicate), color = interaction(postion_effect_init, replicate)))+
-    geom_line(linewidth = 0.5)+
+ # num_positions <- min(30, length(unique(locus_data$Position)));
+
+   #set.seed(12345)
+  #selected_positions <- sample(unique(locus_data$Position), size = num_positions)
+
+  #locus_data <- locus_data %>%
+  #  filter(Position %in% selected_positions)
+
+p <- ggplot(locus_data, aes(Generation, Frequency, group = position_effect_init, color = position_effect_init))+
+    geom_line(linewidth = 0.5)+ #interaction(position_effect_init), replicate
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
-  # If you don't want to display the legend, uncomment the line below
-  
-  #p <- p + theme(legend.position = "none")
+  #theme(legend.position = "none")
 
-  # If you want to save the plot, uncomment the lines below
-  
   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
+
   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
   plots[[loci_geni]] <- ggplotly(p)
 })
@@ -551,7 +533,88 @@ plots
 
 ```
 
+```{r}
 
+# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+# pattern <- "^genome1_n300_.*\\.csv$"#(15|2|3)
+# files <- list.files(dirpath, pattern, full.names = TRUE)
+# 
+# process_file <- function(file) {
+#   replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+#   herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+#   loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+#   sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+#   gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+#   
+#   data <- read.csv(file, header = TRUE)
+#   data$Position <- factor(data$Position)
+#   
+#   datadiff <- data %>%
+#     select(-Effect) %>%
+#     group_by(Position) %>%
+#     mutate(Frequency = Frequency - Frequency[Generation == 1]) %>%
+#     pivot_wider(names_from = Position, values_from = Frequency) %>%
+#    mutate_at(vars(-c(Generation)), ~c(rep(0, gen), diff(., lag = gen))) %>%
+#     pivot_longer(cols = -Generation, names_to = "Position", values_to = "Frequency") %>%
+#     group_by(Position) %>%
+#     summarise(mu_fr = mean(abs(Frequency), na.rm = TRUE)) %>%
+#     arrange(mu_fr) %>% replace_na(list(mu_fr = 0))
+#   afm <- datadiff  %>% filter(mu_fr > mean(mu_fr) - sd(mu_fr)/sqrt(length(mu_fr)))%>% # median(mu_fr))
+#     mutate(Position = factor(Position))
+# 
+#   filtered_positions <- (afm$Position)
+# 
+#   data <- data %>% group_by(Position) %>%
+#     dplyr::filter(Position %in% filtered_positions) %>%
+#     mutate(replicate = replicate_id,
+#          herit = herit,
+#          loci = loci,
+#          sd = sd,
+#          initFreq = Frequency[Generation == 1],
+#          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+#          h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+#          position_effect_init = paste("position = ", Position," ",
+#                                       "Effect = ", round(Effect, 2)," ",
+#                                       "Initial Freq = ", round(initFreq, 2) ,
+#                                       sep = ""))
+# 
+#   return(data)
+# }
+# 
+# dataframes <- lapply(files, process_file)
+# combined_data <- bind_rows(dataframes)
+# 
+# #path <- "your/path/here"  # Define your path here
+# plots <- list()
+# 
+# plots <- lapply(unique(combined_data$loci_gen), function(loci_geni) {
+#   locus_data <- combined_data %>%
+#     filter(loci_gen == loci_geni)
+#   # If you want to filter by Effect > 1.5, uncomment the line below
+#   #locus_data <- locus_data %>% filter(Effect > 1.5)
+#   set.seed(12345)
+#   # If you want to select a subset of positions, uncomment the lines below
+#   #num_positions <- min(10, length(unique(locus_data$Position)))
+#   #selected_positions <- sample(unique(locus_data$Position), size = num_positions)
+#   #locus_data <- locus_data %>% filter(Position %in% selected_positions)
+# 
+#   p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(position_effect_init, replicate), color = interaction(position_effect_init, replicate)))+
+#     geom_line(linewidth = 0.5)+
+#     facet_wrap(~h2_sd, ncol = 4)+
+#     ylim(min = 0, max = 1)+
+#     theme_bw()
+#   # If you don't want to display the legend, uncomment the line below
+#   #p <- p + theme(legend.position = "none")
+# 
+#   # If you want to save the plot, uncomment the lines below
+#   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
+#   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
+#   plots[[loci_geni]] <- ggplotly(p)
+# })
+# 
+# plots
+
+```
 
 ### Sinusoidal II
 
@@ -637,7 +700,7 @@ process_file <- function(file) {
            sd = sd,
            initFreq = Frequency[Generation == 1],
            h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-           postion_effect_init = paste("position = ", Position," ",
+           position_effect_init = paste("position = ", Position," ",
                                        "Effect = ", round(Effect, 2)," ",
                                        "Initial Freq = ", round(initFreq, 2) ,
                                        sep = ""))
@@ -662,7 +725,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
   #selected_positions <- sample(unique(locus_data$Position), size = num_positions)
   #locus_data <- locus_data %>% filter(Position %in% selected_positions)
 
-  p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(postion_effect_init, replicate), color = interaction(postion_effect_init, replicate)))+
+  p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(position_effect_init, replicate), color = interaction(position_effect_init, replicate)))+
     geom_line(linewidth = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
@@ -680,102 +743,11 @@ plots
 
 ```
 
-
 #### Exploration for Linear Fluctuation regarding what drives the most fluctuating loci
 
-> In this section, we can explore the moving difference between inital frequency and other generations then select loci with high fluctuations. 
-After we sample 10 or more of those loci for more exploration
+> In this section, we can explore the sequential difference between of allele frequency, set a threshold, then select loci with high fluctuations. After we sample 10 or more of those loci for more exploration
 
 ```{r, fig.width = 16, fig.height = 8}
-# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
-# pattern <- "^genome15_n300_.*\\.csv$"#(15|2|3)
-# files <- list.files(dirpath, pattern, full.names = TRUE)
-# 
-# process_file <- function(file) {
-# 
-# replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
-# herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-# loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-# sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
-# 
-# data <- read.csv(file, header = TRUE) %>%
-#   select(Generation, Position, Frequency, Effect)  %>%
-#   mutate(Position = factor(Position))
-# 
-# datadiff <- data %>%
-#   select(-Effect) %>%
-#   group_by(Position) %>%
-#   mutate(Frequency = Frequency - Frequency[Generation == 1]) %>%
-#   pivot_wider(names_from = Position, values_from = Frequency) %>%
-#   mutate_at(vars(-c(Generation)), ~c(0, diff(.))) %>%
-#   pivot_longer(cols = -Generation, names_to = "Position", values_to = "Frequency") %>%
-#   group_by(Position) %>%
-#   summarise(mu_fr = mean(abs(Frequency), na.rm = TRUE)) %>%
-#   arrange(mu_fr) %>% replace_na(list(mu_fr = 0))
-# 
-# 
-# datadiff %>% ggplot(aes(mu_fr, fill = Position))+
-#   geom_histogram(bins = 50)+
-#   geom_vline(xintercept = median(datadiff$mu_fr), color = "magenta")+
-#   geom_vline(xintercept = mean(datadiff$mu_fr), col = "black")+
-#   geom_vline(xintercept = mean(datadiff$mu_fr) - sd(datadiff$mu_fr)/sqrt(length(datadiff$mu_fr)), col = "red")+ # sd(af$mu_fr)/sqrt(length(af$mu_fr)
-#   mytheme()
-# 
-# afm <- datadiff  %>% filter(mu_fr > median(mu_fr))%>%#mean(mu_fr) - sd(mu_fr)/sqrt(length(mu_fr)))
-#   mutate(Position = factor(Position))
-# 
-# filtered_positions <- (afm$Position)
-# 
-# data <- data %>% group_by(Position) %>%
-#   dplyr::filter(Position %in% filtered_positions) %>%
-#   mutate(replicate = replicate_id,
-#        herit = herit,
-#        loci = loci,
-#        sd = sd,
-#        initFreq = Frequency[Generation == 1],
-#        h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-#        position_effect_init = paste("position = ", Position," ",
-#                                     "Effect = ", round(Effect, 2)," ",
-#                                     "Initial Freq = ", round(initFreq, 2) ,
-#                                     sep = ""))
-# 
-#   return(data)
-# }
-# 
-# dataframes <- lapply(files, process_file)
-# combined_data <- bind_rows(dataframes)
-# 
-# #path <- "your/path/here"  # Define your path here
-# plots <- list()
-# 
-# plots <- lapply(unique(combined_data$loci), function(locus) {
-#   locus_data <- combined_data %>%
-#     filter(loci == locus,
-#            Effect > 1.5)
-# 
-#   num_positions <- min(30, length(unique(locus_data$Position)));
-# 
-#    set.seed(12345)
-#   selected_positions <- sample(unique(locus_data$Position), size = num_positions)
-# 
-#   locus_data <- locus_data %>%
-#     filter(Position %in% selected_positions)
-# 
-# p <- ggplot(locus_data, aes(Generation, Frequency, group = position_effect_init, color = position_effect_init))+
-#     geom_line(linewidth = 0.5)+ #interaction(position_effect_init), replicate
-#     facet_wrap(~h2_sd, ncol = 4)+
-#     ylim(min = 0, max = 1)+
-#     theme_bw()
-#   #theme(legend.position = "none")
-# 
-#   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
-# 
-#   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-#   plots[[loci_geni]] <- ggplotly(p)
-# })
-# 
-# plots
-
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome15_n300_.*\\.csv$"
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -796,7 +768,9 @@ process_file <- function(file) {
     group_by(Position) %>%
     mutate(Frequency = Frequency - Frequency[Generation == 1]) %>%
     pivot_wider(names_from = Position, values_from = Frequency) %>%
-    mutate_at(vars(-c(Generation)), ~c(0, diff(.))) %>%
+    mutate_at(vars(-c(Generation)), ~c(rep(0, gen), diff(., lag = gen)))  %>%
+    # Uncomment for sequential difference
+    # mutate_at(vars(-c(Generation)), ~c(0, diff(.))) %>%
     pivot_longer(cols = -Generation, names_to = "Position", values_to = "Frequency") %>%
     group_by(Position) %>%
     summarise(mu_fr = mean(abs(Frequency), na.rm = TRUE)) %>%
@@ -863,6 +837,5 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
 })
 
 plots
-
 
 ```

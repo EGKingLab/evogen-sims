@@ -1,0 +1,49 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+### Test Generation-Wise, Linear
+
+```{r}
+source("~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/Generation_Freq.R")
+```
+
+#### Neutral
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### Linear
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+
+```
+
+#### Sin I
+
+```{r, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### Sin II
+
+```{r, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+
+```

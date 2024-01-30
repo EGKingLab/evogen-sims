@@ -15,19 +15,19 @@ source("~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/AlleleFrequen
 ### Neutral selection
 
 ```{r}
-# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
-# pattern <- "^genome15\\D" #(\\D|$)
-# result <- process_files(dirpath, pattern, "loci_gen")
-# combined_data <- result$combined_data
-# plots <- result$plots
-# plots
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <-  "^genome(1|2|3)_n\\d+_H0.1_*" # "^genome15\\D" #(\\D|$)
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
 ```
 
 ### Constant Selection
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
-pattern <- "^genome15\\D" #(\\D|$)
+pattern <- "^genome(1|2|3)_n\\d+_H*" #"^genome1\\D" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
 plots <- result$plots
@@ -38,7 +38,7 @@ plots
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome15\\D" #(\\D|$)
+pattern <- "^genome15_n\\d+_H0.1_*" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
 plots <- result$plots
