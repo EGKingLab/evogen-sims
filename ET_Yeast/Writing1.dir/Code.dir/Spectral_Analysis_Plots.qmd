@@ -9,12 +9,13 @@ editor: visual
 library(tidyverse)
 library(stringr)
 library(cowplot)
+library(plotly)
 theme_set(theme_cowplot())
 ```
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
-pattern <- "^genome[1-9]_n(1|10|70)_H0.(1|8|5)SD(1|4)Gen(10|30).csv" # ^genome1_n(1|10|70)_H0.(1|8)SD(1|4)Gen(10|30).csv // ^genome1_n(1|10|70)_.*
+pattern <- "^genome[1-9]_n(1|10|70|100|300)_H0.(1|8|5)SD(1|4)Gen(10|30).csv" # ^genome1_n(1|10|70)_H0.(1|8)SD(1|4)Gen(10|30).csv // ^genome1_n(1|10|70)_.*
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
 dataframes <- list()
@@ -91,7 +92,8 @@ fft_fx <- function(dir_path, pattern, spectrum_span){
 ```
 
 ```{r}
-all_results <- fft_fx(dir_path, pattern, spectrum_span)
+spectrum_span=2
+all_results <- fft_fx(dirpath, pattern, spectrum_span)
 
 fft1 <- all_results %>%
   mutate(Frequency= 1/Frequency) %>% 
