@@ -1,0 +1,34 @@
+---
+title: "Combined_Spectral"
+format: html
+editor: visual
+---
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir"
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MySpecFunction.R')
+run_fft_analysis(dirpath)
+```
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir"
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MySpecFunction.R')
+run_fft_analysis(dirpath)
+```
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MySpecFunction.R')
+run_fft_analysis(dirpath)
+```
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MySpecFunction.R')
+run_fft_analysis(dirpath)
+```
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MySpecFunction.R') run_fft_analysis(dirpath)
+```
