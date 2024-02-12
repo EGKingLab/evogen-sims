@@ -15,7 +15,7 @@ theme_set(theme_cowplot())
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
-pattern <- "^genome[1-9]_n(1|10|70|100|300)_H0.(1|8|5)SD(1|4)Gen(10|30).csv" # ^genome1_n(1|10|70)_H0.(1|8)SD(1|4)Gen(10|30).csv // ^genome1_n(1|10|70)_.*
+pattern <- "^genome[1-5]_n(10|70|100)_H0.(1|8|5)SD(1|4)Gen(10|30).csv" # ^genome1_n(1|10|70)_H0.(1|8)SD(1|4)Gen(10|30).csv // ^genome1_n(1|10|70)_.*
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
 dataframes <- list()
@@ -41,9 +41,14 @@ dataframes[[file]] <- data
 ```
 
 ```{r}
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(loci_Gen = paste("loci = ", loci," ", "Gen = ", gen, sep = ""))
+```
 
-fft_fx <- function(dir_path, pattern, spectrum_span){
-  files <- list.files(dir_path, pattern = pattern, full.names = TRUE)
+```{r}
+
+fft_fx <- function(dirpath, pattern, spectrum_span){
+  files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
 
   files_df <- data.frame(file_name = files) %>%
     mutate(myloci_full = str_extract(file_name, "genome\\d+_n\\d+")) %>%
@@ -95,15 +100,18 @@ fft_fx <- function(dir_path, pattern, spectrum_span){
 spectrum_span=2
 all_results <- fft_fx(dirpath, pattern, spectrum_span)
 
-fft1 <- all_results %>%
+nloci <- unique(all_results$myloci)
+fft1 <- list()
+for(loci in nloci){
+fft1[[loci]] <- all_results %>%
+  filter(myloci==loci) %>% 
   mutate(Frequency= 1/Frequency) %>% 
   filter(Frequency < 40) %>% 
   ggplot(aes(Frequency, spec, color = File)) + 
-  geom_line(linewidth=1.1) +
-  facet_wrap(~myloci, scales = "free") + 
+  geom_line(linewidth=1.1) + 
   theme(legend.position = "none") +
   xlab("Periodicity") +
   ylab("Spectral Density")
-
+}
 fft1
 ```

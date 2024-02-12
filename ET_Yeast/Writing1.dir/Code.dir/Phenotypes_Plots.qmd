@@ -183,3 +183,51 @@ print(cov_mat)
 ```{r, echo=FALSE, results='hide'}
 var(df[-1])
 ```
+
+```{r}
+fike <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/MeanPhenotypes1_n300_H0.1SD1.csv")
+
+P1 <- fike %>% 
+  filter(Generation>=1000) %>% 
+  ggplot(aes(Generation, Phenotype))+
+  geom_line()
+```
+
+```{r}
+fike <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n300_H0.1SD1.csv")
+
+P2 <- fike %>% 
+  filter(Generation>=1000) %>% 
+  ggplot(aes(Generation, Phenotype))+
+  geom_line()
+```
+
+```{r}
+P2/P1
+```
+
+```{r}
+fake <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/MeanPhenotypes1_n10_H0.1SD4.csv")
+
+PO <- fake %>% 
+  filter(Generation>=1000) %>% 
+  ggplot(aes(Generation, Phenotype))+
+  geom_line()
+```
+
+```{r}
+fake <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n10_H0.1SD4.csv")
+
+PP <- fake %>% 
+  filter(Generation>=1000) %>% 
+  ggplot(aes(Generation, Phenotype))+
+  geom_line()
+```
+
+```{r}
+PP/PO
+```
+
+```{r}
+PP
+```
