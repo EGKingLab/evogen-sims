@@ -23,6 +23,26 @@ mytheme <- function(){
 }
 ```
 
+```{r}
+########### Infinitisimal Model #################
+a = 5
+b = 25
+x = seq(1:100)
+y <- function(x){
+  Y = a*exp(-x/b)
+}
+Y <- y(x)
+z = data.frame(Y, x)
+
+z %>% ggplot(aes(x,Y))+
+  geom_line(linewidth = 1)+
+  annotate("text", x = 20, y = max(Y)/1.2, label = "infinitesimal model", fontface = "bold") +  # Add this line
+  labs(x = "Loci", y = "Effect")+
+  theme_set(theme_cowplot())+
+  theme(axis.text = element_text( size = 12, face = "bold"),
+        axis.line = element_line(size = 1))
+```
+
 ```{r, fig.width=12, fig.height=8, echo=FALSE}
 Generation <- seq(1, 100)
 Optimum <- seq(90, 110, length.out = 100)
@@ -78,13 +98,17 @@ p2 <- Opt_Data %>%
   ggplot(aes(x = Generation, y = Optimum))+
   geom_line(size = 1)+
   geom_hline(yintercept = mu_pheno, col = "darkred", size = 1)+
-  annotate("text", x = 50, y = mu_pheno, 
+  annotate("text", x = 55, y = mu_pheno, 
            label = "Mean Phenotype", 
-           size = 3, vjust = -8, hjust = - 0.1, 
-           col = "darkred", angle = 85)+
-  labs(x = NULL, y = NULL)+ 
-  theme(axis.text = element_text(size = 12),
-        axis.line = element_line(size = 1)) 
+           size = 3.5, vjust = 0.1, hjust = 0, 
+           col = "darkred", angle = 90)+
+  labs(x = NULL, y = NULL)+
+  theme_set(theme_cowplot())+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
 
 p2
 
@@ -99,13 +123,17 @@ p3 <- ggplot(df) +
   geom_line(aes(Generation, Optimum), size = 1) + 
   geom_hline(yintercept = mean(Optimum), 
              color = "darkred", size = 1)+ 
-  annotate("text", x = 50, y = 100, 
+  annotate("text", x = 40, y = 100, 
            label = "Mean Phenotype", 
-           size = 3, vjust = -3, hjust = - 0.1, 
-           col = "darkred", angle = 80)+ 
+           size = 4, vjust = 0.1, hjust = 0, 
+           col = "darkred", angle = 65)+ 
   labs( x = NULL, y = NULL)+
-  theme(axis.text = element_text(size = 12),
-        axis.line = element_line(size = 1))
+  theme_set(theme_cowplot())+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
 
 p3
 
@@ -122,13 +150,17 @@ p4 <- ggplot(df) +
   geom_line(aes(Generation, Optimum), size =1) +
   geom_hline(yintercept = mean(Optimum), 
              color = "darkred", size = 1)+
-  annotate("text", x = 50, y = 100, 
+  annotate("text", x = 40, y = 100, 
            label = "Mean Phenotype", 
-           size = 3, vjust = -3, hjust = - 0.1,
-           col = "darkred", angle = 80)+ 
+           size = 4, vjust = 0.1, hjust = 0,
+           col = "darkred", angle = 60)+ 
   labs( x = NULL, y = NULL)+
-  theme(axis.text = element_text(size = 12, angle = 45),
-        axis.line = element_line(size = 1))
+  theme_set(theme_cowplot())+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
 
 p4
 ```
@@ -140,4 +172,515 @@ mygrid <- plot_grid(p1, p2, p3, p4, labels = "AUTO", label_size = 10,label_colou
   draw_label("Phenotype", size = 12, x = -0.01, y = 0.5, vjust = 0.5, angle = 90, fontface = "bold")
 
 mygrid
+```
+
+### Ignore
+
+```{r}
+pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") %>% 
+  filter(Generation == 0 | Generation %% 10 == 0)
+ pa <- pheno %>% 
+        ggplot(aes(Generation, Phenotype))+
+        geom_line(linewidth = 0.1, alpha = 1)+
+        theme_bw()
+```
+
+```{r}
+pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv")# %>% 
+  #filter(Generation == 0 | Generation %% 10 != 0)
+pb <-  pheno %>% ggplot(aes(Generation, Phenotype))+
+        geom_line(linewidth = 0.1, alpha = 1)+
+        theme_bw()
+```
+
+```{r}
+pa/pb
+```
+
+### Allele Frequency
+
+```{r}
+geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
+  filter(Generation == 0 | Generation %% 30 == 0) %>% 
+  mutate(Position = factor(Position))
+ pc <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
+   geom_line(linewidth = 0.1, alpha = 1)+
+   theme_bw()+
+   theme(legend.position = "none")
+
+```
+
+```{r}
+geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
+  mutate(Position = factor(Position))
+ pd <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
+   geom_line(linewidth = 0.1, alpha = 1)+
+   theme_bw()+
+   theme(legend.position = "none")
+```
+
+```{r}
+pc/pd
+```
+
+### Figure: Monogenic Two-Season
+
+> In monogenic traits, the fluctuations are more noticeable and less complex for models with two equal seasons, facilitating the observation of seasonality
+
+```{r}
+#dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD1Gen10.csv")
+mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n1_H0.1SD1Gen10.csv")
+```
+
+```{r, fig.width=8, fig.height=4, echo=FALSE}
+# Add a column to distinguish the datasets
+geno_file <- mono1 %>% mutate(Selection = "Instantaneous")
+geno_file2 <- mono2 %>% mutate(Selection = "Gradual 2-Seasons")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2)
+
+# Create the plot
+freqplot <- Genome_dataset %>% 
+  ggplot(aes(x = Generation, y = Frequency, 
+             color = factor(Position))) +
+  geom_line(linewidth = .5) +
+  facet_grid(Selection~.) +
+  theme_set(theme_cowplot())+
+  theme(axis.text = element_text(size = 12, angle = 15),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(face = "bold"),
+        legend.position = "none")
+
+freqplot
+```
+
+### Figure: Oligogenic and Polygenic
+
+```{r}
+#dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+Oligo1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv")
+Oligo2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n70_H0.1SD1Gen10.csv")
+```
+
+```{r, fig.width=8, fig.height=4, echo=FALSE}
+# Add a column to distinguish the datasets
+geno_file <- Oligo1 %>% mutate(Selection = "Oligogenic")
+geno_file2 <- Oligo2 %>% mutate(Selection = "Polygenic")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2)
+
+# Create the plot
+freqplot <- Genome_dataset %>% 
+  ggplot(aes(x = Generation, y = Frequency, 
+             color = factor(Position))) +
+  geom_line(linewidth = .1) +
+  facet_wrap(Selection~.) +
+  theme_set(theme_cowplot())+
+  theme(axis.text = element_text(size = 12, angle = 15),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(face = "bold"),
+        legend.position = "none")
+
+ggplotly(freqplot)
+```
+
+### Heritability's Effect
+
+```{r}
+Heri1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
+Herit2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD2Gen10.csv")
+```
+
+```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+# Add a column to distinguish the datasets
+geno_file <- Heri1 %>% mutate(Selection = "Heritability = 0.1")
+geno_file2 <- Herit2 %>% mutate(Selection = "Heritability = 0.8")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2) %>% 
+  filter(Generation<=500)
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~.) +
+  theme_cowplot()+
+  theme(legend.position = "none",
+        axis.text = element_text( size = 17, face = "bold"),
+        axis.line = element_line(size = 1),
+        axis.title = element_text( size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+freqplot
+```
+
+### Selection Effect
+
+```{r}
+library(tidyverse)
+library(cowplot) 
+
+plot_frequency_by_descriptor <- function(file_paths, descriptors) {
+  datasets <- list()
+
+  for (i in seq_along(file_paths)) {
+    dataset <- read.csv(file_paths[i]) %>%
+      mutate(Selection = descriptors[i])
+    datasets[[i]] <- dataset
+  }
+  
+  # Combine all datasets
+  Genome_dataset <- bind_rows(datasets) %>% 
+    filter(Generation <= 500)
+  
+  # Create the plot
+  freqplot <- Genome_dataset %>%
+    ggplot(aes(x = Generation, y = Frequency, 
+               color = factor(Position))) +
+    geom_line(linewidth = 0.5) +
+    facet_wrap(~Selection) +
+    theme_cowplot() +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 17, face = "bold"),
+          axis.line = element_line(size = 1),
+          axis.title = element_text(size = 17, face = "bold"),
+          strip.text = element_text(size = 17, face = "bold"))
+  
+  return(freqplot)
+}
+
+```
+
+```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
+file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD4Gen10.csv"
+
+# Example usage of the function with multiple files and different descriptors
+ file_paths <- c(file1, file2)
+ descriptors <- c("SD = 1", "SD = 4")
+ plot_frequency_by_descriptor(file_paths, descriptors)
+
+```
+
+### Season Length
+
+```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
+file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv"
+
+# Example usage of the function with multiple files and different descriptors
+ file_paths <- c(file1, file2)
+ descriptors <- c("Generation = 10", "Generation = 30")
+ plot_frequency_by_descriptor(file_paths, descriptors)
+
+```
+
+### Combined Effect
+
+```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
+file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD4Gen30.csv"
+
+# Example usage of the function with multiple files and different descriptors
+ file_paths <- c(file1, file2)
+ descriptors <- c("H2 = 0.1 SD = 1 Gen = 10", "H2 = 0.8 SD = 4 Gen = 30")
+ plot_frequency_by_descriptor(file_paths, descriptors)
+```
+
+### Genome Size Effect
+
+```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+
+Mono <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD3Gen10.csv")
+Oligo <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD3Gen10.csv")
+Poly<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.1SD3Gen10.csv")
+
+# Add a column to distinguish the datasets
+geno_file <- Mono %>% mutate(Selection = "Monogenic")
+geno_file2 <- Oligo %>% mutate(Selection = "Oligogenic")
+geno_file3 <- Poly %>% mutate(Selection = "Polygenic")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>% filter(Generation <=100) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Monogenic",  
+                                 "Oligogenic", 
+                                 "Polygenic"))
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(~Selection) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+freqplot
+```
+
+### Model Comparison
+
+```{r,  warning=FALSE, fig.width = 8, fig.height = 4}
+mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD4Gen10.csv")
+mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n70_H0.5SD4Gen10.csv")
+mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n70_H0.5SD4.csv")
+
+
+# Add a column to distinguish the datasets
+geno_file <- mono1 %>% mutate(Selection = "Instantaneous")
+geno_file2 <- mono2 %>% mutate(Selection = "Gradual 2-Seasons")
+geno_file3 <- mono3 %>% mutate(Selection = "Gradual 4-Seasons")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, 
+                        geno_file2, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Instantaneous", 
+                                 "Gradual 2-Seasons", 
+                                 "Gradual 4-Seasons"))
+
+#   # Select 30 random positions
+  set.seed(12345)
+  
+  selected_positions <- Genome_dataset %>%
+    sample_n(size = min(30, n()), replace = F) %>%
+    pull(Position)
+  
+
+    # Filter the data for the selected positions
+    Genome_dataset <- Genome_dataset %>%
+      filter(Position %in% selected_positions)
+  
+
+# Create the plot
+freqplot <- Genome_dataset %>% 
+  filter(Generation <=500) %>%
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~.) +
+  theme_cowplot()+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+freqplot
+```
+
+### Neutral vs Gradual 4 seasons
+
+```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n10_H0.5.csv"
+file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.8SD2.csv"
+
+# Example usage of the function with multiple files and different descriptors
+ file_paths <- c(file1, file2)
+ descriptors <- c("Neutral", "Gradual 4 Seasons")
+ plot_frequency_by_descriptor(file_paths, descriptors)
+```
+
+### Spectral Analysis
+
+```{r}
+run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
+  library(tidyverse)
+  library(cowplot)
+  library(lubridate)
+  library(future)
+  library(future.apply)
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function
+  mytheme <- theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+  
+  files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+  
+  # Extract information from file names
+  files_df <- data.frame(file_name = files) %>%
+    mutate(
+      myloci_full = str_extract(file_name, "genome\\d+_n\\d+"),
+      myGen_full = str_extract(file_name, "Gen\\d*"),
+      mySD_full = str_extract(file_name, "SD\\d*"),
+      myHert_full = str_extract(file_name, "(?<=H)\\d*\\.?\\d*"),
+      myloci = str_remove(myloci_full, "genome\\d+_n"),
+      myGen = str_remove(myGen_full, "Gen"),
+      mySD = str_remove(mySD_full, "SD"),
+      myHert = myHert_full,
+      loci_Gen = paste(myloci, myGen, sep="_"),
+      SD_H2 = paste("SD = ", mySD, " h2 = ", myHert)
+    ) %>%
+    select(-myloci_full, -myGen_full, -mySD_full, -myHert_full)
+  
+  all_results <- data.frame()
+  
+  # Process each file
+  for (i in seq_along(files_df$file_name)) {
+    file_name <- files_df$file_name[i]
+    loci_Gen <- files_df$loci_Gen[i]
+    SD_H2 <- files_df$SD_H2[i]
+    
+    file <- read.csv(file_name) %>%
+      select(-Origin, -Effect) %>%
+      pivot_wider(names_from = Position, values_from = Frequency, 
+                  values_fill = list(Frequency = 0))
+
+
+    ff1 <- file[, -1] # Exclude non-FFT columns
+    
+    # Apply FFT and calculate spectrum
+    ttest <- spectrum(ff1, spans = spectrum_span, plot = FALSE)
+    
+    
+    out.spect <- if (is.matrix(ttest$spec)) {
+      rowMeans(ttest$spec)
+    } else {
+      ttest$spec
+    }
+    
+    # Prepare results for plotting
+    dd <- data.frame(
+      Frequency = rep(ttest$freq),
+      File = basename(file_name),
+      spec = out.spect,
+      loci_Gen = loci_Gen,
+      SD_H2 = SD_H2
+    )
+    
+    all_results <- rbind(all_results, dd)
+  }
+  
+  # Plot results with conditional filtering
+  nloci <- unique(all_results$loci_Gen)
+  fft1 <- list()
+  for (loci in nloci) {
+    threshold <- ifelse(grepl("_30$", loci), 70, ifelse(grepl("_20$", loci), 50, 40))
+    fft1[[loci]] <- all_results %>%
+      filter(loci_Gen == loci) %>%
+      mutate(Frequency = 1 / Frequency) %>%
+      filter(Frequency < threshold) %>%
+      ggplot(aes(Frequency, spec, color = File)) + 
+      geom_line(linewidth = 1) +
+      facet_wrap(~SD_H2, scales = "free_y") +
+      xlab("Periodicity") +
+      ylab("Spectral Density") +
+      mytheme
+  }
+  
+  return(fft1)
+}
+```
+
+```{r, fig.width = 12, fig.height = 6}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
+#source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+pattern ="^genome[1-3]_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run2_fft_analysis(dirpath, pattern)
+```
+
+### Phenotypes
+
+```{r, fig.width = 12, fig.height = 6}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^MeanPhenotypes1_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  
+mytheme <- theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+data <- read.csv(file, header = TRUE)
+
+data$herit <- rep(herit, nrow(data))
+data$loci <- rep(loci, nrow(data))
+data$sd <- rep(sd, nrow(data))
+
+dataframes[[file]] <- data
+}
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = "")) %>% 
+  filter(Generation <= 2000)
+
+plots <- list()
+loci <- unique(combined_data$loci)
+for(locus in loci){
+  locus_data <- combined_data %>% 
+    filter(loci == locus)
+  p <- locus_data %>% 
+    ggplot(aes(Generation, Phenotype))+
+    geom_line(linewidth = 0.1)+
+  geom_line(aes(y = Optimum), color = "darkred", size = 0.1, linewidth = 0.1) +
+    facet_wrap(~h2_sd, ncol = 2, scales = "free_y")+
+    mytheme
+  
+  plots[[locus]] <- (p) 
+}
+plots
+```
+
+```{r, fig.width = 12, fig.height = 6}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes[1]_n300_H0\\.(8)(SD(1))?(Gen(30))?\\.csv$"
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+data <- read.csv(file, header = TRUE)
+
+data$herit <- rep(herit, nrow(data))
+data$loci <- rep(loci, nrow(data))
+data$sd <- rep(sd, nrow(data))
+data$gen <- rep(gen, nrow(data))
+
+dataframes[[file]] <- data
+}
+
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = "")) %>% 
+  filter(Generation <= 2000)
+
+mytheme <- theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+plots <- list()
+loci_gens <- unique(combined_data$loci_gen)
+for(loci_geni in loci_gens){
+  locus_data <- combined_data %>% 
+    filter(loci_gen == loci_geni)
+  p <- locus_data %>% 
+    ggplot(aes(Generation, Phenotype))+
+    geom_line(linewidth = 0.3)+
+    facet_wrap(~h2_sd, ncol = 2, scales = "free_y")+
+    geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+    mytheme
+  plots[[loci_geni]] <- (p) 
+}
+plots
 ```

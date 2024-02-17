@@ -12,21 +12,52 @@ source("~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/Generation_Fr
 
 #### Neutral
 
+> Note that we are only using A = 1 locus, B = 10 loci, C = 100 loci and D = 30. For C and D, we randomly sample 30 loci
+
 ```{r, warning=FALSE, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
-print(plot_result)
+print((plot_result))
 ```
 
 #### Linear
 
+#### Standard deviation effect
+
 ```{r, warning=FALSE, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv$"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1|4)Gen(10)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
 print(plot_result)
 
+```
+
+#### Heritability effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1)Gen(10)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### Selection length effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1)Gen(10|30)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### High Values Combination effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.8|0\\.1)SD(4)Gen(30)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
 ```
 
 #### Sin I
@@ -38,6 +69,45 @@ plot_result <- gen_plotting_function(dirpath, pattern)
 print(plot_result)
 ```
 
+#### Standard deviation effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1|4)Gen(10)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+
+```
+
+#### Heritability effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1)Gen(10)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### Selection length effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1)Gen(10|30)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### High Values Combination effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.8|0\\.1)SD(4)Gen(30)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### 
+
 #### Sin II
 
 ```{r, fig.width = 16, fig.height = 8}
@@ -45,5 +115,139 @@ dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
 print(plot_result)
+
+```
+
+#### Standard deviation effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1|4)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+
+```
+
+#### Heritability effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+#### High Values Combination effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome1_n(1|10|100|300)_H(0\\.8)SD(4)\\.csv$"
+plot_result <- gen_plotting_function(dirpath, pattern)
+print(plot_result)
+```
+
+## Now Let's Check Effect size
+
+```{r, echo=FALSE}
+# gen3_plotting_function <- function(dirpath, pattern, ncol_plots = 2, label_size = 14, label_x = 0.5, label_y = 1) {
+#   
+#   # Data Processing
+#   files <- list.files(dirpath, pattern, full.names = TRUE)
+#   
+#   combined_data <- map_dfr(files, ~{
+#     file <- .x
+#     herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+#     loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+#     sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+#     gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+#     
+#     read.csv(file, header = TRUE) %>% 
+#       select(Generation, Position, Frequency, Effect) %>% 
+#       mutate(Position = factor(Position),
+#              herit = rep(herit, n()),
+#              loci = rep(loci, n()),
+#              sd = rep(sd, n()),
+#              gen = rep(gen, n()),
+#              Pos_Effect = paste("Position = ", Position, " Effect = ", Effect),  # Removed 
+#              h2_sd = paste("h2 = ", herit, " sd = ", sd, " generations = ", gen, sep = ""))
+#   })
+#   
+#     set.seed(12345)
+#   
+#   selected_positions <- combined_data %>%
+#     group_by(loci) %>%
+#     sample_n(size = min(30, n()), replace = F) %>%
+#     pull(Pos_Effect)
+#   
+# 
+#     # Filter the data for the selected positions
+#     combined_data <- combined_data %>%
+#       filter(Pos_Effect %in% selected_positions)
+#     
+#   # Static Plotting
+#   plots_static <- combined_data %>%
+#     group_by(loci) %>%
+#     nest() %>%
+#     mutate(plot = map(data, ~{
+#       ggplot(data = .x, aes(Generation, Frequency, group = Pos_Effect, color = Pos_Effect)) +
+#         geom_line(linewidth = 0.1) +
+#         facet_wrap(~h2_sd, ncol = 4) +
+#         ylim(0, 1) +
+#         theme_bw() +
+#         theme(legend.position = "none")
+#     })) %>%
+#     pull(plot)
+#   
+#   # Combine static plots using plot_grid
+#   combined_static_plot <- plot_grid(plotlist = plots_static, ncol = ncol_plots, align = 'v', 
+#                                     labels = "AUTO", label_size = label_size, 
+#                                     label_x = label_x, label_y = label_y)
+#   
+#   # Interactive Plotting
+#   plots_interactive <- map(plots_static, ~ggplotly(.x))
+# 
+#   # Return both static and interactive plots
+#   return(list(static = combined_static_plot, interactive = plots_interactive))
+# }
+
+```
+
+```{r, echo=FALSE}
+# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+# pattern <- "^genome1_n(10|100|1)_H(0\\.8)SD(1|4)Gen(10)\\.csv$"
+# # Example usage
+# result <- gen3_plotting_function(dirpath, pattern)
+# 
+# print(result$static)
+
+```
+
+```{r, echo=FALSE}
+# library(shiny)
+# library(plotly)
+# 
+# ui <- fluidPage(
+#   # Use lapply to create a plotlyOutput for each plot in the list
+#   uiOutput("plots")
+# )
+# 
+# server <- function(input, output, session) {
+#   # Dynamically generate output slots for each plotly plot
+#   output$plots <- renderUI({
+#     plot_output_list <- lapply(seq_along(result$interactive), function(i) {
+#       plotlyOutput(outputId = paste("plot", i, sep = "_"))
+#     })
+#     do.call(tagList, plot_output_list)
+#   })
+#   
+#   # Render each Plotly plot
+#   lapply(seq_along(result$interactive), function(i) {
+#     output[[paste("plot", i, sep = "_")]] <- renderPlotly({
+#       result$interactive[[i]]
+#     })
+#   })
+# }
+# 
+# shinyApp(ui, server)
 
 ```
