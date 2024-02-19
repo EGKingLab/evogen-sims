@@ -684,3 +684,64 @@ for(loci_geni in loci_gens){
 }
 plots
 ```
+
+### Population
+
+```{r, fig.width = 12, fig.height = 6}
+mytheme <- theme(
+  axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+a <- 10000
+b <- 5000
+x = seq(1, 100, length.out = 100)
+yi <- 5000 + 5000 / (1 + exp(-0.1 * (x - 50)))
+yii <- rep(c(rep(a, 25), rep(b, 25)), 2)
+yiii <- 2500 * sin(x / 10) + 7500
+data <- data.frame(x = x, yi = yi, yii = yii, yiii = yiii)
+
+p <- ggplot(data) +
+  geom_line(aes(x, yi, color = "Population A"), size = 2) +
+  geom_line(aes(x, yii, color = "Population B"), size = 2) +
+  geom_line(aes(x, yiii, color = "Population C"), size = 2) +
+  labs(x = "Generation", y = "Population", color = "Functions", size = 17) +
+  scale_color_manual(values = c("Population A" = "blue", "Population B" = "red", "Population C" = "darkgreen")) +
+  theme_cowplot()+
+  mytheme
+p
+```
+
+### Signs of FS
+
+```{r, warning=FALSE, fig.width = 12, fig.height = 6}
+
+geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD4Gen30.csv") %>% 
+  filter(Generation <= 500)
+pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD4Gen30.csv")%>% 
+  filter(Generation <= 500)
+
+g1 <- geno %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+p1 <- pheno %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line(linewidth = 0.5) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+g1|p1
+
+```

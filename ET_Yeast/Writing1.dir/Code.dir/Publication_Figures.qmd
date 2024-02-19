@@ -127,4 +127,105 @@ process_files <- function(dirpath, pattern, plot_type) {
 
 ```
 
-### Figure 1
+### Figure 1: Monogenic Two-Season
+
+### Figure 2: Models Comparison
+
+```{r}
+#dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.5SD2Gen10.csv")
+mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n10_H0.5SD2Gen10.csv")
+mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.5SD2.csv")
+```
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Add a column to distinguish the datasets
+geno_file <- mono1 %>% mutate(Selection = "Instantaneous Model")
+geno_file2 <- mono2 %>% mutate(Selection = "Gradual 2-Seasons Model")
+geno_file3 <- mono3 %>% mutate(Selection = "Gradual 4-Seasons Model")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, 
+                        geno_file2, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Instantaneous Model", 
+                                 "Gradual 2-Seasons Model", 
+                                 "Gradual 4-Seasons Model"))
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.2) +
+  facet_wrap(Selection~.) +
+  theme_cowplot()+
+  theme(legend.position = "none",
+        axis.text = element_text( size = 12, face = "bold"),
+        axis.line = element_line(size = 1),
+        axis.title = element_text( size = 12, face = "bold"))
+
+freqplot
+```
+
+### Neutral vs Gradual 4 seasons
+
+```{r}
+neutr1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n10_H0.5.csv")
+mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.5SD2.csv")
+```
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Add a column to distinguish the datasets
+geno_file <- neutr1 %>% mutate(Selection = "Neutral Model")
+geno_file3 <- mono3 %>% mutate(Selection = "Gradual 4-Seasons Model")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Neutral Model",  
+                                 "Gradual 4-Seasons Model"))
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.2) +
+  facet_wrap(Selection~.) +
+  theme_cowplot()+
+  theme(legend.position = "none",
+        axis.text = element_text( size = 12, face = "bold"),
+        axis.line = element_line(size = 1),
+        axis.title = element_text( size = 12, face = "bold"))
+
+freqplot
+```
+
+### Genome Size
+
+```{r}
+Mono <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD3Gen10.csv")
+Oligo <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD3Gen10.csv")
+Poly<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n100_H0.1SD3Gen10.csv")
+```
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Add a column to distinguish the datasets
+geno_file <- Mono %>% mutate(Selection = "Monogenic")
+geno_file2 <- Oligo %>% mutate(Selection = "Oligogenic")
+geno_file3 <- Poly %>% mutate(Selection = "Polygenic")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Monogenic",  
+                                 "Oligogenic", 
+                                 "Polygenic"))
+
+# Create the plot
+freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.2) +
+  facet_grid(Selection~.) +
+  theme_cowplot()+
+  theme(legend.position = "none",
+        axis.text = element_text( size = 12, face = "bold"),
+        axis.line = element_line(size = 1),
+        axis.title = element_text( size = 12, face = "bold"))
+
+freqplot
+```
