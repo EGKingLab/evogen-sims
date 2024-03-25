@@ -1,3 +1,71 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+seeds <- round(seq(1234, 2500, length.out = 100))
+
+nloci <- 1
+ninds <- 10000
+h2 <- 0.5
+
+mean_pheno <- numeric(length = length(seeds))
+sd_pheno <- numeric(length = length(seeds))
+
+for (i in seq_along(seeds)) {
+  seed <- seeds[i]
+  set.seed(seed)
+  
+  effects <- rexp(nloci)
+  markers <- runif(nloci, 0, 1) #Probability of carrying a given allele 
+  additive <- numeric(length = ninds)
+  
+  for (ind in 1:ninds) {
+    geno <- rbinom(nloci, 1, markers)
+    effs <- geno*effects
+    additive[ind] <- sum(effs)
+  }
+  V_A <- var(additive)
+  V_E <- (V_A/h2)- V_A
+  env <- rnorm(ninds, 0.0, sqrt(V_E))
+  
+  df <- tibble(phenotypes = additive + env)
+  #df$phenotypes <- (df$phenotypes / sd(df$phenotypes))
+  mean_pheno[i] <- mean(df$phenotypes)
+  sd_pheno[i] <- sd(df$phenotypes)
+}
+
+mypheno <- tibble(mean_pheno = mean_pheno, sd_pheno = sd_pheno)
+# head(mypheno)
+# max(mypheno$mean_pheno)
+# min(mypheno$mean_pheno)
+
+µs <- mypheno %>% summarise(µp = mean(mean_pheno), µsd = mean(sd_pheno))
+```
+
+```{r}
+library(patchwork)
+
+p1 <- ggplot()+
+  geom_histogram(data = mypheno, aes(mean_pheno), bins = 30)+
+  geom_vline(xintercept = µs$µp, color = "red")+
+  ggtitle("1 loci")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme_classic()
+
+p2 <- ggplot()+
+  geom_histogram(data = mypheno, aes(sd_pheno), bins = 30)+
+  geom_vline(xintercept = µs$µsd, color = "red")+
+  ggtitle("1 loci")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme_classic()
+
+p1|p2
+```
+
+```{r}
 library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot())
@@ -6,7 +74,7 @@ rm(list = ls())
 set.seed(7711)
 
 #how many loci
-nloci <- 70
+nloci <- 1
 
 #how many individuals
 ninds <- 10000
@@ -36,9 +104,10 @@ env <- rnorm(ninds, 0.0, sqrt(V_E))
 
 phenotypes <- tibble(phenotypes = additive + env)
 
-#phenotypes$phenotypes <- (phenotypes$phenotypes/ sd(phenotypes$phenotypes)) + 100
+phenotypes$phenotypes <- (phenotypes$phenotypes/ sd(phenotypes$phenotypes)) + 100
 
-phenotypes$phenotypes <- ((phenotypes$phenotypes - mean(phenotypes$phenotypes))/sd(phenotypes$phenotypes)) + 100
+#phenotypes$phenotypes <- ((phenotypes$phenotypes - mean(phenotypes$phenotypes))/sd(phenotypes$phenotypes)) + 100
+
 
 #phenotypes$phenotypes <- (phenotypes$phenotypes/ max(phenotypes$phenotypes))  + 100
 #phenotypes$phenotypes <- quantile(phenotypes$phenotypes, rank(phenotypes$phenotypes)/ length(phenotypes$phenotypes))
@@ -59,7 +128,7 @@ scaling_f <- mean(phenotypes$phenotypes)
   
 #phenotypes$fitness <- 1 - ((phenotypes$phenotypes - new_opt)^2/phenotypes$phenotypes) #Quadratic
 #phenotypes$fitness <- exp(-(1/10) * (phenotypes$phenotypes - new_opt)^2)# we can alsp try 1/
-phenotypes$fitness <- exp(-(1/mean(phenotypes$phenotypes)) * ((phenotypes$phenotypes - new_opt))^2)
+phenotypes$fitness <- exp(-(3/mean(phenotypes$phenotypes)) * ((phenotypes$phenotypes - new_opt))^2)
 
 #phenotypes$fitness <- exp(-(3/(scaling_f)) * (phenotypes$phenotypes - new_opt)^2)
 #phenotypes$fitness <- (dnorm(new_opt - phenotypes$phenotypes, 10))
@@ -74,10 +143,5 @@ phenotypes |>
   geom_point() +
   #ylim(0,1) +
   geom_vline(xintercept = new_opt, color = "steelblue")
-
-# set.seed(1234)
-# hist(rexp(50))
-# 
-# hist(rgamma(50, 2, 2))
-# 
-# hist(0.1/rbeta(50, 1, 1))
+ #  
+```
