@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -e "=== Beginning of SLiM run with different QTLs > $(date) ===" >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4-${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
+echo -e "=== Beginning of SLiM run with different QTLs > $(date) ===" >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
 output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome5_100_0.5.csv"
 if [[ ! -f "$output" ]]
 then
@@ -45,5 +45,5 @@ wait
 else
   echo "All is well, Boss.  The ${output} file is there."
 fi
-echo "=== Fini finito! End of SLiM QTLs Constant Selection run >" $(date) >> >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4-${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
+echo "=== Fini finito! End of SLiM QTLs Constant Selection run >" $(date) >> >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
 

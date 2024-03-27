@@ -26,7 +26,7 @@ initialize() {
 		q = c(q, pos);
 		pos = pos + 1;
 		initializeGenomicElement(g1, pos, pos + nneutral - 1);
-		pos = pos + nneutral;	
+		pos = pos + nneutral;
 	}
 	// Define Q and recombination rate
 	m2.convertToSubstitution = F;
@@ -40,7 +40,7 @@ initialize() {
 }
 
 // Initial generation
-	1 late() {
+1 late() {
 	// Add a subpopulation for individuals that will be used for selecting QTLs
 	sim.addSubpop("p2", 2);
 	// Add a mutation of type m2 to the first genome in subpopulation p2
@@ -104,17 +104,17 @@ mutationEffect(m2) {
 	lower_opt = mean(phenotypes) - sd(phenotypes)*stdv;
 	upper_opt = mean(phenotypes) + sd(phenotypes)*stdv;
 	nopt = rep(c(rep(lower_opt,gener),rep(upper_opt,gener)), ranges);
+	
 	defineGlobal("newopt", nopt);
-	defineGlobal("scaling", phenotypes);
 	
-	inds.fitnessScaling = exp(-(1/(sacling)) * (phenotypes - newopt[sim.cycle])^2);
+	//inds.fitnessScaling = exp(-(3/(scaling)) * (phenotypes - newopt[sim.cycle])^2);
 	
-
- //mean_fitness =sum(ind.fitness(for(ind in inds))) / len(inds)
-        mean_fitness = mean(inds.fitnessScaling);
-
-        // Add the phenotypes as a tag to the individuals
-        inds.tagF = phenotypes;
+	
+	//mean_fitness =sum(ind.fitness(for(ind in inds))) / len(inds)
+	mean_fitness = mean(inds.fitnessScaling);
+	
+	// Add the phenotypes as a tag to the individuals
+	inds.tagF = phenotypes;
 	
 	// Get the mutation information and order them by frequency
 	qtls = sim.mutationsOfType(m2);
@@ -125,20 +125,24 @@ mutationEffect(m2) {
 	//q_a = 1 - freq;	
 	//het = 2*q_a*freq;
 	indices = order(freq, F);
+	
+	/*
 	for (i in indices)
-                
-	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
+		
+		writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
+	
+	// Calculate mean phenotype for the population
+	meanPhenotype = mean(phenotypes);
+	
+	// Output information about mean phenotype and mean fitness to a FSV file (MeanPhenotypes_singl.csv)
+	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
+*/
 
-        // Calculate mean phenotype for the population
-        meanPhenotype = mean(phenotypes);
-
-        // Output information about mean phenotype and mean fitness to a FSV file (MeanPhenotypes_singl.csv)
-        writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 }
 
 // Implement the selection process for generations 2 to 2000
 
-2:2000 late(){
+1:2000 late(){
 	// Get individuals in the population
 	inds = sim.subpopulations.individuals;
 	
@@ -181,9 +185,9 @@ mutationEffect(m2) {
 	indices = order(freq, F);
 	for (i in indices)
 		
-               // q_a = 1 - freq[i];
-               // het = 2*q_a*freq[i];
-
+		// q_a = 1 - freq[i];
+		// het = 2*q_a*freq[i];
+		
 		writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
 	
 	// Calculate mean phenotype for the population
@@ -194,5 +198,6 @@ mutationEffect(m2) {
 }
 
 2001 late(){
-sim.outputFixedMutations();
+	sim.outputFixedMutations();
 }
+

@@ -152,7 +152,7 @@ mutationEffect(m2) {
 	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
-		phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes)) + 100;
+	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes)) + 100;
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
 	//inds.fitnessScaling = 1 - (abs(phenotypes - newopt[sim.cycle])/100);

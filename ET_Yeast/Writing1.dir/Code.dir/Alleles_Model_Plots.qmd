@@ -9,6 +9,7 @@ editor: visual
 library(tidyverse)
 library(stringr)
 library(cowplot)
+library(plotly)
 theme_set(theme_cowplot())
 ```
 
@@ -97,13 +98,14 @@ for (genome_file in genome_files) {
                    round(initFreq, 2) , sep = ""))
   
   # Create a ggplot and add it to the list of plots
-  plots[[genome_file]] <- ggplotly(df %>%
+  plots[[genome_file]] <- (df %>%
     ggplot(aes(Generation, Frequency, color = interaction(postion_effect_init, replicate))) +
     geom_line(linewidth = 0.2) +
     labs(x = "", y = "") +
     ylim(min = 0, max = 1)+
     #ggtitle(paste(Loci_n, "L", " for 0.", heritability, " H", sep = "")) +
     mytheme())  # Make sure mytheme() is defined or loaded correctly
+  ## ggplotly
 }
 (plots)
 # Combine the plots into a single plot grid
@@ -393,11 +395,11 @@ for(locus in loci){
     filter(loci == locus, Generation <= 2000)
   
   # Select 10 random positions
-  selected_positions <- sample(locus_data$Position, size = min(15, nrow(locus_data)), replace = F)
+  #selected_positions <- sample(locus_data$Position, size = min(15, nrow(locus_data)), replace = F)
   
   # Filter the data for the selected positions
-  locus_data <- locus_data %>% 
-    filter(Position %in% selected_positions)
+  #locus_data <- locus_data %>% 
+    #filter(Position %in% selected_positions)
   
   p <- locus_data %>% 
     ggplot(aes(Generation, Frequency, group = interaction(Position,Effect, Init_Freq), color = interaction(Position,Effect, Init_Freq)))+

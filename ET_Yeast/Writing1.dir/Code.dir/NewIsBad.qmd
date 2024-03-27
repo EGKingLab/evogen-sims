@@ -1,0 +1,491 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Standard error
+
+```{r}
+############ Libraries and theme function ########
+
+library(tidyverse)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme_set(theme_cowplot())+
+    theme(axis.title = element_text(face = "bold"),
+          axis.text = element_text(face = "italic"),
+          plot.title = element_text(hjust = 0.5)) #,legend.position = "none"
+}
+
+#################### Data Processing and plotting ###############
+
+# The first part deals with constant and sinusoidal II
+process_files <- function(dirpath, pattern, plot_type) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate_id <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    data <- read.csv(file, header = TRUE)
+    
+    data$herit <- rep(herit, nrow(data))
+    data$loci <- rep(loci, nrow(data))
+    data$sd <- rep(sd, nrow(data))
+    data$replicate <- rep(factor(replicate_id), nrow(data))
+    
+    # argument for linear and sinusoidal I selections
+    
+    if(!is.na(gen)) {
+      data$gen <- rep(gen, nrow(data))
+    }
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) %>% 
+    mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+ 
+   # plots for either linear or sinusoidal selections
+  
+  plots <- list()
+  if (plot_type == "loci_gen") {
+    loci_gens <- unique(combined_data$loci_gen)
+    for(loci_geni in loci_gens){
+      locus_data <- combined_data %>% 
+        filter(loci_gen == loci_geni)
+      p <- locus_data %>% 
+        ggplot(aes(Generation, Phenotype, group = replicate, color = replicate))+
+        stat_summary(fun.data = mean_se, geom = "line") +  # Add this line to plot the mean phenotype with standard errors
+        facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
+        theme_bw()
+        #theme(legend.position = "none")
+      plots[[loci_geni]] <- (p) #ggplotly
+    }
+    
+    # plots for constant or sinusoidal II selections
+    
+  } else if (plot_type == "loci") {
+    loci <- unique(combined_data$loci)
+    for(locus in loci){
+      locus_data <- combined_data %>% 
+        filter(loci == locus)
+      p <- locus_data %>% 
+        ggplot(aes(Generation, Phenotype, group = replicate, color = replicate))+
+        stat_summary(fun.data = mean_se, geom = "line") +  # Add this line to plot the mean phenotype with standard errors
+        facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
+        theme_bw()+
+        theme(legend.position = "none")
+      plots[[locus]] <- (p) #ggplotly
+    }
+  }
+  
+  return(list(combined_data = combined_data, plots = plots))
+}
+
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n1_H0\\.(1)(SD(4))?(Gen(30))?\\.csv$" #"^MeanPhenotypes(1|2|3)_n*" #|10|15|20|30
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+
+```
+
+### Neutral
+
+```{r, fig.width = 8, fig.height = 4}
+rm(list = ls())
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+
+```
+
+### Constant
+
+```{r, fig.width = 8, fig.height = 4}
+rm(list = ls())
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+```
+
+### Instantaneous
+
+```{r, fig.width = 8, fig.height = 4}
+rm(list = ls())
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+
+```
+
+### Gradual 2 seasons
+
+```{r, fig.width = 8, fig.height = 4}
+rm(list = ls())
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+```
+
+### Gradual 4 seasons
+
+```{r, fig.width = 8, fig.height = 4}
+rm(list = ls())
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+```
+
+## Using Boxplot
+
+```{r}
+
+# , fig.width = 8, fig.height = 4
+############ Libraries and theme function ########
+
+rm(list = ls())
+library(tidyverse)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+    theme(legend.position = "none",
+          axis.text = element_text(size = 15, face = "bold"),
+          axis.line = element_line(size = 2),
+          axis.title = element_text(size = 15, face = "bold"),
+          strip.text = element_text(size = 15, face = "bold"),
+          plot.title = element_text(hjust = 0.5)) #,legend.position = "none"
+}
+
+#################### Data Processing and plotting ###############
+
+# The first part deals with constant and sinusoidal II
+process_files <- function(dirpath, pattern, plot_type) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(herit = herit, loci = loci, sd = sd,
+             replicate = as.factor(replicate),
+             h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+         Optimum = ifelse(Optimum == max(Optimum), "H", "L"))
+    
+    
+    # argument for linear and sinusoidal I selections
+    
+    if(!is.na(gen)) {
+      data$gen <- rep(gen, nrow(data))
+    }
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes)
+  
+  # plots for either linear or sinusoidal selections
+  
+  plots <- list()
+  if (plot_type == "loci_gen") {
+    unique_loci_gens <- unique(combined_data$loci_gen)
+    for (loci_gen_val in unique_loci_gens) {
+      loci_gen_data <- combined_data %>%
+        filter(loci_gen == loci_gen_val) %>%
+       # group_by(Generation) %>%
+        filter(Generation == 0 | Generation %% gen == 0)
+        #summarise(Phenotype = mean(Phenotype, na.rm = TRUE))
+      
+      p <- ggplot(loci_gen_data, aes(x = Generation, y = Phenotype)) +
+        geom_boxplot(aes(group = Generation, fill = Optimum), size = 0.5, varwidth = TRUE, alpha = 0.5) +
+        #geom_line()+
+        facet_wrap(~h2_sd, scales = "free_y") +
+        mytheme()
+      
+      plots[[loci_gen_val]] <- p
+    }
+    
+    # plots for constant or sinusoidal II selections
+    
+  } else if (plot_type == "loci") {
+    loci <- unique(combined_data$loci)
+    unique_loci_gens <- unique(combined_data$loci_gen)
+    for (locus in loci) {
+        filter(loci_gen == loci_gen_val) %>%
+       # group_by(Generation) %>%
+        filter(Generation == 0 | Generation %% gen == 0)
+        #summarise(Phenotype = mean(Phenotype, na.rm = TRUE))
+      
+      p <- ggplot(locus, aes(x = Generation, y = Phenotype)) +
+        geom_boxplot(aes(group = Generation, fill = Optimum), size = 0.5, varwidth = TRUE, alpha = 0.5) +
+        #geom_line()+
+        facet_wrap(~h2_sd, scales = "free_y") +
+        mytheme()
+      
+      plots[[loci_gen_val]] <- p
+    }
+  }
+  
+  return(list(combined_data = combined_data, plots = plots))
+} # , Generation == 0 | Generation %% gen != 0
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1)(SD(4))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci_gen")
+
+# Print combined data to check h2_sd
+print(result$combined_data)
+
+# Now, let's try plotting again
+result$plots
+```
+
+### Two plots cmoparison
+
+#### 1. Standard error
+
+```{r, fig.width = 8, fig.height = 4}
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n300+_H0.8SD4Gen10\\.csv$"# "^MeanPhenotypes\\d+_n100+_H0\\.(1|8)(SD(4))?(Gen(10))?\\.csv$"
+result <- process_files(dirpath, pattern, "loci")
+result$plots
+```
+
+#### 2. Box Plot
+
+```{r, fig.width = 8, fig.height = 4}
+############ Libraries and theme function ########
+rm(list = ls())
+library(tidyverse)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5)) #,legend.position = "none"
+}
+
+#################### Data Processing and plotting ###############
+
+# The first part deals with constant and sinusoidal II
+process_files <- function(dirpath, pattern, plot_type) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(herit = herit, loci = loci, sd = sd,
+             replicate = as.factor(replicate),
+             h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+         Optimum = ifelse(Optimum == max(Optimum), "H", "L"))
+    
+    
+    # argument for linear and sinusoidal I selections
+    
+    if(!is.na(gen)) {
+      data$gen <- rep(gen, nrow(data))
+    }
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) # %>%
+      #  filter(Generation == 0 | Generation %% 50 == 0)
+  
+  # plots for either linear or sinusoidal selections
+  
+  plots <- list()
+  if (plot_type == "loci_gen") {
+    unique_loci_gens <- unique(combined_data$loci_gen)
+    for (loci_gen_val in unique_loci_gens) {
+      loci_gen_data <- combined_data %>%
+        filter(loci_gen == loci_gen_val) %>%
+        filter(Generation == 0 | Generation %% gen == 0)
+      
+      p <- ggplot(loci_gen_data, aes(x = Generation, y = Phenotype)) +
+        geom_boxplot(aes(group = Generation, fill = Optimum), size = 0.5, varwidth = TRUE, alpha = 0.5) +
+        facet_wrap(~h2_sd, scales = "free_y") +
+        mytheme()
+      
+      plots[[loci_gen_val]] <- p
+    }
+    
+    # plots for constant or sinusoidal II selections
+    
+  } else if (plot_type == "loci") {
+    loci <- unique(combined_data$loci)
+    unique_loci_gens <- unique(combined_data$loci_gen)
+    for (locus in loci) {
+      loci_data <- combined_data %>%
+        filter(loci_gen == loci_gen_val) %>%
+        filter(Generation == 0 | Generation %% gen == 0)
+      
+      p <- ggplot(locus, aes(x = Generation, y = Phenotype)) +
+        geom_boxplot(aes(group = Generation, fill = Optimum), size = 0.5, varwidth = TRUE, alpha = 0.5) +
+        facet_wrap(~h2_sd, scales = "free_y") +
+        mytheme()
+      
+      plots[[loci_gen_val]] <- p
+    }
+  }
+  
+  return(list(combined_data = combined_data, plots = plots))
+} # , Generation == 0 | Generation %% gen != 0
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n10+_H0.8SD4Gen30\\.csv$"
+result <- process_files(dirpath, pattern, "loci_gen")
+
+# Print combined data to check h2_sd
+print(result$combined_data)
+
+# Now, let's try plotting again
+result$plots
+
+```
+
+```{r}
+############ Libraries and theme function ########
+rm(list = ls())
+library(tidyverse)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5)) #,legend.position = "none"
+}
+
+#################### Data Processing and plotting ###############
+
+# The first part deals with constant and sinusoidal II
+process_files <- function(dirpath, pattern, plot_type) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+  mutate(herit = herit, loci = loci, sd = sd,
+         replicate = as.factor(replicate),
+         h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+         Optimum = ifelse(Optimum == max(Optimum), "H", "L"))
+    
+    
+    # argument for linear and sinusoidal I selections
+    
+    if(!is.na(gen)) {
+      data$gen <- rep(gen, nrow(data))
+    }
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes)
+  
+  # plots for either linear or sinusoidal selections
+  
+  plots <- list()
+  if (plot_type == "loci_gen") {
+    unique_loci_gens <- unique(combined_data$loci_gen)
+    for (loci_gen_val in unique_loci_gens) {
+      loci_gen_data <- combined_data %>%
+        filter(loci_gen == loci_gen_val) %>%
+        filter(Generation == 0 | Generation %% gen == 0)
+      
+      p <- ggplot(loci_gen_data, aes(x = Generation, y = Phenotype)) +
+        geom_boxplot(aes(group = Generation, fill = Optimum), size = 0.5, varwidth = TRUE, alpha = 0.5) +
+        facet_wrap(~h2_sd, scales = "free_y") +
+        mytheme()
+      
+      plots[[loci_gen_val]] <- p
+    }
+    
+    # plots for constant or sinusoidal II selections
+    
+  } else if (plot_type == "loci") {
+    unique_loci_gens <- unique(combined_data$loci_gen)
+    for (loci_gen_val in unique_loci_gens) {
+      loci_data <- combined_data %>%
+        filter(loci_gen == loci_gen_val) %>%
+        filter(Generation == 0 | Generation %% gen == 0)
+      
+      p <- ggplot(loci_data, aes(x = Generation, y = Phenotype)) +
+        geom_boxplot(aes(group = Generation, fill = Optimum), size = 0.5, varwidth = TRUE, alpha = 0.5) +
+        facet_wrap(~h2_sd, scales = "free_y") +
+        mytheme()
+      
+      plots[[loci_gen_val]] <- p
+    }
+  }
+  
+  return(list(combined_data = combined_data, plots = plots))
+}
+
+# Call the function and check the plots
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n10+_H0.8SD4Gen30\\.csv$"
+result <- process_files(dirpath, pattern, "loci_gen")
+result$plots
+
+```
