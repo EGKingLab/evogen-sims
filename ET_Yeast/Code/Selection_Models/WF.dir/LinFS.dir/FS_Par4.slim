@@ -93,7 +93,12 @@ mutationEffect(m2) {
 	
 	// Calculate the phenotypes by adding the genetic and environmental components
 	phenotypes = additive + env;
-	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/sd(phenotypes))+100;
+	
+	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes)) + 100;
+	
+	scaleFactor = mean(phenotypes);
+	defineConstant("scaling", scaleFactor);
 	
 	// Define the lower and upper bounds of the optimal phenotype and define a global variable newopt
 	lower_opt = mean(phenotypes) - sd(phenotypes)*stdv;
@@ -102,7 +107,7 @@ mutationEffect(m2) {
 	defineGlobal("newopt", nopt);
 	defineGlobal("scaling", phenotypes);
 	
-	inds.fitnessScaling = exp(-(1/(phenotypes)) * (phenotypes - newopt[sim.cycle])^2);
+	inds.fitnessScaling = exp(-(1/(sacling)) * (phenotypes - newopt[sim.cycle])^2);
 	
 
  //mean_fitness =sum(ind.fitness(for(ind in inds))) / len(inds)
@@ -145,10 +150,13 @@ mutationEffect(m2) {
 	
 	// Calculate phenotype values for each individual as the sum of their additive genetic and environmental values
 	phenotypes = additive + env;
-	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/sd(phenotypes))+100;
 	
-	inds.fitnessScaling = exp(-(1/(phenotypes)) * (phenotypes - newopt[sim.cycle])^2);
-	//inds.fitnessScaling = exp(-(1/scaling) * (phenotypes - newopt[sim.cycle])^2);
+	
+	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes)) + 100;
+	
+	//inds.fitnessScaling = exp(-(1/(phenotypes)) * (phenotypes - newopt[sim.cycle])^2);
+	inds.fitnessScaling = exp(-(3/scaling) * (phenotypes - newopt[sim.cycle])^2);
 	
 	// Get the mean fitness and phenotype and write them to a FSV file
 	

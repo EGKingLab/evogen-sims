@@ -91,9 +91,11 @@ mutationEffect(m2) {
 	
 	// Calculate the phenotypes by adding the genetic and environmental components
 	phenotypes = additive + env;
-	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/sd(phenotypes))+100;
 	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
+	
+	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes))+ 100;
 	
 	
 	// Get the mutation information and order them by frequency
@@ -133,9 +135,11 @@ mutationEffect(m2) {
 	
 	// Calculate phenotype values for each individual as the sum of their additive genetic and environmental values
 	phenotypes = additive + env;
-	phenotypes = (phenotypes/sd(phenotypes))+100;
+	//phenotypes = (phenotypes/sd(phenotypes))+100;
 	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
+	
+	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes))+ 100;
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
 	//inds.fitnessScaling = 1 - (abs(phenotypes - newopt[sim.cycle])/100);
