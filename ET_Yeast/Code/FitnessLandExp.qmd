@@ -153,86 +153,85 @@ phenotypes |>
 ## Exploring fitness
 
 ```{r}
-nloci <- c(1, 10, 30, 100, 300, 1000)
-ninds <- 10000
-h2s <- c(0.1, 0.5, 0.8)
-sds <- 1:4
-
-seeds <-1234 #round(seq(1234, 2500, length.out = 50))
-
-# Initialize df dataframe
-df <- tibble()
-
-for (seed in seeds) {
-  set.seed(seed)
-  
-  for(locus in nloci){
-    effects <- rexp(locus)
-    markers <- runif(locus, 0, 1) # Probability of carrying a given allele
-    additive <- numeric(length = ninds)
-    
-    for (ind in 1:ninds) {
-      geno <- rbinom(locus, 1, markers)
-      effs <- geno * effects
-      additive[ind] <- sum(effs)
-      V_A <- locus/3 # Scaling VA based on the observation
-    }
-   # V_A <- locus/3
-    #V_A <- var(additive)
-    
-    for(h2 in h2s){
-      V_E <- (V_A / h2) - V_A
-      env <- rnorm(ninds, 0.0, sqrt(V_E))
-      
-      for (sd in sds) {
-        myphedata <- tibble(
-          phenotypes = additive + env,
-          
-          mup = 0.5*locus, # Expected mean
-          sdp = sqrt(locus/(3*h2)), #Expected standard deviation
-          phenotype = ((phenotypes - mup)/sdp), # Phenotype scaling
-          
-          optimum = mean(phenotype) + (sd * sd(phenotype)),
-          sd = sd,  # Add sd column
-          seed = seed,  # Add seed column
-          h2 = h2,  # Add h2 column
-          locus = locus  # Add locus column
-        )
-        df <- bind_rows(df, myphedata)
-      }
-    }
-  }
-}
-
-newdataset <- df %>% group_by(seed, sd, locus, h2) %>%
-  mutate(Fitness = exp(-(1/150) * (phenotype - optimum)^2),
-    heritability = factor(h2),
-    stand_dev = factor(sd))
+# nloci <- c(1, 10, 30, 100, 300, 1000)
+# ninds <- 10000
+# h2s <- c(0.1, 0.5, 0.8)
+# sds <- 1:4
+# 
+# seeds <-1234 #round(seq(1234, 2500, length.out = 50))
+# 
+# # Initialize df dataframe
+# df <- tibble()
+# 
+# for (seed in seeds) {
+#   set.seed(seed)
+#   
+#   for(locus in nloci){
+#     effects <- rexp(locus)
+#     markers <- runif(locus, 0, 1) # Probability of carrying a given allele
+#     additive <- numeric(length = ninds)
+#     
+#     for (ind in 1:ninds) {
+#       geno <- rbinom(locus, 1, markers)
+#       effs <- geno * effects
+#       additive[ind] <- sum(effs)
+#       V_A <- locus/3 # Scaling VA based on the observation
+#     }
+#    # V_A <- locus/3
+#     #V_A <- var(additive)
+#     
+#     for(h2 in h2s){
+#       V_E <- (V_A / h2) - V_A
+#       env <- rnorm(ninds, 0.0, sqrt(V_E))
+#       
+#       for (sd in sds) {
+#         myphedata <- tibble(
+#           phenotypes = additive + env,
+#           
+#           mup = 0.5*locus, # Expected mean
+#           sdp = sqrt(locus/(3*h2)), #Expected standard deviation
+#           phenotype = ((phenotypes - mup)/sdp), # Phenotype scaling
+#           
+#           optimum = mean(phenotype) + (sd * sd(phenotype)),
+#           sd = sd,  # Add sd column
+#           seed = seed,  # Add seed column
+#           h2 = h2,  # Add h2 column
+#           locus = locus  # Add locus column
+#         )
+#         df <- bind_rows(df, myphedata)
+#       }
+#     }
+#   }
+# }
+# 
+# newdataset <- df %>% group_by(seed, sd, locus, h2) %>%
+#   mutate(Fitness = exp(-(1/150) * (phenotype - optimum)^2),
+#     heritability = factor(h2),
+#     stand_dev = factor(sd))
 
 ```
 
 ```{r, fig.width=10, fig.height=5}
-library(ggridges)
-theme_set(theme_classic())
-
-ggplot(newdataset, aes(y = stand_dev, x = Fitness)) +
-  geom_density_ridges(aes(fill = heritability), alpha = 0.3,bandwidth = 0.01) + 
-  scale_fill_manual(values = c("cyan", "yellow", "magenta")) +
-  facet_grid(~locus)+
-  theme(axis.text = element_text(size = 12, face = "bold"),
-        axis.line = element_line(size = 2),
-        axis.title = element_text(size = 12, face = "bold"),
-        strip.text = element_text(size = 12, face = "bold"))
+# library(ggridges)
+# theme_set(theme_classic())
+# 
+# ggplot(newdataset, aes(y = stand_dev, x = Fitness)) +
+#   geom_density_ridges(aes(fill = heritability), alpha = 0.3,bandwidth = 0.01) + 
+#   scale_fill_manual(values = c("cyan", "yellow", "magenta")) +
+#   facet_grid(~locus)+
+#   theme(axis.text = element_text(size = 12, face = "bold"),
+#         axis.line = element_line(size = 2),
+#         axis.title = element_text(size = 12, face = "bold"),
+#         strip.text = element_text(size = 12, face = "bold"))
 ```
 
 ## Assessing optimum and fitness: To scale single locus
 
 ```{r}
 rm(list = ls())
-library(tibble)
-library(dplyr)
+library(tidyverse)
 
-nloci <- c(1, 10, 100, 500, 1000, 10000)
+nloci <- c(1, 10, 100) #, 500, 1000, 10000
 ninds <- 10000
 h2s <- c(0.1, 0.5, 0.8)
 sds <- 1:4
@@ -255,7 +254,7 @@ for (seed in seeds) {
       effs <- geno * effects
       additive[ind] <- sum(effs)
     }
-    V_A <- locus/3
+    V_A <- var(additive)#locus/3
     
     for(h2 in h2s){
       V_E <- (V_A / h2) - V_A
@@ -276,8 +275,8 @@ for (seed in seeds) {
           phenotype = ((phenotypes - mup)/sdp), # Phenotype scaling
           
           optimum = mean(phenotype) + sd * sd(phenotype),
-          Fitness = ifelse(locus==1, exp(-(1/150) * (phenotype - optimum)^2), 
-                           exp(-(1/150) * (phenotype - optimum)^2)),
+          ## Fitness = ifelse(locus==1, exp(-(1/100) * (phenotype - optimum)^2), 
+            ##                exp(-(1/locus) * (phenotype - optimum)^2)),
           sd = sd,  # Add sd column
           seed = seed,  # Add seed column
           h2 = h2,  # Add h2 column
@@ -289,14 +288,18 @@ for (seed in seeds) {
   }
 }
 
-newdataset <- df %>% group_by(seed, sd, locus, h2) %>%
+newdataset <- df %>% #group_by(sd, locus, h2) %>%
   mutate(heritability = factor(h2),
-    stand_dev = factor(sd))
+    stand_dev = factor(sd),
+    Fitness = ifelse(locus==1, exp(-(1/150) * (phenotype - optimum)^2), 
+                           exp(-(1/150) * (phenotype - optimum)^2))
+    )
 
 ```
 
 ```{r, fig.width=10, fig.height=5}
-
+library(cowplot)
+library(patchwork)
 library(ggridges)
 theme_set(theme_classic())
 
@@ -304,7 +307,7 @@ ggplot(newdataset, aes(y = stand_dev, x = Fitness)) +
   geom_density_ridges(aes(fill = heritability), alpha = 0.3) + # ,bandwidth = 0.12, rel_min_height = 0.0005
   scale_fill_manual(values = c("cyan", "yellow", "magenta")) +
   facet_grid(~locus, scales = "free_y")+
-  scale_y_discrete(expand = c(0.01, 0))+
+  #scale_y_discrete(expand = c(0.01, 0))+
   theme(axis.text = element_text(size = 12, face = "bold"),
         axis.line = element_line(size = 2),
         axis.title = element_text(size = 12, face = "bold"),
@@ -312,37 +315,401 @@ ggplot(newdataset, aes(y = stand_dev, x = Fitness)) +
 ```
 
 ```{r}
-# plot of Optimum vs. sd
-ggplot(newdataset, aes(x = sd, y = optimum,  color = heritability)) +
-  geom_point() +
-  facet_wrap(~locus, scales = "free_y")+
-  labs( title = "optimum vs. Standard Deviation",
-        x = "Standard Deviation (sd)",
-        y = "optimum"
-  )+
-  theme(plot.title = element_text(hjust = 0.5))
+rm(list = ls())
+library(tibble)
+library(dplyr)
+
+nloci <- c(1, 10, 100) #, 500, 1000, 10000
+ninds <- 10000
+h2s <- c(0.5)
+sds <- 1
+
+seeds <- 1234 #round(seq(1234, 2500, length.out = 50))
+
+# Initialize df dataframe
+df <- tibble()
+
+for (seed in seeds) {
+  set.seed(seed)
+  
+  for (locus in nloci) {
+    effects <- rexp(locus)
+    markers <- runif(locus, 0, 1) # Probability of carrying a given allele
+    additive <- numeric(length = ninds)
+    
+    for (ind in 1:ninds) {
+      geno <- rbinom(locus, 1, markers)
+      effs <- geno * effects
+      additive[ind] <- sum(effs)
+    }
+    V_A <- var(additive) # locus/3
+    
+    for (h2 in h2s) {
+      V_E <- (V_A / h2) - V_A
+      env <- rnorm(ninds, 0.0, sqrt(V_E))
+      
+      for (sd in sds) {
+        if (locus == 1) {
+          sdp <- sqrt(locus * 3 / h2)
+        } else {
+          sdp <- sqrt(locus / (3 * h2))
+        }
+        myphedata <- tibble(
+          phenotypes = additive + env,
+          mup = 0.5 * locus, # Expected mean
+          sdp = sdp, # Expected standard deviation
+          phenotype = ((phenotypes - mup) / sdp), # Phenotype scaling
+          optimum = mean(phenotype) + sd * sd(phenotype),
+          sd = sd, # Add sd column
+          seed = seed, # Add seed column
+          h2 = h2, # Add h2 column
+          locus = locus # Add locus column
+        )
+        df <- bind_rows(df, myphedata)
+      }
+    }
+  }
+}
+
+newdataset <- df %>% group_by(sd, locus, h2, optimum) %>%
+  mutate(
+    heritability = factor(h2),
+    stand_dev = factor(sd),
+    Fitness = ifelse(locus == 1, exp(-(1/150) * (phenotype - optimum)^2),
+                     exp(-(1/(150 * sqrt(locus))) * (phenotype - optimum)^2))
+  )
+
 ```
 
 ```{r}
-# Calculate the sequential difference t1 - t in optimum
 
-newdataset2 <- newdataset %>% 
-  #dplyr::filter(h2 > 0.1) %>% 
-  dplyr::select(optimum, sd, heritability, locus) %>% 
-  distinct() %>% 
-  group_by(locus, heritability) %>% 
-  arrange(sd) %>% 
-  mutate(optimum_diff = c(NA, diff(optimum))) %>% 
-  drop_na()
+newdataset2 <- newdataset %>% group_by(sd, locus, heritability) %>%
+  mutate(Fitness = (round(Fitness, digits = 6)),
+         Optimum = factor(round(optimum, digits = 6)),
+         Mean_Fitness = mean(Fitness, na.rm = TRUE)) %>%
+  filter(stand_dev ==1)
 
-# Create the modified plot
-ggplot(newdataset2, aes(x = sd, y = optimum_diff, color = heritability)) +
-  geom_point() +
-  facet_wrap(~locus, scales = "free_y") +
-  labs(
-    title = "Optimal Difference  vs. Standard Deviation",
-    x = "Standard Deviation (sd)",
-    y = "Optimal Difference"
-  )+
-  theme(plot.title = element_text(hjust = 0.5))
+ggplot(newdataset2, aes(y = optimum, x = Fitness, color = heritability)) +
+  geom_density_ridges(aes(fill = heritability), alpha = 0.3) +
+  geom_vline(aes(xintercept = mean(Fitness)), linetype="dashed", color = "red") +
+  geom_text(aes(x = Mean_Fitness, label = paste("Mean =", round(Mean_Fitness, 2))), y = Inf, vjust = 2, color = "red", size = 2) +
+  facet_grid(~locus, scales = "free_y")+
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
+```
+
+```{r}
+# # plot of Optimum vs. sd
+# ggplot(newdataset, aes(x = sd, y = optimum,  color = heritability)) +
+#   geom_point() +
+#   facet_wrap(~locus, scales = "free_y")+
+#   labs( title = "optimum vs. Standard Deviation",
+#         x = "Standard Deviation (sd)",
+#         y = "optimum"
+#   )+
+#   theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+# # Calculate the sequential difference t1 - t in optimum
+# 
+# newdataset2 <- newdataset %>% 
+#   #dplyr::filter(h2 > 0.1) %>% 
+#   dplyr::select(optimum, sd, heritability, locus, Fitness, phenotype) %>% 
+#   distinct() %>% 
+#   group_by(locus, heritability) %>% 
+#   arrange(sd) %>% 
+#   mutate(optimum_diff = c(NA, diff(optimum)),
+#          Fitness = as.factor(round(Fitness, digits = 5))) %>% 
+#   drop_na()
+# 
+# # Create the modified plot
+# ggplot(newdataset2, aes(x = sd, y = optimum_diff, color = heritability)) +
+#   geom_point() +
+#   facet_wrap(~locus, scales = "free_y") +
+#   labs(
+#     title = "Optimal Difference  vs. Standard Deviation",
+#     x = "Standard Deviation (sd)",
+#     y = "Optimal Difference"
+#   )+
+#   theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Fitness vs Phenotype
+
+```{r}
+# 
+# library(ggridges)
+# theme_set(theme_classic())
+# 
+# ggplot(newdataset, aes(x = phenotype, y = Fitness, fill = heritability)) +
+#   #geom_density_ridges(aes(fill = heritability), alpha = 0.3) + 
+#   geom_histogram()+
+#   #scale_fill_manual(values = c("cyan", "yellow", "magenta")) +
+#   facet_grid(~locus, scales = "free_y")+
+#   #scale_y_discrete(expand = c(0.01, 0))+
+#   theme(axis.text = element_text(size = 12, face = "bold"),
+#         axis.line = element_line(size = 2),
+#         axis.title = element_text(size = 12, face = "bold"),
+#         strip.text = element_text(size = 12, face = "bold"))
+```
+
+```{r}
+newdataset2 <- df %>% group_by(seed, sd, locus, h2) %>%
+  mutate(heritability = factor(h2),
+    stand_dev = factor(sd),
+    Fitness = as.factor(round(Fitness, digits = 5)))
+
+ggplot(newdataset2, aes(phenotype, Fitness, fill = heritability)) +
+  geom_density_ridges(aes(fill = heritability), alpha = 0.3) +
+  facet_grid(~locus, scales = "free_y")+
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
+```
+
+```{r}
+#unique(newdataset2$Fitness)
+```
+
+## Adjust fit fx
+
+```{r}
+rm(list = ls())
+library(tibble)
+library(dplyr)
+
+nloci <- c(1, 10, 100, 300)
+ninds <- 10000
+h2s <- c(0.1, 0.5, 0.8)
+sds <- 1:4
+
+seeds <- 690897
+
+# Initialize df as an empty tibble
+df <- tibble()#numeric(length = ninds)
+
+  # Loop for loci
+  for (locus in nloci) {
+    effects <- rexp(locus)
+    markers <- runif(locus, 0, 1)
+    additive <- numeric(length = ninds)
+
+    #  Additive effects for individuals
+    for (ind in 1:ninds) {
+      geno <- rbinom(locus, 1, markers)
+      effs <- geno * effects
+      additive[ind] <- sum(effs)
+    }
+    V_A <- locus / 3
+
+    # Loop for heritabilities
+    for (h2 in h2s) {
+      V_E <- (V_A / h2) - V_A
+      env <- rnorm(ninds, 0.0, sqrt(V_E))
+      
+      for (stand in sds) {
+        myphedata <- tibble(
+          phenotypes = additive + env,
+          mup = 0.5 * locus, # Expected mean
+          sdp = ifelse(locus == 1, sqrt((3*locus) / h2), sqrt(locus / (3 * h2))), 
+          phenotype = (phenotypes - mup) / sdp, # Phenotype scaling
+          optimum = mean(phenotype) + (stand * sd(phenotype)),
+          Fitness = ifelse(locus <= 10, exp(-(1/100) * (phenotype - optimum)^2), 
+                           exp(-(1/(100*sdp)) * (phenotype - optimum)^2)),
+          stand = stand,  
+          h2 = h2,  
+          locus = locus
+        )
+        df <- bind_rows(df, myphedata)
+      }
+    }
+  }
+
+```
+
+```{r}
+newdataset <- df %>%
+  group_by(stand, locus, h2) %>%
+  mutate(
+    heritability = factor(h2),
+    stand_dev = factor(stand),
+    optimum = factor(optimum),
+    mean_fitness = mean(Fitness)
+  )
+```
+
+```{r}
+library(ggplot2)
+library(ggridges)
+theme_set(theme_classic())
+
+ggplot(newdataset %>% filter(stand==4, heritability == 0.5), aes(x = Fitness, y = round(optimum, digits = 4))) +
+  geom_density_ridges(aes(fill = heritability), alpha = 0.3, bandwidth = 0.01) + # fill = heritability
+  scale_fill_manual(values = c("magenta", "cyan", "yellow")) +
+  geom_vline(aes(xintercept = mean_fitness), color = "darkblue") +
+  geom_text(aes(x = mean_fitness, label = paste("Mean =", round(mean_fitness, 4)),), y = 3, vjust = 0.5, hjust = 0.5, color = "darkblue", size = 2) +
+  facet_grid(~locus)
+```
+
+## Seq Pheno
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(ggridges)
+sds <- 1:4
+dataf1 <- list() # Ensure this is a list
+for (sdt in sds) {
+  set.seed(124935)
+  phenotypes <- seq(from = -6, to = 6, by = 0.1)
+  phenotypes = (phenotypes - mean(phenotypes))/sd(phenotypes)
+  optimum <- mean(phenotypes) + sdt * sd(phenotypes)
+  fitness <- exp(-(1/150) * (phenotypes - optimum)^2)
+  sdt <- sdt
+  dataf1[[sdt]] <- tibble(phenotypes, optimum, fitness, sdt) # Corrected to dataf1
+}
+#tail(dataf1[[4]]) # Display the head of the first tibble in the list
+dataf1 <- bind_rows(dataf1)
+tail(dataf1)
+```
+
+```{r}
+library(ggridges)
+theme_set(theme_classic())
+
+dataf2 <- dataf1 %>% 
+  mutate(optimum = factor(round(optimum, digits = 3)), standv = factor(sdt))
+
+# Calculate the mean fitness for each standv group
+mean_fitness <- dataf2 %>% 
+  group_by(standv) %>% 
+  summarize(mean_optimum = mean(fitness))
+
+ggplot(dataf2) +
+  geom_density_ridges(aes(y = optimum, x = fitness, color = standv, fill = standv), alpha = 0.3) +
+  geom_vline(data = mean_fitness, aes(xintercept = mean_optimum), color = "blue") +
+  geom_text(data = mean_fitness, aes(x = mean_optimum, label = paste("Mean =", round(mean_optimum, 2))), 
+            y = 5, vjust = 0.5, hjust = 0.5, color = "darkred", size = 3) +  
+  facet_grid(~standv, scales = "free_y") +
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
+```
+
+### Set a global mean fitness for all loci at each standard deviation
+
+```{r}
+rm(list = ls())
+library(tibble)
+library(dplyr)
+
+nloci <- c(1, 10, 30, 100, 300) # Number of loci
+inds <- 10000 # Number of individuals
+h2s <- c(0.1, 0.5, 0.8) # Heritability
+sds <- 1:4 # Standard deviations for optimum
+
+# dataframe
+df_list <- list()  # List to store iterations
+for (iteration in 1:1000) { # 1000 iterations
+  df <- tibble()  # dataframe for each iteration
+  mypheno <- list()
+  set.seed(iteration)  # Use iteration as seeds
+  for(locus in nloci){
+    effs <- rexp(locus) # Random effects
+    markers <- runif(locus, 0, 1) # Random markers
+    additive <- numeric(inds)
+    for(ind in 1:inds){
+      genome <- rbinom(locus, 1, markers) # Genomic representation
+      effects <- genome * effs # Calculate effects
+      additive[ind] <- sum(effects) # Sum of effects
+    }
+    VA <- var(additive) # Additive variance
+    for(h2 in h2s){
+      VE <- (VA/h2) - VA # Environmental variance
+      env <- rnorm(inds, 0, sqrt(VE)) # Environmental effect
+      for(standv in sds){
+        # Adjust phenotype scaling based on locus and heritability
+        sdp = ifelse(locus == 1, sqrt((3*locus)/h2), sqrt(locus/(3 * h2)))
+        mypheno <- tibble(
+          phenotypes = additive + env,
+          mup = 0.5 * locus, # Mean phenotype
+          sdp = sdp, # Standard deviation of phenotype
+          standv = standv,
+          heritability = h2,
+          locus = locus
+        )
+        df <- bind_rows(df, mypheno)
+      }
+    }
+  }
+  df_list[[iteration]] <- df  # Store dataframe in my list of data
+}
+
+# A single dataframe
+combined_df <- do.call(bind_rows, df_list)
+
+newdataset <- combined_df %>%
+  group_by(heritability, locus, standv) %>%
+  mutate(phenotype = (phenotypes - mup) / sdp, # Scaled phenotype
+         optimum = mean(phenotype) + (standv * sd(phenotype)), # Optimum phenotype
+         Fitness = case_when(
+           locus == 1 ~ exp(-(sd(phenotype)/4) *  (phenotype - optimum)^2),
+           TRUE ~ exp(-(sd(phenotype)/100) * (phenotype - optimum)^2)),
+         mean_fit = mean(Fitness),
+         heritability = factor(heritability),
+         standv = factor(standv)) %>% 
+  ungroup()
+
+```
+
+```{r, fig.width=12, fig.height=6}
+
+theme_set(theme_classic())
+
+ggplot(newdataset %>% 
+  filter(standv == 4), aes(Fitness)) +
+  geom_density()+
+  geom_vline(data = newdataset%>% 
+  filter(standv == 4), aes(xintercept = mean_fit), color = "darkred") +
+  geom_text(data = newdataset%>% 
+  filter(standv == 4), aes(x = mean_fit, label = round(mean_fit, 4)), color = "red", vjust = 5, hjust = 0.1, y = Inf) +
+  facet_wrap(~interaction(locus,heritability), scales = "free_y", ncol = 3) +
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
+```
+
+```{r, fig.width=12, fig.height=6}
+library(ggridges)
+theme_set(theme_classic())
+
+ggplot(newdataset %>% 
+  filter(locus <=100), aes(y = standv, x = Fitness)) +
+  geom_density_ridges(aes(fill = heritability), alpha = 0.3) + 
+  scale_fill_manual(values = c("cyan", "yellow", "magenta")) +
+  facet_grid(~locus, scales = "free_y")+
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        #axis.line = element_line(size = 2),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
+```
+
+```{r, fig.width=12, fig.height=6}
+theme_set(theme_classic())
+ggplot(newdataset %>% filter(standv == 4, heritability == 0.5, locus <= 100) %>%
+         group_by(locus), aes(x = Fitness, y = optimum)) +
+  geom_density_ridges(aes(fill = heritability), alpha = 0.3, bandwidth = 0.01) +
+  geom_vline(data = . %>% group_by(locus) %>% summarise(MeanFitness = mean(Fitness)), aes(xintercept = MeanFitness), color = "darkblue") +
+  geom_text(data = . %>% group_by(locus) %>% summarise(MeanFitness = mean(Fitness)), aes(x = MeanFitness, label = paste("Mean =", round(MeanFitness, 4))),  y = 4, vjust = 0.5, hjust = 0.5, color = "darkblue", size = 3) +
+  facet_grid(~locus) +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 12, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
+
 ```
