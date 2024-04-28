@@ -12,6 +12,10 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 ## Writing Flow
 
 The most current notes are at the top.
+[** Wow!! April 28th 2023\***{.underline}
+
+[I need to discuss with Libby how we can use mean and standard deviation while setting the optimum. I have realized that depending on the number of loci, the mean phenotype across replicates can vary, with more loci having a high error rate (mean being away from zero after adjustment). Therefore, we can still set the optimum to be based on the new mean and standard deviation so that the selection pressure can be the same across different number of loci. This is indicated by how all loci can have same fitness value at at given phenotype.]{.underline}
+
 
 [**November 5th 2023\***]{.underline}
 
@@ -159,7 +163,7 @@ Have been working with FFT. I have figured out that the best way to work with th
 
 Started the project while following a single step per time. The first stem was to set the genome size and the number of QTLs. The genome size will approximately equal to 1,220,281 (arbitrary), and the number of QTLs considered are 1 with interval (I) of 610,140, 10 QTLs (I = 110,934), 70 QTLs (I = 17,186), 100 QTLs (I = 12,081), 300 QTLs (I = 4,053).
 
-> To write the file, the file name will include the replicate, QTL#, and hertability value
+> To write the file, the file name will include the replicate, QTL#, and heritability value
 
 On the plan, there is writing a bash code that combines all the files together.
 
