@@ -183,12 +183,11 @@ process_files <- function(dirpath, pattern, plot_type) {
       
       plots[[loci_gen_val]] <- p
     }
-    }
   }
-  
   # Return the list of combined data and plots
   return(list(combined_data = combined_data, plots = plots))
-}
+ }
+
 
 # Example usage of the function
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"

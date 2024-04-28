@@ -47,10 +47,7 @@ p1/p2/p3
 ```{r, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
 pattern <- "^MeanPhenotypes(1|2|3)_n*" #|10|15|20|30
-# "^MeanPhenotypes15\\D" #(\\D|$).    (1|2|3|10|13|17|21)_n
 result <- process_files(dirpath, pattern, "loci")
-#combined_data <- result$combined_data
-#plots <- result$plots
 result$plots
 
 ```

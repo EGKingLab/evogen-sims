@@ -191,6 +191,7 @@ mygrid
 ```{r}
 pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") %>% 
   filter(Generation == 0 | Generation %% 10 == 0)
+
  pa <- pheno %>% 
         ggplot(aes(Generation, Phenotype))+
         geom_line(linewidth = 0.1, alpha = 1)+
@@ -198,14 +199,16 @@ pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Mod
 ```
 
 ```{r}
-pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv")# %>% 
+pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") # %>% 
   #filter(Generation == 0 | Generation %% 10 != 0)
+
 pb <-  pheno %>% ggplot(aes(Generation, Phenotype))+
         geom_line(linewidth = 0.1, alpha = 1)+
         theme_bw()
 ```
 
 ```{r}
+library(patchwork)
 pa/pb
 ```
 
@@ -277,6 +280,7 @@ Oligo2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_M
 ```
 
 ```{r, fig.width=8, fig.height=4, echo=FALSE}
+library(plotly)
 # Add a column to distinguish the datasets
 geno_file <- Oligo1 %>% mutate(Selection = "Oligogenic")
 geno_file2 <- Oligo2 %>% mutate(Selection = "Polygenic")
@@ -1044,9 +1048,48 @@ process_files <- function(dirpath, pattern, plot_type) {
 ```{r, fig.width = 12, fig.height = 6}
 
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir//"
-pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(30))?\\.csv$"
+pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|5)(SD(1|2))?(Gen(20|10))?\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
 # Display plots
 result$plots
+```
+
+#### Optimum vs Fitness
+
+```{r}
+ph1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD1Gen10.csv")
+ph11 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD2Gen10.csv")
+ph2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD3Gen10.csv")
+ph22 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen10.csv")
+
+# Add a new column 'source' to each dataframe
+ph1$standv <- "1 values"
+ph11$standv <- "2 values"
+ph2$standv <- "3 values"
+ph22$standv <- "4 values"
+
+# Combine all dataframes into one
+all_data <- bind_rows(ph1, ph11, ph2, ph22)%>% 
+  filter(Optimum > 0) %>% 
+  mutate(Optimum = factor(Optimum)) 
+
+
+dataf2 <- all_data 
+
+# Calculate the mean fitness for each standv group
+mean_fitness <- dataf2 %>%
+  group_by(standv) %>% 
+  summarize(mean_optimum = mean(meanFitness))
+
+ggplot(dataf2) +
+  geom_density_ridges(aes(y = Optimum, x = meanFitness, color = standv, fill = standv), alpha = 0.3) +
+  geom_vline(data = mean_fitness, aes(xintercept = mean_optimum), color = "blue") +
+  geom_text(data = mean_fitness, aes(x = mean_optimum, label = paste("Mean =", round(mean_optimum, 2))), 
+            y = 5, vjust = 0.5, hjust = 0.5, color = "darkred", size = 2) +  #size = 3
+  facet_grid(~standv, scales = "free_y") +
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
 ```
