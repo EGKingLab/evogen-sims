@@ -9,7 +9,7 @@ rm(list = ls())
 library(tibble)
 library(dplyr)
 
-nloci <- c(1, 10, 100, 300) # Number of loci
+nloci <- c(1, 10, 100, 1000) # Number of loci
 inds <- 10000 # Number of individuals
 h2s <- c(0.1, 0.8) # Heritability
 #sds <- c(40, 50, 70, 60) # Standard deviations to use if we choose z to range between 0 and 100
@@ -27,10 +27,11 @@ for (iteration in 1:200) { # 1000 iterations
     additive <- numeric(inds)
     for(ind in 1:inds){
       genome <- rbinom(locus, 1, markers) # Genomic representation
-      effects <- genome * effs # Calculate effects
+      effects <- (genome * effs) # Calculate effects
       additive[ind] <- sum(effects) # Sum of effects
     }
-    VA <- var(additive) # Additive variance
+    #VA <- var(additive) # Additive variance
+    VA <- locus/3
     for(h2 in h2s){
       VE <- (VA/h2) - VA # Environmental variance
       env <- rnorm(inds, 0, sqrt(VE)) # Environmental effect
@@ -61,10 +62,12 @@ combined_df <- do.call(bind_rows, df_list)
 newdataset <- combined_df %>%
   group_by(heritability, locus, standv) %>%
   mutate(
-        #phenotype = ((phenotypes - min(phenotypes)) / 
-                    # (max(phenotypes) - min(phenotypes))) * 100,# Pheno will be between 0 and 100
-         phenotype = ((phenotypes - mup) / (sdp)),# Scaled phenotype
-         optimum = standv, # Optimum phenotype
+        # phenotype = ((phenotypes - min(phenotypes)) / 
+        #              (max(phenotypes) - min(phenotypes))) * 100,# Pheno will be between 0 and 100
+           phenotype = ((phenotypes - mup) / (sdp)),# Scaled phenotype
+           #optimum = standv, # Optimum phenotype
+        #phenotype = phenotypes,# Scaled phenotype
+        optimum = mean(phenotype)+ sd(phenotype)*standv, # Optimum phenotype
          #Fitness = case_when(
           # locus == 1 ~ exp(-(sd(phenotype)/5) *  (phenotype - optimum)^2),
          #TRUE ~ exp(-(sd(phenotype)/100) * (phenotype - optimum)^2)),
@@ -84,7 +87,7 @@ library(cowplot)
 newdataset2 <- newdataset %>% 
   filter(heritability == 0.8, standv == 1| standv == 4) # | standv == 4| standv == 8
 # Define the phenotype value. Not that this value can be changed based on which z scale choose
-pheno.value <- 1 #can go with 50 if pheno (z) ranges in 0 and 100
+pheno.value <- 0 #can go with 50 if pheno (z) ranges in 0 and 100
 
 # Filter the dataset to get fitness values where phenotype is 1.6 for each locus and standv
 fit.values <- newdataset2 %>%
@@ -105,7 +108,7 @@ myplot <- ggplot(data = newdataset2,
   geom_text(data = fit.values, aes(x = pheno.value, y = round(Fitness, digits =2), 
                                    label = paste("Pheno =", pheno.value, ";  Fit =", round(Fitness, digits = 2))),
             color = standv, vjust = 1.5, hjust = 1.5, size = 2) +
-  facet_wrap(~locus, ncol = 2, scales = "free_x") +
+  facet_wrap(~locus, ncol = 2) +
   labs(x = "Phenotypes", y = "Fitness")+
   theme(axis.text = element_text(size = 12, face = "bold"),
         axis.title = element_text(size = 12, face = "bold"),
