@@ -69,6 +69,7 @@ initialize() {
 	// Create NSV file for genome data and mean phenotype data
 	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/NS.dir/genome",repl,"_","n",loci,"_H",h,".csv"), paste0("Generation,Position,Frequency,Effect,Origin"));
 	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/NS.dir/MeanPhenotypes",repl,"_","n",loci,"_H",h,".csv"), paste0("Generation,Phenotype"));
+writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/NS.dir/InitialPhenotypes",repl,"_","n",loci,"_H",h,".csv"), paste0("Individual,Phenotype"));
 }
 
 // Function to calculate mutation effect
@@ -85,7 +86,8 @@ mutationEffect(m2) {
 	additive = inds.sumOfMutationsOfType(m2);
 	
 	// Calculate the genetic variance and define the environmental variance
-	V_A = sd(additive)^2;
+	//V_A = var(additive); //sd(additive)^2;
+	V_A = loci/3;
 	defineConstant("V_E",(V_A - h2 * V_A) / h2);
 	env = rnorm(size(inds), 0.0, sqrt(V_E));
 	
@@ -95,9 +97,31 @@ mutationEffect(m2) {
 	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
-	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes))+ 100;
+	//phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes))+ 100;
 	
 	
+	mup = 0.5*loci; // Expected mean
+	
+	sdp = sqrt(loci/(3*h2)); //Expected standard deviation
+	
+	/*if (nloci == 1) {
+		sdp = sqrt(nloci*3/h2);
+	} else {
+		sdp = sqrt(nloci / (3 * h2));
+	}*/
+	
+	phenotypes = ((phenotypes - mup)/sdp); // Phenotype scaling
+	
+
+	for (i in seqAlong(inds)) {
+                ind = inds[i];
+                ind_id = ind;
+
+                phenotype = phenotypes[i];
+
+        writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/NS.dir/InitialPhenotypes",repl,"_","n",loci,"_H",h,".csv"), paste0(ind_id, ",",phenotype), append = T);
+}
+
 	// Get the mutation information and order them by frequency
 	qtls = sim.mutationsOfType(m2);
 	freq = sim.mutationFrequencies(NULL, qtls);
@@ -139,7 +163,19 @@ mutationEffect(m2) {
 	//phenotypes = (phenotypes/loci)*100;
 	//phenotypes = ((phenotypes - mean(phenotypes))/sd(phenotypes)) + 10;
 	
-	phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes))+ 100;
+	//phenotypes = ((phenotypes - (nloci/2))/sd(phenotypes))+ 100;
+	
+	mup = 0.5*loci; // Expected mean
+	
+	sdp = sqrt(loci/(3*h2)); //Expected standard deviation
+	
+	/*if (nloci == 1) {
+		sdp = sqrt(nloci*3/h2);
+	} else {
+		sdp = sqrt(nloci / (3 * h2));
+	}*/
+	
+	phenotypes = ((phenotypes - mup)/sdp); // Phenotype scaling
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
 	//inds.fitnessScaling = 1 - (abs(phenotypes - newopt[sim.cycle])/100);
