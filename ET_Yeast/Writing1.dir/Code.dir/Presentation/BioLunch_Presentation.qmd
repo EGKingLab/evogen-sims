@@ -244,8 +244,8 @@ pc/pd
 
 ```{r}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD1Gen10.csv")
-mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n1_H0.1SD1Gen10.csv")
+mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n100_H0.8SD3Gen10.csv")
+mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n100_H0.8SD3Gen10.csv")
 ```
 
 ```{r, fig.width=8, fig.height=4, echo=FALSE}
@@ -257,11 +257,11 @@ geno_file2 <- mono2 %>% mutate(Selection = "Gradual 2-Seasons")
 Genome_dataset <- rbind(geno_file, geno_file2)
 
 # Create the plot
-freqplot <- Genome_dataset %>% 
+freqplot <- Genome_dataset %>% filter(Generation <= 1000) %>% 
   ggplot(aes(x = Generation, y = Frequency, 
              color = factor(Position))) +
-  geom_line(linewidth = .5) +
-  facet_grid(Selection~.) +
+  geom_line(linewidth = .1) +
+  facet_wrap(Selection~.) +
   theme_set(theme_cowplot())+
   theme(axis.text = element_text(size = 12, angle = 15),
         axis.line = element_line(size = 2),
@@ -289,7 +289,7 @@ geno_file2 <- Oligo2 %>% mutate(Selection = "Polygenic")
 Genome_dataset <- rbind(geno_file, geno_file2)
 
 # Create the plot
-freqplot <- Genome_dataset %>% 
+freqplot <- Genome_dataset %>% filter(Generation <= 1000) %>% 
   ggplot(aes(x = Generation, y = Frequency, 
              color = factor(Position))) +
   geom_line(linewidth = .1) +
@@ -357,7 +357,7 @@ plot_frequency_by_descriptor <- function(file_paths, descriptors) {
     ggplot(aes(x = Generation, y = Frequency, 
                color = factor(Position))) +
     geom_line(linewidth = 0.3) +
-    facet_wrap(~Selection) +
+    facet_wrap(Selection~., scales = "free_x") +
     theme_cowplot() +
     theme(legend.position = "none",
           axis.text = element_text(size = 17, face = "bold"),
@@ -372,11 +372,11 @@ plot_frequency_by_descriptor <- function(file_paths, descriptors) {
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
 file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
-file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD4Gen10.csv"
+file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD3Gen10.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
- descriptors <- c("SD = 1", "SD = 4")
+ descriptors <- c("Selection Strength = 1", "Selection Strength = 2")
  plot_frequency_by_descriptor(file_paths, descriptors)
 
 ```
@@ -410,9 +410,9 @@ file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.d
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
 
-Mono <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.5SD2Gen20.csv")
-Oligo <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.5SD2Gen20.csv")
-Poly<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD2Gen20.csv")
+Mono <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD1Gen20.csv")
+Oligo <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen20.csv")
+Poly<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.1SD1Gen20.csv")
 
 # Add a column to distinguish the datasets
 geno_file <- Mono %>% mutate(Selection = "Monogenic")

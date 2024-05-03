@@ -12,10 +12,14 @@ Here are the notes taken while working on the yeast simulation model. Most of th
 ## Writing Flow
 
 The most current notes are at the top.
-[** Wow!! April 28th 2023\***{.underline}
 
-[I need to discuss with Libby how we can use mean and standard deviation while setting the optimum. I have realized that depending on the number of loci, the mean phenotype across replicates can vary, with more loci having a high error rate (mean being away from zero after adjustment). Therefore, we can still set the optimum to be based on the new mean and standard deviation so that the selection pressure can be the same across different number of loci. This is indicated by how all loci can have same fitness value at at given phenotype.]{.underline}
+[**Wow!! April 28th 2023**]{.underline}
 
+I need to discuss with Libby how we can use mean and standard deviation while setting the optimum. I have realized that depending on the number of loci, the mean phenotype across replicates can vary, with more loci having a high error rate (mean being away from zero after adjustment). Therefore, we can still set the optimum to be based on the new mean and standard deviation so that the selection pressure can be the same across different number of loci. This is indicated by how all loci can have same fitness value at at given phenotype.
+
+> Also, how big is our selection? For example, if the phenotype is 1 unit away from optimum, what's gonna be the [**fitness**]{.underline}? This can help explain in which case we can see fluctuation at when standard is 1 and while the scaling factor ([selection width]{.underline}) has been reduced.
+>
+> Can we change the scaling factor to be 50, or 200 is still fine \[[SOMETHING THAT I NEED TO DECIDE ON]{.underline} i.e the scaling factor to use\]??
 
 [**November 5th 2023\***]{.underline}
 

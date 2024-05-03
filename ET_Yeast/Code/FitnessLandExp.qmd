@@ -561,10 +561,10 @@ sds <- 1:4 # Standard deviations for optimum
 
 # dataframe
 df_list <- list()  # List to store iterations
-for (iteration in 1:1000) { # 1000 iterations
+for (iteration in 1:500) { # 1000 iterations
   df <- tibble()  # dataframe for each iteration
   mypheno <- list()
-  set.seed(iteration)  # Use iteration as seeds
+  #set.seed(iteration)  # Use iteration as seeds
   for(locus in nloci){
     effs <- rexp(locus) # Random effects
     markers <- runif(locus, 0, 1) # Random markers
@@ -574,13 +574,13 @@ for (iteration in 1:1000) { # 1000 iterations
       effects <- genome * effs # Calculate effects
       additive[ind] <- sum(effects) # Sum of effects
     }
-    VA <- var(additive) # Additive variance
+    VA <- locus/3#var(additive) # Additive variance
     for(h2 in h2s){
       VE <- (VA/h2) - VA # Environmental variance
       env <- rnorm(inds, 0, sqrt(VE)) # Environmental effect
       for(standv in sds){
         # Adjust phenotype scaling based on locus and heritability
-        sdp = ifelse(locus == 1, sqrt((3*locus)/h2), sqrt(locus/(3 * h2)))
+        sdp = sqrt(locus/(3 * h2))
         mypheno <- tibble(
           phenotypes = additive + env,
           mup = 0.5 * locus, # Mean phenotype
@@ -603,15 +603,31 @@ newdataset <- combined_df %>%
   group_by(heritability, locus, standv) %>%
   mutate(phenotype = (phenotypes - mup) / sdp, # Scaled phenotype
          optimum = mean(phenotype) + (standv * sd(phenotype)), # Optimum phenotype
-         #Fitness = case_when(
-          # locus == 1 ~ exp(-(sd(phenotype)/4) *  (phenotype - optimum)^2),
-          # TRUE ~ exp(-(sd(phenotype)/100) * (phenotype - optimum)^2)),
-         Fitness = exp(-(1/200) * (phenotype - optimum)^2),
+         Fitness = case_when(
+           locus == 1 ~ exp(-(sd(phenotype)/50) *  (phenotype - optimum)^2),
+           TRUE ~ exp(-(sd(phenotype)/50) * (phenotype - optimum)^2)),
+       #  Fitness = exp(-(1/200) * (phenotype - optimum)^2),
          mean_fit = mean(Fitness),
          heritability = factor(heritability),
-         standv = factor(standv)) %>% 
-  ungroup()
+         standv = factor(standv)) 
 
+```
+
+```{r, fig.width=12, fig.height=6}
+#theme_set(theme_classic())
+theme_set(theme_cowplot())
+
+newdataset <- newdataset %>% filter(heritability == 0.1,locus <= 100)
+
+ggplot(newdataset, #standv == 4,
+       aes(x = round(phenotype,digits = 5),
+           y = round(Fitness, digits = 5), color = standv)) +
+  #geom_density_ridges(alpha = 0.3) +
+  geom_point()+
+  facet_grid(~locus, scales = "free_y")+
+  theme(axis.text = element_text(size = 12, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"),
+        strip.text = element_text(size = 12, face = "bold"))
 ```
 
 ```{r, fig.width=12, fig.height=6}

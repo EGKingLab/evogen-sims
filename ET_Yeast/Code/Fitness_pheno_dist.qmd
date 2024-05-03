@@ -19,7 +19,7 @@ To explore whether the number of loci produces a different distribution of pheno
 
 
 ```{r}
-
+rm(list = ls())
 niter <- 100
 
 nlocis <- c(10, 100,1000)
@@ -95,6 +95,17 @@ mm.all |>
   ggplot(aes(value, color = h2F, group = rep_code)) +
   geom_density(linewidth = 0.1) + 
   facet_grid(nlociF~.)
+
+```
+
+```{r}
+mm.all |> filter(h2F == "0.9") %>% 
+  ggplot(aes(value, color = h2F, group = rep_code)) +
+  geom_density(linewidth = 0.1) + 
+  facet_grid(nlociF~., scales = "free_x")
+```
+
+```{r}
 
 ```
 

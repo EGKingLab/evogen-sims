@@ -9,7 +9,7 @@ rm(list = ls())
 library(tibble)
 library(dplyr)
 
-nloci <- c(1, 10, 100, 1000) # Number of loci
+nloci <- c(1, 10, 100, 300) # Number of loci
 inds <- 10000 # Number of individuals
 h2s <- c(0.1, 0.8) # Heritability
 #sds <- c(40, 50, 70, 60) # Standard deviations to use if we choose z to range between 0 and 100
@@ -118,4 +118,39 @@ myplot <- ggplot(data = newdataset2,
 ```{r, fig.width=12, fig.height=6}
 myplot
 ```
+## Fitness/ selection strength assessment
+
+```{r}
+library(tidyverse)
+
+fitfx <- function(D){
+  w = exp(-(1/50)*D^2)
+  return(w)
+}
+```
+
+```{r}
+D = seq(-5, 5, by = 1)
+fitness = fitfx(D)
+```
+
+```{r}
+fdf <- tibble(D, fitness)
+nfdf <- fdf %>% 
+  mutate(D = abs(D)) %>% 
+  distinct() %>% 
+  mutate(difd = round(c(diff(fitness), 0), digits = 4))
+
+nfdf
+
+```
+```{r}
+nfdf %>% 
+  ggplot(aes(factor(D), factor(round(fitness, digits = 4))))+
+  geom_point()+
+  labs(x = "Optimal Distance", y = "Fitness")+
+  theme_classic()
+```
+
+
 

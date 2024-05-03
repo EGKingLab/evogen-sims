@@ -141,69 +141,73 @@ Attaching package: 'dplyr'</code></pre>
 
     intersect, setdiff, setequal, union</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>nloci <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">300</span>, <span class="dv">10</span>, <span class="dv">100</span>) <span class="co"># Number of loci</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>nloci <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">300</span>) <span class="co"># Number of loci</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>inds <span class="ot">&lt;-</span> <span class="dv">10000</span> <span class="co"># Number of individuals</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>h2s <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.8</span>) <span class="co"># Heritability</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>sds <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>) <span class="co"># Standard deviations for optimum</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># dataframe</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>df_list <span class="ot">&lt;-</span> <span class="fu">list</span>()  <span class="co"># List to store iterations</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (iteration <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">1000</span>) { <span class="co"># 1000 iterations</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">tibble</span>()  <span class="co"># dataframe for each iteration</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  mypheno <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#set.seed(iteration)  # Use iteration as seeds</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(locus <span class="cf">in</span> nloci){</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    effs <span class="ot">&lt;-</span> <span class="fu">rexp</span>(locus) <span class="co"># Random effects</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    markers <span class="ot">&lt;-</span> <span class="fu">runif</span>(locus, <span class="dv">0</span>, <span class="dv">1</span>) <span class="co"># Random markers</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    additive <span class="ot">&lt;-</span> <span class="fu">numeric</span>(inds)</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(ind <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>inds){</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      genome <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(locus, <span class="dv">1</span>, markers) <span class="co"># Genomic representation</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>      effects <span class="ot">&lt;-</span> genome <span class="sc">*</span> effs <span class="co"># Calculate effects</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>      additive[ind] <span class="ot">&lt;-</span> <span class="fu">sum</span>(effects) <span class="co"># Sum of effects</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    VA <span class="ot">&lt;-</span> <span class="fu">var</span>(additive) <span class="co"># Additive variance</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(h2 <span class="cf">in</span> h2s){</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>      VE <span class="ot">&lt;-</span> (VA<span class="sc">/</span>h2) <span class="sc">-</span> VA <span class="co"># Environmental variance</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>      env <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(inds, <span class="dv">0</span>, <span class="fu">sqrt</span>(VE)) <span class="co"># Environmental effect</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span>(standv <span class="cf">in</span> sds){</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Adjust phenotype scaling based on locus and heritability</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        sdp <span class="ot">=</span> <span class="fu">sqrt</span>(locus<span class="sc">/</span>(<span class="dv">3</span><span class="sc">*</span>h2))</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ifelse(locus == 1, sqrt((3*locus)/h2), sqrt(3*locus/h2))</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        mypheno <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>          <span class="at">phenotypes =</span> additive <span class="sc">+</span> env,</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>          <span class="at">mup =</span> <span class="fl">0.5</span> <span class="sc">*</span> locus, <span class="co"># Mean phenotype</span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">sdp =</span> sdp, <span class="co"># Standard deviation of phenotype</span></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>          <span class="at">standv =</span> standv,</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>          <span class="at">heritability =</span> h2,</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>          <span class="at">locus =</span> locus</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(df, mypheno)</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  df_list[[iteration]] <span class="ot">&lt;-</span> df  <span class="co"># Store dataframe in my list of data</span></span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="co"># A single dataframe</span></span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(bind_rows, df_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#sds &lt;- c(40, 50, 70, 60) # Standard deviations to use if we choose z to range between 0 and 100</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>sds <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>) <span class="co"># Standard deviations for optimum</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># dataframe</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>df_list <span class="ot">&lt;-</span> <span class="fu">list</span>()  <span class="co"># List to store iterations</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (iteration <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) { <span class="co"># 1000 iterations</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">tibble</span>()  <span class="co"># dataframe for each iteration</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  mypheno <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="co">#set.seed(iteration)  # Use iteration as seeds</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(locus <span class="cf">in</span> nloci){</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    effs <span class="ot">&lt;-</span> <span class="fu">rexp</span>(locus) <span class="co"># Random effects</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    markers <span class="ot">&lt;-</span> <span class="fu">runif</span>(locus, <span class="dv">0</span>, <span class="dv">1</span>) <span class="co"># Random markers</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    additive <span class="ot">&lt;-</span> <span class="fu">numeric</span>(inds)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(ind <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>inds){</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>      genome <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(locus, <span class="dv">1</span>, markers) <span class="co"># Genomic representation</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>      effects <span class="ot">&lt;-</span> (genome <span class="sc">*</span> effs) <span class="co"># Calculate effects</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>      additive[ind] <span class="ot">&lt;-</span> <span class="fu">sum</span>(effects) <span class="co"># Sum of effects</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">#VA &lt;- var(additive) # Additive variance</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    VA <span class="ot">&lt;-</span> locus<span class="sc">/</span><span class="dv">3</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(h2 <span class="cf">in</span> h2s){</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>      VE <span class="ot">&lt;-</span> (VA<span class="sc">/</span>h2) <span class="sc">-</span> VA <span class="co"># Environmental variance</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>      env <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(inds, <span class="dv">0</span>, <span class="fu">sqrt</span>(VE)) <span class="co"># Environmental effect</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span>(standv <span class="cf">in</span> sds){</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Adjust phenotype scaling based on locus and heritability</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        sdp <span class="ot">=</span> <span class="fu">sqrt</span>(locus<span class="sc">/</span>(<span class="dv">3</span><span class="sc">*</span>h2))</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ifelse(locus == 1, sqrt((3*locus)/h2), sqrt(3*locus/h2))</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>        mypheno <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">phenotypes =</span> additive <span class="sc">+</span> env,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>          <span class="at">mup =</span> <span class="fl">0.5</span> <span class="sc">*</span> locus, <span class="co"># Mean phenotype</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>          <span class="at">sdp =</span> sdp, <span class="co"># Standard deviation of phenotype</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>          <span class="at">standv =</span> standv,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>          <span class="at">heritability =</span> h2,</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>          <span class="at">locus =</span> locus</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(df, mypheno)</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  df_list[[iteration]] <span class="ot">&lt;-</span> df  <span class="co"># Store dataframe in my list of data</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="co"># A single dataframe</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(bind_rows, df_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>newdataset <span class="ot">&lt;-</span> combined_df <span class="sc">%&gt;%</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(heritability, locus, standv) <span class="sc">%&gt;%</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">#phenotype = 10 + (phenotypes - min(phenotypes)) / (max(phenotypes)* min(phenotypes)), </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">phenotype =</span> (phenotypes <span class="sc">-</span> mup) <span class="sc">/</span> (sdp),<span class="co"># Scaled phenotype</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">optimum =</span> standv, <span class="co"># Optimum phenotype</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>         <span class="co">#Fitness = case_when(</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>          <span class="co"># locus == 1 ~ exp(-(sd(phenotype)/5) *  (phenotype - optimum)^2),</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>         <span class="co">#TRUE ~ exp(-(sd(phenotype)/100) * (phenotype - optimum)^2)),</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">Fitness =</span> <span class="fu">case_when</span>(</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>           locus <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">exp</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">50</span>) <span class="sc">*</span>  (phenotype <span class="sc">-</span> optimum)<span class="sc">^</span><span class="dv">2</span>),</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>         <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">exp</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">50</span>) <span class="sc">*</span> (phenotype <span class="sc">-</span> optimum)<span class="sc">^</span><span class="dv">2</span>)),</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>         <span class="co">#mean_fit = mean(Fitness),</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">heritability =</span> <span class="fu">factor</span>(heritability),</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">standv =</span> <span class="fu">factor</span>(standv)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># phenotype = ((phenotypes - min(phenotypes)) / </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">#              (max(phenotypes) - min(phenotypes))) * 100,# Pheno will be between 0 and 100</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">phenotype =</span> ((phenotypes <span class="sc">-</span> mup) <span class="sc">/</span> (sdp)),<span class="co"># Scaled phenotype</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>           <span class="co">#optimum = standv, # Optimum phenotype</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">#phenotype = phenotypes,# Scaled phenotype</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">optimum =</span> <span class="fu">mean</span>(phenotype)<span class="sc">+</span> <span class="fu">sd</span>(phenotype)<span class="sc">*</span>standv, <span class="co"># Optimum phenotype</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>         <span class="co">#Fitness = case_when(</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>          <span class="co"># locus == 1 ~ exp(-(sd(phenotype)/5) *  (phenotype - optimum)^2),</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>         <span class="co">#TRUE ~ exp(-(sd(phenotype)/100) * (phenotype - optimum)^2)),</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">Fitness =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>           locus <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">exp</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">50</span>) <span class="sc">*</span>  (phenotype <span class="sc">-</span> optimum)<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>         <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">exp</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">50</span>) <span class="sc">*</span> (phenotype <span class="sc">-</span> optimum)<span class="sc">^</span><span class="dv">2</span>)),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>         <span class="co">#mean_fit = mean(Fitness),</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">heritability =</span> <span class="fu">factor</span>(heritability),</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">standv =</span> <span class="fu">factor</span>(standv)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
@@ -211,14 +215,14 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>newdataset2 <span class="ot">&lt;-</span> newdataset <span class="sc">%&gt;%</span> </span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(heritability <span class="sc">==</span> <span class="fl">0.1</span>, standv <span class="sc">==</span> <span class="dv">1</span><span class="sc">|</span> standv <span class="sc">==</span> <span class="dv">4</span>) <span class="co"># | standv == 4| standv == 8</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the phenotype value</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>pheno.value <span class="ot">&lt;-</span> <span class="dv">1</span><span class="co">#1.60</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(heritability <span class="sc">==</span> <span class="fl">0.8</span>, standv <span class="sc">==</span> <span class="dv">1</span><span class="sc">|</span> standv <span class="sc">==</span> <span class="dv">4</span>) <span class="co"># | standv == 4| standv == 8</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the phenotype value. Not that this value can be changed based on which z scale choose</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>pheno.value <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co">#can go with 50 if pheno (z) ranges in 0 and 100</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the dataset to get fitness values where phenotype is 1.6 for each locus and standv</span></span>
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>fit.values <span class="ot">&lt;-</span> newdataset2 <span class="sc">%&gt;%</span></span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">round</span>(phenotype, <span class="at">digits =</span> <span class="dv">2</span>) <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">round</span>(phenotype, <span class="at">digits =</span> <span class="dv">2</span>) <span class="sc">==</span> pheno.value) <span class="sc">%&gt;%</span></span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(locus, standv, Fitness) <span class="sc">%&gt;%</span></span>
 <span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
@@ -230,12 +234,12 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> <span class="fu">round</span>(Fitness, <span class="at">digits =</span> <span class="dv">5</span>), <span class="at">color =</span> standv)) <span class="sc">+</span></span>
 <span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> pheno.value, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept =</span> Fitness, <span class="at">color =</span> <span class="fu">as.factor</span>(standv))) <span class="sc">+</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> pheno.value, <span class="at">y =</span> <span class="fu">round</span>(Fitness, <span class="at">digits =</span> <span class="dv">2</span>), </span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>                <span class="at">label =</span> <span class="fu">paste</span>(<span class="st">"Pheno ="</span>, pheno.value, <span class="st">"; Fit ="</span>, <span class="fu">round</span>(Fitness, <span class="at">digits =</span> <span class="dv">2</span>))),</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">data =</span> fit.values, <span class="fu">aes</span>(<span class="at">yintercept =</span> Fitness, <span class="at">color =</span> <span class="fu">as.factor</span>(standv))) <span class="sc">+</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> fit.values, <span class="fu">aes</span>(<span class="at">x =</span> pheno.value, <span class="at">y =</span> <span class="fu">round</span>(Fitness, <span class="at">digits =</span><span class="dv">2</span>), </span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">label =</span> <span class="fu">paste</span>(<span class="st">"Pheno ="</span>, pheno.value, <span class="st">";  Fit ="</span>, <span class="fu">round</span>(Fitness, <span class="at">digits =</span> <span class="dv">2</span>))),</span>
 <span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> standv, <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">hjust =</span> <span class="fl">1.5</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>locus, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">scales =</span> <span class="st">"free_x"</span>) <span class="sc">+</span></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Phenotypes"</span>, <span class="at">y =</span> <span class="st">"Fitness"</span>) <span class="sc">+</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>locus, <span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Phenotypes"</span>, <span class="at">y =</span> <span class="st">"Fitness"</span>)<span class="sc">+</span></span>
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
 <span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
 <span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>        <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">face =</span> <span class="st">"bold"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -243,9 +247,64 @@ Attaching package: 'dplyr'</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>myplot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="WhoIsFit_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+<p><img src="WhoIsFit_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="1152"></p>
 </div>
 </div>
+<section id="fitness-selection-strength-assessment" class="level2">
+<h2 class="anchored" data-anchor-id="fitness-selection-strength-assessment">Fitness/ selection strength assessment</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ forcats   1.0.0     ✔ readr     2.1.5
+✔ lubridate 1.9.3     ✔ stringr   1.5.1
+✔ purrr     1.0.2     ✔ tidyr     1.3.1
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter()    masks stats::filter()
+✖ dplyr::lag()       masks stats::lag()
+✖ lubridate::stamp() masks cowplot::stamp()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fitfx <span class="ot">&lt;-</span> <span class="cf">function</span>(D){</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  w <span class="ot">=</span> <span class="fu">exp</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">50</span>)<span class="sc">*</span>D<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(w)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">=</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">5</span>, <span class="dv">5</span>, <span class="at">by =</span> <span class="dv">1</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fitness <span class="ot">=</span> <span class="fu">fitfx</span>(D)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fdf <span class="ot">&lt;-</span> <span class="fu">tibble</span>(D, fitness)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>nfdf <span class="ot">&lt;-</span> fdf <span class="sc">%&gt;%</span> </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">D =</span> <span class="fu">abs</span>(D)) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">difd =</span> <span class="fu">round</span>(<span class="fu">c</span>(<span class="fu">diff</span>(fitness), <span class="dv">0</span>), <span class="at">digits =</span> <span class="dv">4</span>))</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>nfdf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+      D fitness   difd
+  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+1     5   0.607 0.120 
+2     4   0.726 0.109 
+3     3   0.835 0.0878
+4     2   0.923 0.0571
+5     1   0.980 0.0198
+6     0   1     0     </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>nfdf <span class="sc">%&gt;%</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="fu">factor</span>(D), <span class="fu">factor</span>(<span class="fu">round</span>(fitness, <span class="at">digits =</span> <span class="dv">4</span>))))<span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()<span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Optimal Distance"</span>, <span class="at">y =</span> <span class="st">"Fitness"</span>)<span class="sc">+</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="WhoIsFit_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
 
 </main>
 <!-- /main column -->

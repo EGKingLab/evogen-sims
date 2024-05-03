@@ -133,9 +133,9 @@ process_files <- function(dirpath, pattern, plot_type) {
 
 ```{r}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.5SD2Gen10.csv")
-mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n10_H0.5SD2Gen10.csv")
-mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.5SD2.csv")
+mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
+mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
+mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.1SD2.csv")
 ```
 
 ```{r, warning=FALSE, fig.width = 16, fig.height = 8}
@@ -153,7 +153,9 @@ Genome_dataset <- rbind(geno_file,
                                  "Gradual 4-Seasons Model"))
 
 # Create the plot
-freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+freqplot <- Genome_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
   geom_line(linewidth = 0.2) +
   facet_wrap(Selection~.) +
   theme_cowplot()+
@@ -218,7 +220,9 @@ Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>%
                                  "Polygenic"))
 
 # Create the plot
-freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+freqplot <- Genome_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
   geom_line(linewidth = 0.2) +
   facet_grid(Selection~.) +
   theme_cowplot()+

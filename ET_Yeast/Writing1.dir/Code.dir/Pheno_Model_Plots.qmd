@@ -28,10 +28,10 @@ mytheme <- function() {
 
 ```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
 
-file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n1_H0.8SD1.csv"
+file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/MeanPhenotypes1_n100_H0.8SD1.csv"
 
 pheno_file <- read.csv(file_path) %>% 
-  mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
+  mutate(Optimum = Optimum, Phenotype = Phenotype)
 
 # replicate <- as.numeric(str_extract(file_path, "(?<=MeanPhenotypes)[0-9]+"))
 heritability <- as.numeric(str_extract(file_path, "(?<=H0\\.)\\d+"))
@@ -46,16 +46,16 @@ ggplot(pheno_file, aes(Generation, Phenotype)) +
 ```
 
 ```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
-file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n100_H0.8SD1Gen10.csv"
+file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n100_H0.8SD3Gen10.csv"
 
 pheno_file <- read.csv(file_path) %>% 
-  mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
+  mutate(Optimum = Optimum, Phenotype = Phenotype )
 
 # replicate <- as.numeric(str_extract(file_path, "(?<=MeanPhenotypes)[0-9]+"))
 heritability <- as.numeric(str_extract(file_path, "(?<=H0\\.)\\d+"))
 Loci_n <- as.numeric(str_extract(file_path, "(?<=_n)\\d+"))
 
-pheno_file <- pheno_file %>% filter(Generation < 200)
+pheno_file <- pheno_file %>% filter(Generation < 1000)
 
 ggplot(pheno_file, aes(Generation, Phenotype)) +
   geom_line(linewidth = 0.2) +
@@ -164,10 +164,10 @@ for(locus in loci){
     ggplot(aes(Generation, Phenotype))+
     #geom_point(size = 0.2)+
     geom_line(linewidth = 0.1)+
-  #geom_line(aes(y = Optimum), color = "darkred", linewidth = 0.2) +
-  #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
+  geom_line(aes(y = Optimum), color = "darkred", linewidth = 0.2) +
+  geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
     facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
-    ylim(min = 100, max = 125)+
+    #ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
@@ -256,8 +256,8 @@ for(loci_geni in loci_gens){
     ggplot(aes(Generation, Phenotype))+
     geom_line(linewidth = 0.1)+
     facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
-    #geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
-  #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
+   # geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
+#geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
     #ylim(min = 100, max = 125)+
     theme_bw()+
     theme(legend.position = "none")
