@@ -135,7 +135,7 @@ mutationEffect(m2) {
 	
 	nopt = rep(0, size(generations));
 	for (i in signals) {
-		nopt =  nopt + stdv*sd(phenotypes) * sin(2 * (22/7) * generations / i) +  mean(phenotypes);
+		nopt =  nopt + stdv * sin(2 * (22/7) * generations / i);
 	}
 	nopt = nopt/4;
 	
