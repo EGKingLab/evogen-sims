@@ -120,8 +120,8 @@ mutationEffect(m2) {
 	//defineConstant("scaling", scaleFactor);
 	
 	// Define the lower and upper bounds of the optimal phenotype and define a global variable newopt
-	lower_opt = mean(phenotypes) - sd(phenotypes)*stdv;
-	upper_opt = mean(phenotypes) + sd(phenotypes)*stdv;
+	lower_opt = -stdv; //mean(phenotypes) - sd(phenotypes)*stdv;
+	upper_opt = stdv; //mean(phenotypes) + sd(phenotypes)*stdv;
 	nopt = rep(c(rep(lower_opt,gener),rep(upper_opt,gener)), ranges);
 	
 	defineGlobal("newopt", nopt);

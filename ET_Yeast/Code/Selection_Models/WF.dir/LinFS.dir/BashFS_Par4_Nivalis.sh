@@ -45,5 +45,7 @@ wait
 else
   echo "All is well, Boss.  The ${output} file is there."
 fi
-echo "=== Fini finito! End of SLiM QTLs Constant Selection run >" $(date) >> >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
+total_end_time=$(date +%s)
+total_runtime=$((total_end_time - total_start_time))
+echo "=== Finished! End of SLiM QTLs fluctuating 2 equal seasons run > $(date). Total runtime: $total_runtime seconds ===" >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
 
