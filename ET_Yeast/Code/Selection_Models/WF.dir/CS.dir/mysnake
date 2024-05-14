@@ -1,0 +1,80 @@
+# Snakefile
+
+# Define input and output file paths
+output = "/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/genome5_100_0.5.csv"
+
+# Define constants
+heritabilities = [0.1, 0.5, 0.8]
+stdvs = [1, 2, 3, 4]
+
+# Define mapping from seeds to replicates
+seeds_to_replicates = {
+    2345: 1, 78344: 2, 11349: 3, 85732: 4, 65741: 5,
+    49831: 6, 49826: 7, 49914: 8, 49969: 9, 49719: 10,
+    49849: 11, 50022: 12, 50172: 13, 50346: 14, 49970: 15,
+    50007: 16, 50103: 17, 49991: 18, 49876: 19, 50084: 20,
+    49993: 21, 50123: 22, 50079: 23, 49801: 24, 49909: 25,
+    50064: 26, 49950: 27, 50207: 28, 50164: 29, 50196: 30
+}
+
+# Define mapping from loci to regions
+loci_to_regions = {
+    1: 610140, 10: 61014, 70: 8716, 100: 6101, 300: 2033
+}
+
+# Rule to check if the output file exists
+rule check_output_file:
+    input:
+        output
+    run:
+        if not os.path.exists(output):
+            raise FileNotFoundError(f"My file {output} doesn't exist. Running SLiM QTLs now.")
+
+# Rule to run SLiM for each combination of parameters
+rule run_SLiM:
+    input:
+        script="CS_Par4_Copy.slim"
+    output:
+        touch("slim_complete_{seed}_{repl}_{loci}_{h}_{SD}")
+    params:
+        seed=lambda wildcards: wildcards.seed,
+        repl=lambda wildcards: wildcards.repl,
+        loci=lambda wildcards: wildcards.loci,
+        h=lambda wildcards: wildcards.h,
+        SD=lambda wildcards: wildcards.SD
+    run:
+        seed = params.seed
+        repl = params.repl
+        loci = params.loci
+        h = params.h
+        SD = params.SD
+        region = loci_to_regions[loci]
+        shell("slim -d seed={seed} -d repl={repl} -d loci={loci} -d region={region} -d h={h} -d SD={SD} CS_Par4_Copy.slim")
+
+# Generate combinations of parameters for SLiM runs
+rule generate_params:
+    output:
+        expand("slim_complete_{seed}_{repl}_{loci}_{h}_{SD}", 
+               seed=seeds_to_replicates.keys(), 
+               repl=seeds_to_replicates.values(), 
+               loci=loci_to_regions.keys(), 
+               h=heritabilities, 
+               SD=stdvs)
+
+# Rule to log completion
+rule log_completion:
+    input:
+        output
+    run:
+        with open("log.txt", "a") as log:
+            log.write(f"=== Finished! End of SLiM QTLs Constant Selection run > $(date) ===\n")
+
+# Final target
+rule all:
+    input:
+        output
+    output:
+        "log.txt"
+    run:
+        touch(output)
+
