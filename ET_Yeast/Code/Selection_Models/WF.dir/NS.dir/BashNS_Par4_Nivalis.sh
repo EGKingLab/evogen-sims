@@ -1,7 +1,7 @@
 #!/bin/bash
 #module load SLiM
 
-echo -e "=== Bigining of SLiM run with different QTLs > $(date) ===" >> ../../../../output.dir/Selection_Models/WF.dir/NS.dir/NS_par4-${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
+echo -e "=== Bigining of SLiM run with different QTLs > $(date) ===" >> ../../../../output.dir/Selection_Models/WF.dir/NS.dir/NS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
 
 output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome5_100_0.5.csv"
 if [[ ! -f "$output" ]]
@@ -37,5 +37,7 @@ wait
 else
   echo "All is well, Boss.  The ${output} file is there."
 fi
-echo "=== Fini finito! End of SLiM QTLs Constant Selection run >" $(date) >> ../../../../output.dir/Selection_Models/WF.dir/NS.dir/NS_par4--$SLURM_JOBID_${SLURM_ARRAY_TASK_ID}.log
+total_end_time=$(date +%s)
+total_runtime=$((total_end_time - total_start_time))
+echo "=== Finished! End of SLiM QTLs neutral selection run > $(date). Total runtime: $total_runtime seconds ===" >> ../../../../output.dir/Selection_Models/WF.dir/NS.dir/NS_par4$SLURM_JOBID_${SLURM_ARRAY_TASK_ID}.log
 
