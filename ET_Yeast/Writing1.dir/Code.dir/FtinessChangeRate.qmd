@@ -1,0 +1,112 @@
+---
+title: "Choosing_OptimumValue"
+author: "E.T"
+format: html
+editor: visual
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+
+# Setting up phenotypes and possible optimum values
+
+phenotypes <- seq(-10, 10, by = 1)
+optimum <- seq(-5, 5, by = 0.5)
+
+## Used fitness function
+
+fitfx <- function(p, o){
+  w = exp(-(1/200)*(p-o)^2)
+  return(w)
+}
+
+#data
+
+dfw <- crossing(phenotypes, optimum) %>% 
+  mutate(fitness = fitfx(phenotypes, optimum))
+
+```
+
+```{r}
+
+# Adding a colum of fitness when phenotype is zero
+
+dfw <- dfw %>%
+  group_by(optimum) %>%
+  mutate(y_at_x0 = fitfx(0, optimum),
+         y_at_optimum = fitfx(optimum, optimum))
+
+```
+
+```{r, warning=FALSE, message=FALSE, fig.width=10, fig.height=6}
+ggplot()+
+  geom_line(data = dfw, 
+            aes(x = phenotypes, y = fitness, color = factor(optimum)))+
+  geom_hline(data = dfw, aes(yintercept = y_at_x0, color = factor(optimum)), linetype = "dashed")+
+  geom_text(data = dfw %>% filter(phenotypes == 0), 
+            aes(x = 0, y = y_at_x0, label = round(y_at_x0, 2)), 
+            hjust = -0.1, vjust = 0.5, size = 3)+
+  facet_wrap(~abs(optimum), ncol = 4)+
+  theme_classic()+
+  theme(legend.position = c(0.9, 0.1),
+        legend.box = "square", 
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(face = "bold")) + 
+  guides(color = guide_legend(ncol = 3, title = '               Optimum'))
+```
+
+```{r}
+library(tidyverse)
+
+# Setting up phenotypes and possible optimum values
+phenotypes <- seq(-10, 10, by = 1)
+optimum <- seq(-4, 4, by = 1)
+C_values <- seq(20, 200, by = 20)
+
+# Function to plot fitness for a given C value
+plot_fitness <- function(C) {
+  fitfx <- function(p, o){
+    w = exp(-(1/C)*(p-o)^2)
+    return(w)
+  }
+
+  dfw <- crossing(phenotypes, optimum) %>% 
+    mutate(fitness = fitfx(phenotypes, optimum))
+
+  dfw <- dfw %>%
+    group_by(optimum) %>%
+    mutate(y_at_x0 = fitfx(0, optimum),
+           y_at_optimum = fitfx(optimum, optimum))
+
+  p <- ggplot() +
+  geom_line(data = dfw, 
+            aes(x = phenotypes, y = fitness, color = factor(optimum))) +
+  geom_hline(data = dfw, aes(yintercept = y_at_x0, color = factor(optimum)), linetype = "dashed") +
+  geom_text(data = dfw %>% filter(phenotypes == 0), 
+            aes(x = 0, y = y_at_x0, label = round(y_at_x0, 2)), 
+            hjust = -0.1, vjust = 0.5, size = 3) +
+  facet_wrap(~abs(optimum), ncol = 3) +
+  theme_classic() +
+  theme(legend.position = c(0.85, 0.2),
+        legend.box = "square", 
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5)) +  # Center the title
+  guides(color = guide_legend(ncol = 3, title = '               Optimum')) +
+  ggtitle(paste("Fitness Plot for C =", C))
+
+  
+  return(p)
+}
+
+# Generate and save plots for each C value
+plots <- lapply(C_values, plot_fitness)
+
+# Display the plots (optional, only shows the last plot)
+print(plots[[5]])  # Replace with other indices to see different plots
+
+```
+
+```{r}
+plots
+```
