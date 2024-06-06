@@ -135,10 +135,10 @@ mutationEffect(m2) {
 	indices = order(freq, F);
 	
 	
-	for (i in indices)
+	for (i in indices){
 		
 		writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
-	
+	}
 	// Calculate mean phenotype for the population
 	meanPhenotype = mean(phenotypes);
 	
@@ -199,10 +199,10 @@ mutationEffect(m2) {
 	
 	// Order mutations by frequency (descending) and output information for each mutation to a FSV file (genome_singl.csv)
 	indices = order(freq, F);
-	for (i in indices)
+	for (i in indices){
 	
 		writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", format("%.6f",freq[i]), ",", format("%.6f",selCoef[i]),",", origin[i]), append = T);
-	
+	}
 	// Calculate mean phenotype for the population
 	meanPhenotype = mean(phenotypes);
 	
