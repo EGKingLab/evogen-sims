@@ -10,6 +10,7 @@ Example*
 *vcf
 *.png
 *.csv
+*.html
 *.pdf
 test*
 #regenerated files

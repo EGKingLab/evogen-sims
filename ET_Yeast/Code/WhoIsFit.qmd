@@ -113,7 +113,7 @@ myplot <- ggplot(data = newdataset2,
   geom_hline(data = fit.values, aes(yintercept = Fitness, color = as.factor(standv))) +
   geom_text(data = fit.values, aes(x = pheno.value, y = round(Fitness, digits =2), 
                                    label = paste("Pheno =", pheno.value, ";  Fit =", round(Fitness, digits = 2))), color = standv, vjust = 1.5, hjust = 1.5, size = 2) +
-  facet_wrap(~locus, ncol = 2) +
+  facet_wrap(~locus, ncol = 2, scales = "free") +
   labs(x = "Phenotypes", y = "Fitness")+
   theme(axis.text = element_text(size = 12, face = "bold"),
         axis.title = element_text(size = 12, face = "bold"),
@@ -214,7 +214,7 @@ myplot4 <- ggplot(data = newdataset4,
   geom_hline(data = fit.values, aes(yintercept = Fitness, color = as.factor(standv))) +
   geom_text(data = fit.values, aes(x = pheno.value, y = round(Fitness, digits =2), 
                                    label = paste("Pheno =", pheno.value, ";  Fit =", round(Fitness, digits = 2))), color = standv, vjust = 1.5, hjust = 1.5, size = 2) +
-  facet_wrap(~locus, ncol = 2) +
+  facet_wrap(~locus, ncol = 2, slcales = "free") +
   labs(x = "Phenotypes", y = "Fitness")+
   theme(axis.text = element_text(size = 12, face = "bold"),
         axis.title = element_text(size = 12, face = "bold"),
