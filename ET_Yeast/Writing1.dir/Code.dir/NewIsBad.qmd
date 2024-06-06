@@ -105,14 +105,13 @@ result$plots
 ### Neutral
 
 ```{r, fig.width = 8, fig.height = 4}
-rm(list = ls())
-source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
-
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
-pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
-result <- process_files(dirpath, pattern, "loci")
-result$plots
-
+# rm(list = ls())
+# source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
+# 
+# dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+# pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|5|8)(SD(4|1))?(Gen(10))?\\.csv$"
+# result <- process_files(dirpath, pattern, "loci")
+# result$plots
 ```
 
 ### Constant
@@ -277,7 +276,7 @@ print(result$combined_data)
 result$plots
 ```
 
-### Two plots cmoparison
+### Two plots comparison
 
 #### 1. Standard error
 
@@ -391,7 +390,6 @@ print(result$combined_data)
 
 # Now, let's try plotting again
 result$plots
-
 ```
 
 ```{r}
