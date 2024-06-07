@@ -6,7 +6,7 @@ editor: visual
 
 ## Standard error
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 ############ Libraries and theme function ########
 
 library(tidyverse)
@@ -104,7 +104,7 @@ result$plots
 
 ### Neutral
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 # rm(list = ls())
 # source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
 # 
@@ -116,7 +116,7 @@ result$plots
 
 ### Constant
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 rm(list = ls())
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
 
@@ -128,7 +128,7 @@ result$plots
 
 ### Instantaneous
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 rm(list = ls())
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
 
@@ -141,7 +141,7 @@ result$plots
 
 ### Gradual 2 seasons
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 rm(list = ls())
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
 
@@ -153,7 +153,7 @@ result$plots
 
 ### Gradual 4 seasons
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 rm(list = ls())
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
 
@@ -165,7 +165,7 @@ result$plots
 
 ## Using Boxplot
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 
 # , fig.width = 8, fig.height = 4
 ############ Libraries and theme function ########
@@ -280,7 +280,7 @@ result$plots
 
 #### 1. Standard error
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MeanPhenotypePlots.R')
 
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
@@ -291,7 +291,7 @@ result$plots
 
 #### 2. Box Plot
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE, message=FALSE}
 ############ Libraries and theme function ########
 rm(list = ls())
 library(tidyverse)
@@ -392,7 +392,7 @@ print(result$combined_data)
 result$plots
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 ############ Libraries and theme function ########
 rm(list = ls())
 library(tidyverse)

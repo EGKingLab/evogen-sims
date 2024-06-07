@@ -1,5 +1,5 @@
 ---
-title: "Phenotype plots"
+title: "plots"
 format: html
 author: "Esdras T"
 editor: visual

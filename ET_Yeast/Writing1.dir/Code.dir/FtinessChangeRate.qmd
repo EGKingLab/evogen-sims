@@ -83,7 +83,7 @@ plot_fitness <- function(C) {
             aes(x = phenotypes, y = fitness, color = factor(optimum))) +
   geom_hline(data = dfw, aes(yintercept = y_at_x0, color = factor(optimum)), linetype = "dashed") +
   geom_text(data = dfw %>% filter(phenotypes == 0), 
-            aes(x = 0, y = y_at_x0, label = round(y_at_x0, 2)), 
+            aes(x = 0, y = y_at_x0, label = round(y_at_x0, 3)), 
             hjust = -0.1, vjust = 0.5, size = 3) +
   facet_wrap(~abs(optimum), ncol = 3) +
   theme_classic() +
@@ -92,7 +92,7 @@ plot_fitness <- function(C) {
         legend.title = element_text(face = "bold"),
         legend.text = element_text(face = "bold"),
         plot.title = element_text(hjust = 0.5)) +  # Center the title
-  guides(color = guide_legend(ncol = 3, title = '               Optimum')) +
+  guides(color = guide_legend(ncol = 3, title = 'Distance to Optimum')) +
   ggtitle(paste("Fitness Plot for C =", C))
 
   

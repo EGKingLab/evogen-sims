@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 library(tidyverse)
 library(stringr)
 library(cowplot)
@@ -13,7 +13,7 @@ library(plotly)
 theme_set(theme_cowplot())
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 mytheme <- function() {
   theme_set(theme_cowplot()) +
     theme(axis.title = element_text(face = "bold"),
@@ -25,7 +25,7 @@ mytheme <- function() {
 
 ### Neutral Selection
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n100_H0.5.csv"
 
 genome_file <- read.csv(file_path) %>% 
@@ -43,7 +43,7 @@ genome_file %>%
   mytheme()
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^genome1", full.names = TRUE)
 plots <- list()
 
@@ -65,7 +65,7 @@ for (genome_file in genome_files){
 plot_grid(plots)
 ```
 
-```{r, fig.width = 16, fig.height = 12}
+```{r, fig.width = 16, fig.height = 12, echo=FALSE, message=FALSE}
 # Load necessary libraries
 library(dplyr)
 library(ggplot2)
@@ -116,7 +116,7 @@ for (genome_file in genome_files) {
 
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
 pattern = "^genome15"
 file_list <- list.files(dir_path, pattern = pattern, full.names = TRUE)
@@ -167,7 +167,7 @@ allele_data %>% filter(loci==70) %>%
 
 ### Constant Selection
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -190,12 +190,12 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/CS.dir/Plots/"
 
 plots <- list()
@@ -218,7 +218,7 @@ for(locus in loci){
 plots
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 combined_data %>%
     filter(loci == 100) %>%
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
@@ -233,7 +233,7 @@ combined_data %>%
 
 #### Linear
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -258,13 +258,13 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/LinFS.dir/Plots/"
 
 plots <- list()
@@ -280,14 +280,15 @@ for(loci_geni in loci_gens){
     theme_bw()+
     theme(legend.position = "none")
   
-plots[[loci_geni]] <- ggplotly(p)
+plots[[loci_geni]] <- (p)#ggplotly
+
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
 }
 plots
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 combined_data %>% 
     filter(loci == 70, gen == 30) %>% 
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
@@ -300,7 +301,7 @@ combined_data %>%
 
 #### Sinusoidal I
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -325,13 +326,13 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFS.dir/Plots/"
 
 plots <- list()
@@ -348,14 +349,14 @@ for(loci_geni in loci_gens){
     theme(legend.position = "none")
   #plotname <- paste(path, "Allele_plot_for_loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = plots[[locus]], width = 12, height = 8, units = "in")
-  plots[[loci_geni]] <- ggplotly(p)
+  plots[[loci_geni]] <- (p) #ggplotly
 }
 plots
 ```
 
 #### Sinusoidal II
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -380,12 +381,12 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFSGen.dir/Plots/"
 set.seed(1234)
 plots <- list()
@@ -409,14 +410,14 @@ for(locus in loci){
     theme_bw()+
     theme(legend.position = "none")
   
-  plots[[locus]] <- ggplotly(p)
+  plots[[locus]] <- (p) #ggplotly
 }
 plots
 
 
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 pr <- combined_data %>%
     filter(loci == 70) %>%
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
@@ -424,6 +425,6 @@ pr <- combined_data %>%
     facet_wrap(~h2_sd, ncol = 4)+
     theme_bw()+
     theme(legend.position = "none")
-ggplotly(pr)
+(pr) #ggplotly
 
 ```

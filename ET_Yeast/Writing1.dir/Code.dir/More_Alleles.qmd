@@ -6,7 +6,7 @@ editor: visual
 
 ### Test Generation-Wise, Linear
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 source("~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/Generation_Freq.R")
 ```
 
@@ -14,7 +14,7 @@ source("~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/Generation_Fr
 
 > Note that we are only using A = 1 locus, B = 10 loci, C = 100 loci and D = 30. For C and D, we randomly sample 30 loci
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -25,7 +25,7 @@ print((plot_result))
 
 #### Standard deviation effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1|4)Gen(10)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -35,7 +35,7 @@ print(plot_result)
 
 #### Heritability effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1)Gen(10)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -44,7 +44,7 @@ print(plot_result)
 
 #### Selection length effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1)Gen(10|30)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -53,7 +53,7 @@ print(plot_result)
 
 #### High Values Combination effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.8|0\\.1)SD(4)Gen(30)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -62,7 +62,7 @@ print(plot_result)
 
 #### Sin I
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -71,7 +71,7 @@ print(plot_result)
 
 #### Standard deviation effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1|4)Gen(10)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -81,7 +81,7 @@ print(plot_result)
 
 #### Heritability effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1)Gen(10)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -90,7 +90,7 @@ print(plot_result)
 
 #### Selection length effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1)Gen(10|30)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -99,7 +99,7 @@ print(plot_result)
 
 #### High Values Combination effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.8|0\\.1)SD(4)Gen(30)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -110,7 +110,7 @@ print(plot_result)
 
 #### Sin II
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1|4)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -120,7 +120,7 @@ print(plot_result)
 
 #### Standard deviation effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1)SD(1|4)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -130,7 +130,7 @@ print(plot_result)
 
 #### Heritability effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.1|0\\.8)SD(1)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -139,7 +139,7 @@ print(plot_result)
 
 #### High Values Combination effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE, message=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome1_n(1|10|100|300)_H(0\\.8)SD(4)\\.csv$"
 plot_result <- gen_plotting_function(dirpath, pattern)
@@ -148,7 +148,7 @@ print(plot_result)
 
 ## Now Let's Check Effect size
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, echo=FALSE, message=FALSE}
 # gen3_plotting_function <- function(dirpath, pattern, ncol_plots = 2, label_size = 14, label_x = 0.5, label_y = 1) {
 #   
 #   # Data Processing
