@@ -61,7 +61,7 @@ library(tidyverse)
 # Setting up phenotypes and possible optimum values
 phenotypes <- seq(-10, 10, by = 1)
 optimum <- seq(-4, 4, by = 1)
-C_values <- seq(20, 200, by = 20)
+C_values <- seq(25, 200, by = 25)
 
 # Function to plot fitness for a given C value
 plot_fitness <- function(C) {
