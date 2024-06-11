@@ -93,10 +93,28 @@
 #   return(list(combined_data = combined_data, plots = plots))
 # }
 
+############## This is to help with packages in case theyre not there #####
+install_and_load <- function(packages) {
+  for (package in packages) {
+    if (!require(package, character.only = TRUE)) {
+      install.packages(package, dependencies = TRUE)
+      library(package, character.only = TRUE)
+    }
+  }
+}
+
+# List of required packages
+packages <- c("tidyverse", "stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
+
+# Install and load the packages
+#install_and_load(packages)
 
 ############ Libraries and theme function ########
 
-library(tidyverse)
+#library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(dplyr)
 library(stringr)
 library(plotly)
 library(patchwork)

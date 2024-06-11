@@ -5,8 +5,11 @@ format: html
 editor: visual
 ---
 
-```{r, echo=FALSE, message=FALSE}
-library(tidyverse)
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyr)
+library(ggplot2)
+library(tidyselect)
+library(dplyr)
 library(stringr)
 library(cowplot)
 library(ggridges)
@@ -190,7 +193,7 @@ mygrid
 ### Ignore
 
 ```{r}
-pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") %>% 
+pheno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") %>% 
   filter(Generation == 0 | Generation %% 10 == 0)
 
  pa <- pheno %>% 
@@ -200,7 +203,7 @@ pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Mod
 ```
 
 ```{r}
-pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") # %>% 
+pheno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD1Gen10.csv") # %>% 
   #filter(Generation == 0 | Generation %% 10 != 0)
 
 pb <-  pheno %>% ggplot(aes(Generation, Phenotype))+
@@ -216,7 +219,7 @@ pa/pb
 ### Allele Frequency
 
 ```{r}
-geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
+geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
   filter(Generation == 0 | Generation %% 30 == 0) %>% 
   mutate(Position = factor(Position))
  pc <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
@@ -227,7 +230,7 @@ geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Mode
 ```
 
 ```{r}
-geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
+geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
   mutate(Position = factor(Position))
  pd <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
    geom_line(linewidth = 0.1, alpha = 1)+
@@ -245,8 +248,8 @@ pc/pd
 
 ```{r}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n100_H0.8SD3Gen10.csv")
-mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n100_H0.8SD3Gen10.csv")
+mono1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n100_H0.8SD3Gen10.csv")
+mono2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n100_H0.8SD3Gen10.csv")
 ```
 
 ```{r, fig.width=8, fig.height=4, echo=FALSE}
@@ -276,8 +279,8 @@ freqplot
 
 ```{r}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-Oligo1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv")
-Oligo2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n70_H0.1SD1Gen10.csv")
+Oligo1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv")
+Oligo2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n70_H0.1SD1Gen10.csv")
 ```
 
 ```{r, fig.width=8, fig.height=4, echo=FALSE}
@@ -307,8 +310,8 @@ ggplotly(freqplot)
 ### Heritability's Effect
 
 ```{r}
-Heri1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
-Herit2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD2Gen10.csv")
+Heri1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
+Herit2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD2Gen10.csv")
 ```
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
@@ -337,8 +340,6 @@ freqplot
 ### Selection Effect
 
 ```{r}
-library(tidyverse)
-library(cowplot) 
 
 plot_frequency_by_descriptor <- function(file_paths, descriptors) {
   datasets <- list()
@@ -372,8 +373,8 @@ plot_frequency_by_descriptor <- function(file_paths, descriptors) {
 ```
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
-file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
-file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD3Gen10.csv"
+file1 <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
+file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD3Gen10.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
@@ -385,8 +386,8 @@ file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.d
 ### Season Length
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
-file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv"
-file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen30.csv"
+file1 <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv"
+file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen30.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
@@ -398,8 +399,8 @@ file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.d
 ### Combined Effect
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
-file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
-file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD4Gen30.csv"
+file1 <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen10.csv"
+file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD4Gen30.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
@@ -410,10 +411,11 @@ file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.d
 ### Genome Size Effect
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+library(forcats)
 
-Mono <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD1Gen20.csv")
-Oligo <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen20.csv")
-Poly<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.1SD1Gen20.csv")
+Mono <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD1Gen20.csv")
+Oligo <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen20.csv")
+Poly<- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.1SD1Gen20.csv")
 
 # Add a column to distinguish the datasets
 geno_file <- Mono %>% mutate(Selection = "Monogenic")
@@ -448,9 +450,9 @@ freqplot
 ### Model Comparison
 
 ```{r,  warning=FALSE, fig.width = 8, fig.height = 4}
-mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD4Gen20.csv")
-mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n70_H0.5SD4Gen20.csv")
-mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n70_H0.5SD4.csv")
+mono1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD4Gen20.csv")
+mono2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n70_H0.5SD4Gen20.csv")
+mono3 <- read.csv("../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n70_H0.5SD4.csv")
 
 
 # Add a column to distinguish the datasets
@@ -501,8 +503,8 @@ freqplot <- Genome_dataset %>%
 ### Neutral vs Gradual 4 seasons
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4}
-file1 <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n70_H0.5.csv"
-file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n70_H0.5SD4.csv"
+file1 <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/genome1_n70_H0.5.csv"
+file2 <-  "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n70_H0.5SD4.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
@@ -514,7 +516,6 @@ file2 <-  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.d
 
 ```{r}
 run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
-  library(tidyverse)
   library(cowplot)
   library(lubridate)
   library(future)
@@ -608,8 +609,8 @@ fft1[[loci]] <- all_results %>%
 ```
 
 ```{r, fig.width = 12, fig.height = 6}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
-#source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
+#source('../../../Writing1.dir/Code.dir/ComboSpec.R')
 pattern ="^genome[1-3]_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```
@@ -617,7 +618,7 @@ run2_fft_analysis(dirpath, pattern)
 ### Phenotypes
 
 ```{r, fig.width = 12, fig.height = 6}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^MeanPhenotypes1_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
@@ -663,7 +664,7 @@ plots
 ```
 
 ```{r, fig.width = 12, fig.height = 6}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes[1]_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 files <- list.files(dirpath, pattern, full.names = TRUE)
 
@@ -743,9 +744,9 @@ p
 
 ```{r, warning=FALSE, fig.width = 12, fig.height = 6}
 
-geno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD4Gen30.csv") %>% 
+geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n70_H0.5SD4Gen30.csv") %>% 
   filter(Generation <= 500)
-pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD4Gen30.csv")%>% 
+pheno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n100_H0.5SD4Gen30.csv")%>% 
   filter(Generation <= 500)
 
 g1 <- geno %>% 
@@ -775,7 +776,6 @@ g1|p1
 ```{r, fig.width = 12, fig.height = 6}
 ############ Libraries and theme function ########
 rm(list = ls())
-library(tidyverse)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -869,7 +869,7 @@ process_files <- function(dirpath, pattern, plot_type) {
   return(list(combined_data = combined_data, plots = plots))
 } 
 
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(30))?\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
@@ -879,7 +879,7 @@ result$plots
 ```
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n300_H0\\.(1)(SD(1))?(Gen(10))?\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
@@ -891,7 +891,7 @@ result$plots
 ```
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n1+_H0.8SD4Gen30\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
@@ -962,7 +962,6 @@ result$plots
 rm(list = ls())
 
 # Load necessary libraries
-library(tidyverse)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -1050,7 +1049,6 @@ process_files <- function(dirpath, pattern, plot_type) {
 rm(list = ls())
 
 # Load necessary libraries
-library(tidyverse)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -1134,7 +1132,7 @@ process_files <- function(dirpath, pattern, plot_type) {
 }
 
 # Define directory path and pattern
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(30))?\\.csv$"
 
 # Process files and generate plots
@@ -1147,7 +1145,7 @@ result$plots
 
 ```{r, fig.width = 12, fig.height = 6}
 
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir//"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir//"
 pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|5)(SD(1|2))?(Gen(20|10))?\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
@@ -1158,10 +1156,10 @@ result$plots
 #### Optimum vs Fitness
 
 ```{r}
-ph1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD1Gen10.csv")
-ph11 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD2Gen10.csv")
-ph2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD3Gen10.csv")
-ph22 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen10.csv")
+ph1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD1Gen10.csv")
+ph11 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD2Gen10.csv")
+ph2 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD3Gen10.csv")
+ph22 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen10.csv")
 
 # Add a new column 'source' to each dataframe
 ph1$standv <- "1 values"

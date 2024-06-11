@@ -130,15 +130,15 @@ editor: visual
 
 ## Source code
 
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 rm(list = ls())
-source("~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/AlleleFrequencyPlotCode.R")
+source("AlleleFrequencyPlotCode.R")
 ```
 
 ### Neutral selection
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+dirpath <- "/mnt/pixstor/kingeg-lab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
 pattern <-  "^genome15\\D" # "^genome(1|2|3)_n\\d+_H0.1_*" # "^genome15\\D" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
@@ -149,7 +149,7 @@ plots
 ### Constant Selection
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+dirpath <- "/mnt/pixstor/kingeg-lab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
 pattern <- "^genome1\\D" #"^genome(1|2|3)_n\\d+_H*" #"^genome1\\D" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
@@ -160,7 +160,7 @@ plots
 ### Linear Fluctuating
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+dirpath <- "../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome15\\D"#_n\\d+_H0.1_*" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
@@ -171,7 +171,7 @@ plots
 ### Sinusoidal I
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+dirpath <- "../output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome15\\D" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
@@ -182,7 +182,7 @@ plots
 ### Sinusoidal II
 
 ```{r}
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
+dirpath <- "../output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
 pattern <- "^genome15\\D" #(\D|$) 
 result <- process_files(dirpath, pattern, "loci_gen") 
 combined_data <- result$combined_data 
