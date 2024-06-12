@@ -4,7 +4,12 @@ run_fft_analysis <-
   function(dirpath,
            pattern = "^genome\\d+_n\\d+_H0.(1|8|5)(SD[1-4])?(Gen\\d+)?\\.csv$",
            spectrum_span = 2) {
-  library(tidyverse)
+  #library(tidyverse)
+    library(tidyr)
+    library(forcats)
+    library(dplyr)
+    library(tidyselect)
+    library(ggplot2)
   library(future)
   library(future.apply)
 
@@ -72,7 +77,7 @@ run_fft_analysis <-
 ######################################################
 ######################################################
 
-library(tidyverse)
+library(tidyr)
 library(cowplot)
 library(lubridate)
 library(future)

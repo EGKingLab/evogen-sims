@@ -1,5 +1,9 @@
 run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
-  library(tidyverse)
+  library(tidyr)
+  library(forcats)
+  library(dplyr)
+  library(tidyselect)
+  library(ggplot2)
   library(cowplot)
   library(lubridate)
   library(future)
