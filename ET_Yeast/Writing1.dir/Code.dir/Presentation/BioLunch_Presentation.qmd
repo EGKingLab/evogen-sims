@@ -213,7 +213,7 @@ p3
 
 ```
 
-```{r}
+```{r, fig.width=12, fig.height=8}
 # Generation sequence from 1 to 2000
 Generation <- c(1:200)
 Optimum = rep(0, length(Generation))
@@ -228,10 +228,10 @@ p3 <- ggplot(df) +
   geom_line(aes(Generation, Optimum), size = 2) + 
   geom_hline(yintercept = mean(Optimum), 
              color = "darkred", size = 2)+ 
-  annotate("text", x = 90, y = 0.2, 
+  annotate("text", x = 80, y = 0.2, 
            label = "Mean Phenotype", 
-           size = 5, vjust = 0.1, hjust = 0, 
-           col = "darkred", angle = 85)+ 
+           size = 11, vjust = 0.1, hjust = 0, 
+           col = "darkred", angle = 70)+ 
   #labs(x = NULL, y = NULL) + #  x = "Generation", y = "Phenotype"
   labs(x = "Generation", y = "Optimum")+
   theme_set(theme_cowplot())+
@@ -272,7 +272,7 @@ library(dplyr)
 p4 <- ggplot(df %>% filter(Generation < 502)) + 
     geom_line(aes(Generation, Optimum), size = 2) +
     geom_hline(yintercept = mean(Optimum), color = "darkred", size = 2) +
-    annotate("text", x = 70, y = 0.2, label = "Mean Phenotype", size = 5, vjust = 0.1, hjust = 0, col = "darkred", angle = 80) + 
+    annotate("text", x = 75, y = 0.2, label = "Mean Phenotype", size = 11, vjust = 0.1, hjust = 0, col = "darkred", angle = 80) + 
     #labs(x = NULL, y = NULL) +
   labs(x = "Generation", y = "Optimum")+
     theme_cowplot() +
