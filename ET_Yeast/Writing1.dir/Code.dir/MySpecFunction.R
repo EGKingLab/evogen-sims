@@ -148,7 +148,9 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
   nloci <- unique(all_results$loci_Gen)
   fft1 <- list()
   for (loci in nloci) {
-    threshold <- ifelse(grepl("_30$", loci), 70, ifelse(grepl("_20$", loci), 50, 40))
+    threshold <- ifelse(grepl("_30$", loci), 70, 
+                        ifelse(grepl("_20$", loci), 50, 
+                               ifelse(grepl("_10$", loci), 30, 70)))
     fft1[[loci]] <- all_results %>%
       filter(loci_Gen == loci) %>%
       mutate(Frequency = 1 / Frequency) %>%
