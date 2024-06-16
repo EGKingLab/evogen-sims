@@ -139,7 +139,7 @@ source("AlleleFrequencyPlotCode.R")
 
 ```{r}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
-pattern <-  "^genome15\\D" # "^genome(1|2|3)_n\\d+_H0.1_*" # "^genome15\\D" #(\\D|$)
+pattern <-  "^genome1_n\\d+_H0.1_*" # "^genome(1|2|3)_n\\d+_H0.1_*" # "^genome15\\D" #(\\D|$)
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
 plots <- result$plots

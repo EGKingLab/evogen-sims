@@ -651,14 +651,19 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
   library(lubridate)
   library(future)
   library(future.apply)
+  library(dplyr)
+  library(tidyr)
+  library(stringr)
+  library(ggplot2)
+  
   theme_set(theme_cowplot())
   
   # Define a custom theme function
   mytheme <- theme(legend.position = "none",
-        axis.text = element_text(size = 17, face = "bold"),
-        axis.line = element_line(size = 2),
-        axis.title = element_text(size = 17, face = "bold"),
-        strip.text = element_text(size = 17, face = "bold"))
+                   axis.text = element_text(size = 17, face = "bold"),
+                   axis.line = element_line(size = 2),
+                   axis.title = element_text(size = 17, face = "bold"),
+                   strip.text = element_text(size = 17, face = "bold"))
   
   files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
   
@@ -666,14 +671,14 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
   files_df <- data.frame(file_name = files) %>%
     mutate(
       myloci_full = str_extract(file_name, "genome\\d+_n\\d+"),
-      myGen_full = str_extract(file_name, "Gen\\d*"),
-      mySD_full = str_extract(file_name, "SD\\d*"),
+      myGen_full = str_extract(file_name, "Gen\\d+"),
+      mySD_full = str_extract(file_name, "SD\\d+"),
       myHert_full = str_extract(file_name, "(?<=H)\\d*\\.?\\d*"),
       myloci = str_remove(myloci_full, "genome\\d+_n"),
       myGen = str_remove(myGen_full, "Gen"),
       mySD = str_remove(mySD_full, "SD"),
       myHert = myHert_full,
-      loci_Gen = paste(myloci, myGen, sep="_"),
+      loci_Gen = paste(myloci, myGen, sep = "_"),
       SD_H2 = paste("SD = ", mySD, " h2 = ", myHert)
     ) %>%
     select(-myloci_full, -myGen_full, -mySD_full, -myHert_full)
@@ -688,15 +693,12 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
     
     file <- read.csv(file_name) %>%
       select(-Origin, -Effect) %>%
-      pivot_wider(names_from = Position, values_from = Frequency, 
-                  values_fill = list(Frequency = 0))
-
-
+      pivot_wider(names_from = Position, values_from = Frequency, values_fill = list(Frequency = 0))
+    
     ff1 <- file[, -1] # Exclude non-FFT columns
     
     # Apply FFT and calculate spectrum
     ttest <- spectrum(ff1, spans = spectrum_span, plot = FALSE)
-    
     
     out.spect <- if (is.matrix(ttest$spec)) {
       rowMeans(ttest$spec)
@@ -706,7 +708,7 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
     
     # Prepare results for plotting
     dd <- data.frame(
-      Frequency = rep(ttest$freq),
+      Frequency = rep(ttest$freq, nrow(ff1)),
       File = basename(file_name),
       spec = out.spect,
       loci_Gen = loci_Gen,
@@ -721,8 +723,8 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
   fft1 <- list()
   for (loci in nloci) {
     threshold <- ifelse(grepl("_30$", loci), 70, ifelse(grepl("_20$", loci), 50, ifelse(grepl("_10$", loci), 30, 70)))
-
-fft1[[loci]] <- all_results %>%
+    
+    fft1[[loci]] <- all_results %>%
       filter(loci_Gen == loci) %>%
       mutate(Frequency = 1 / Frequency) %>%
       filter(Frequency < threshold) %>%
@@ -732,11 +734,11 @@ fft1[[loci]] <- all_results %>%
       xlab("Periodicity") +
       ylab("Spectral Density") +
       mytheme
-
   }
   
   return(fft1)
 }
+
 ```
 
 ```{r, fig.width = 12, fig.height = 6}

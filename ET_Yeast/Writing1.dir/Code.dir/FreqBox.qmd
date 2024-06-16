@@ -1,0 +1,471 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(stringr)
+
+# Define the directory and file pattern
+dirpath <- "../../output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome\\d_n300_H0.5SD3"
+
+# List all files in the directory that match the pattern
+files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+
+# Initialize an empty data frame to hold all data
+all_data <- data.frame()
+
+# Loop over each file to read and combine data
+for (file_name in files) {
+  replicate_number <- str_extract(basename(file_name), "\\d+")
+  
+  # Read the file into a data frame
+  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect))
+  
+  # Add columns for replicate number
+  file_data <- file_data %>%
+    mutate(Replicate = replicate_number)
+  
+  # Combine with the main data frame
+  all_data <- bind_rows(all_data, file_data)
+}
+
+# Transform the data from wide to long format if needed
+all_data_long <- all_data %>%
+  gather(key = "Position", value = "Frequency")
+
+
+# Transform the data from long to wide format
+all_data_wide <- all_data %>%
+  pivot_wider(names_from = Position, values_from = Frequency)
+
+
+# Set seed for reproducibility
+set.seed(6959705)
+
+# Randomly select 3 positions
+selected_positions <- sample(names(all_data_wide)[-c(1,2)], 3)
+
+# Filter the wide data frame for the selected positions
+filtered_data_wide <- all_data_wide %>%
+  select(c("Generation", "Replicate", selected_positions))
+
+# Convert the filtered wide data frame back to a long format
+filtered_data_long <- filtered_data_wide %>%
+  pivot_longer(cols = all_of(selected_positions),
+               names_to = "Position",
+               values_to = "Frequency")
+
+ggplot()+
+  geom_boxplot(data = filtered_data_long %>% filter(Generation == 1 | Generation %% 90 == 0) %>%  mutate(Generation = factor(Generation)), aes(Generation, Frequency, group = interaction(Position, Generation), fill = Position, color = Position))+
+  facet_grid(Position~.)
+```
+
+```{r}
+ggplot() +
+  geom_ribbon(data = filtered_data_long %>%
+                 filter(Generation == 1 | Generation %% 90 == 0) %>%
+                 mutate(Generation = factor(Generation)),
+              aes(x = Generation, y = Frequency,
+                  ymin = 0, ymax = Frequency,  # Add ymin and ymax aesthetics
+                  group = interaction(Position, Generation),
+                  fill = Position, color = Position)) +
+  facet_grid(Position ~ .)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+ggplot() +
+  geom_jitter(data = filtered_data_long %>%
+                filter(Generation == 1 | Generation %% 90 == 0) %>%
+                mutate(Generation = factor(Generation)),
+              aes(x = Generation, y = Frequency, color = Position),
+              alpha = 0.4, width = 0.2, height = 0) +
+  geom_smooth(data = filtered_data_long %>%
+                filter(Generation == 1 | Generation %% 90 == 0) %>%
+                mutate(Generation = factor(Generation)),
+              aes(x = Generation, y = Frequency, color = Replicate), method = "loess") +
+  facet_wrap(~ Position, ncol = 1) +
+  theme_minimal() +
+  labs(title = "Frequency Distribution Over Generations",
+       x = "Generation",
+       y = "Frequency",
+       color = "Replicate") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+ggplot() +
+  geom_violin(data = filtered_data_long %>%
+                filter(Generation == 1 | Generation %% 90 == 0) %>%
+                mutate(Generation = factor(Generation)),
+              aes(x = Generation, y = Frequency, fill = Position, color = Position),
+              alpha = 0.6) +
+  facet_grid(Position ~ .) +
+  theme_minimal() +
+  labs(title = "Frequency Distribution Over Generations",
+       x = "Generation",
+       y = "Frequency",
+       fill = "Position",
+       color = "Position") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+ggplot() +
+  geom_line(data = filtered_data_long %>%
+              filter(Generation == 1 | Generation %% 90 == 0) %>%
+              mutate(Generation = factor(Generation)),
+            aes(x = Generation, y = Frequency, group = factor(Replicate), color = factor(Replicate))) +
+  facet_wrap(~ Position, ncol = 1) +
+  theme_minimal() +
+  labs(title = "Frequency Distribution Over Generations",
+       x = "Generation",
+       y = "Frequency",
+       color = "Position") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ggridges)
+
+ggplot(filtered_data_long %>%
+         filter(Generation == 1 | Generation %% 90 == 0) %>%
+         mutate(Generation = factor(Generation)), 
+       aes(x = Generation, y = Frequency, fill = ..density..)) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+  facet_wrap(~ Position, ncol = 1) +
+  theme_minimal() +
+  labs(title = "Density Plot of Frequency Over Generations",
+       x = "Generation",
+       y = "Frequency") +
+  scale_fill_viridis_c(name = "Density") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+ggplot(filtered_data_long %>%
+         filter(Generation == 1 | Generation %% 90 == 0) %>%
+         mutate(Generation = factor(Generation)),
+       aes(x = Generation, y = Position, fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+# Define the directory and file pattern
+dirpath <- "../../output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome10_n300_H0.5SD3"
+
+# List all files in the directory that match the pattern
+files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+
+# Initialize an empty data frame to hold all data
+all_data <- data.frame()
+
+# Loop over each file to read and combine data
+for (file_name in files) {
+  replicate_number <- str_extract(basename(file_name), "\\d+")
+  
+  # Read the file into a data frame
+  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect))
+  
+  # Add columns for replicate number
+  file_data <- file_data %>%
+    mutate(Replicate = replicate_number)
+  
+  # Combine with the main data frame
+  all_data <- bind_rows(all_data, file_data)
+}
+
+# Transform the data from wide to long format if needed
+all_data_long <- all_data %>%
+  gather(key = "Position", value = "Frequency")
+
+
+# Transform the data from long to wide format
+all_data_wide <- all_data %>%
+  pivot_wider(names_from = Position, values_from = Frequency)
+
+
+# Set seed for reproducibility
+set.seed(6959705)
+
+# Randomly select 3 positions
+selected_positions <- sample(names(all_data_wide)[-c(1,2)], 30)
+
+# Filter the wide data frame for the selected positions
+filtered_data_wide <- all_data_wide %>%
+  select(c("Generation", "Replicate", selected_positions))
+
+# Convert the filtered wide data frame back to a long format
+filtered_data_long <- filtered_data_wide %>%
+  pivot_longer(cols = all_of(selected_positions),
+               names_to = "Position",
+               values_to = "Frequency")
+
+library(ggplot2)
+library(dplyr)
+
+ggplot(filtered_data_long %>%
+         filter(Generation == 1 | Generation %% 90 == 0) %>%
+         mutate(Generation = factor(Generation)),
+       aes(x = Generation, y = Position, fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+# Define the directory and file pattern
+dirpath <- "../../output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome10_n300_H0.5SD3"
+
+# List all files in the directory that match the pattern
+files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+
+# Initialize an empty data frame to hold all data
+all_data <- data.frame()
+
+# Loop over each file to read and combine data
+for (file_name in files) {
+  replicate_number <- str_extract(basename(file_name), "\\d+")
+  
+  # Read the file into a data frame
+  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect)) # , -Effect
+  
+  # Add columns for replicate number
+  file_data <- file_data %>%
+    mutate(Replicate = replicate_number)
+  
+  # Combine with the main data frame
+  all_data <- bind_rows(all_data, file_data)
+}
+
+# Transform the data from wide to long format if needed
+#all_data_long <- all_data %>%
+#  gather(key = "Position", value = "Frequency")
+
+
+# Transform the data from long to wide format
+all_data_wide <- all_data %>%
+  pivot_wider(names_from = Position, values_from = Frequency)
+
+
+# Set seed for reproducibility
+set.seed(6959705)
+
+# Randomly select 3 positions
+selected_positions <- sample(names(all_data_wide)[-c(1,2)], 30)
+
+# Filter the wide data frame for the selected positions
+filtered_data_wide <- all_data_wide %>%
+  select(c("Generation", "Replicate", selected_positions))
+
+# Convert the filtered wide data frame back to a long format
+filtered_data_long <- filtered_data_wide %>%
+  pivot_longer(cols = all_of(selected_positions),
+               names_to = "Position",
+               values_to = "Frequency")
+
+library(ggplot2)
+library(dplyr)
+
+ggplot(filtered_data_long %>%
+         filter(Generation == 1 | Generation %% 90 == 0) %>%
+         mutate(Generation = factor(Generation)),
+       aes(x = Generation, y = Position, fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+# Define the directory and file pattern
+dirpath <- "../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome10_n300_H0.5SD3Gen30"
+
+# List all files in the directory that match the pattern
+files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+
+# Initialize an empty data frame to hold all data
+all_data <- data.frame()
+
+# Loop over each file to read and combine data
+for (file_name in files) {
+  replicate_number <- str_extract(basename(file_name), "\\d+")
+  
+  # Read the file into a data frame
+  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect))
+  
+  # Add columns for replicate number
+  file_data <- file_data %>%
+    mutate(Replicate = replicate_number)
+  
+  # Combine with the main data frame
+  all_data <- bind_rows(all_data, file_data)
+}
+
+# Transform the data from wide to long format if needed
+# all_data_long <- all_data %>%
+#   gather(key = "Position", value = "Frequency")
+
+# Transform the data from long to wide format
+all_data_wide <- all_data %>%
+  pivot_wider(names_from = Position, values_from = Frequency)
+
+# Set seed for reproducibility
+set.seed(6959705)
+
+# Randomly select 30 positions
+selected_positions <- sample(names(all_data_wide)[-c(1, 2)], 30)
+
+# Filter the wide data frame for the selected positions
+filtered_data_wide <- all_data_wide %>%
+  select(c("Generation", "Replicate", selected_positions))
+
+# Convert the filtered wide data frame back to a long format
+filtered_data_long <- filtered_data_wide %>%
+  pivot_longer(cols = all_of(selected_positions),
+               names_to = "Position",
+               values_to = "Frequency")
+
+# Sort positions in ascending order
+filtered_data_long <- filtered_data_long %>%
+  arrange(Position)
+
+# Plot the heat map
+ggplot(filtered_data_long %>%
+         filter(Generation == 1 | Generation %% 30 == 0) %>%
+         mutate(Generation = factor(Generation)),
+       aes(x = Generation, y = Position, fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+# Define the directory and file pattern
+dirpath <- "../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome10_n300_H0.5SD3Gen30"
+
+# List all files in the directory that match the pattern
+files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+
+# Initialize an empty data frame to hold all data
+all_data <- data.frame()
+
+# Loop over each file to read and combine data
+for (file_name in files) {
+  replicate_number <- str_extract(basename(file_name), "\\d+")
+  
+  # Read the file into a data frame
+  file_data <- read.csv(file_name) %>% select(-Origin)
+  
+  # Add columns for replicate number
+  file_data <- file_data %>%
+    mutate(Replicate = replicate_number)
+  
+  # Combine with the main data frame
+  all_data <- bind_rows(all_data, file_data)
+}
+
+# Transform the data from long to wide format
+all_data_wide <- all_data %>%
+  pivot_wider(names_from = Position, values_from = Frequency)
+
+# Set seed for reproducibility
+set.seed(6959705)
+
+# Randomly select 30 positions
+selected_positions <- sample(names(all_data_wide)[-c(1, 2, which(names(all_data_wide) == "Effect"))], 30)
+
+# Filter the wide data frame for the selected positions
+filtered_data_wide <- all_data_wide %>%
+  select(c("Generation", "Replicate", "Effect", selected_positions))
+
+# Convert the filtered wide data frame back to a long format
+filtered_data_long <- filtered_data_wide %>%
+  pivot_longer(cols = all_of(selected_positions),
+               names_to = "Position",
+               values_to = "Frequency")
+
+# Sort positions in ascending order
+filtered_data_long <- filtered_data_long %>%
+  arrange(Position)
+
+# Plot the heat map
+ggplot(filtered_data_long %>%
+         filter(Generation == 1 | Generation %% 30 == 0) %>%
+         mutate(Generation = factor(Generation)),
+       aes(x = Generation, y = Position, fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  facet_wrap(~ Effect, scales = "free_y")
+
+```
