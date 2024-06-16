@@ -11,8 +11,8 @@ library(ggplot2)
 library(stringr)
 
 # Define the directory and file pattern
-dirpath <- "../../output.dir/Selection_Models/WF.dir/CS.dir/"
-pattern <- "^genome\\d_n300_H0.5SD3"
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir"
+pattern <- "^genome\\d+_n10_H0.5SD4"
 
 # List all files in the directory that match the pattern
 files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
@@ -59,7 +59,8 @@ filtered_data_wide <- all_data_wide %>%
 filtered_data_long <- filtered_data_wide %>%
   pivot_longer(cols = all_of(selected_positions),
                names_to = "Position",
-               values_to = "Frequency")
+               values_to = "Frequency") %>%
+  mutate(Frequency = replace_na(Frequency, 0))
 
 ggplot()+
   geom_boxplot(data = filtered_data_long %>% filter(Generation == 1 | Generation %% 90 == 0) %>%  mutate(Generation = factor(Generation)), aes(Generation, Frequency, group = interaction(Position, Generation), fill = Position, color = Position))+
@@ -67,28 +68,16 @@ ggplot()+
 ```
 
 ```{r}
-ggplot() +
-  geom_ribbon(data = filtered_data_long %>%
-                 filter(Generation == 1 | Generation %% 90 == 0) %>%
-                 mutate(Generation = factor(Generation)),
-              aes(x = Generation, y = Frequency,
-                  ymin = 0, ymax = Frequency,  # Add ymin and ymax aesthetics
-                  group = interaction(Position, Generation),
-                  fill = Position, color = Position)) +
-  facet_grid(Position ~ .)
+library(tidyverse)
 
-
-```
-
-```{r}
-library(ggplot2)
-library(dplyr)
+# Replace NA values in Frequency with 0
+#filtered_data_long$Frequency <- replace_na(filtered_data_long$Frequency, 0)
 
 ggplot() +
   geom_jitter(data = filtered_data_long %>%
                 filter(Generation == 1 | Generation %% 90 == 0) %>%
                 mutate(Generation = factor(Generation)),
-              aes(x = Generation, y = Frequency, color = Position),
+              aes(x = Generation, y = Frequency, color = Replicate),
               alpha = 0.4, width = 0.2, height = 0) +
   geom_smooth(data = filtered_data_long %>%
                 filter(Generation == 1 | Generation %% 90 == 0) %>%
@@ -139,186 +128,9 @@ ggplot() +
   labs(title = "Frequency Distribution Over Generations",
        x = "Generation",
        y = "Frequency",
-       color = "Position") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+       color = "Replicates") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
 
-```
-
-```{r}
-library(ggplot2)
-library(dplyr)
-library(ggridges)
-
-ggplot(filtered_data_long %>%
-         filter(Generation == 1 | Generation %% 90 == 0) %>%
-         mutate(Generation = factor(Generation)), 
-       aes(x = Generation, y = Frequency, fill = ..density..)) +
-  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-  facet_wrap(~ Position, ncol = 1) +
-  theme_minimal() +
-  labs(title = "Density Plot of Frequency Over Generations",
-       x = "Generation",
-       y = "Frequency") +
-  scale_fill_viridis_c(name = "Density") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-```
-
-```{r}
-library(ggplot2)
-library(dplyr)
-
-ggplot(filtered_data_long %>%
-         filter(Generation == 1 | Generation %% 90 == 0) %>%
-         mutate(Generation = factor(Generation)),
-       aes(x = Generation, y = Position, fill = Frequency)) +
-  geom_tile() +
-  scale_fill_viridis_c(option = "C") +
-  theme_minimal() +
-  labs(title = "Heat Map of Frequency Over Generations",
-       x = "Generation",
-       y = "Position",
-       fill = "Frequency") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-```
-
-```{r}
-# Define the directory and file pattern
-dirpath <- "../../output.dir/Selection_Models/WF.dir/CS.dir/"
-pattern <- "^genome10_n300_H0.5SD3"
-
-# List all files in the directory that match the pattern
-files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
-
-# Initialize an empty data frame to hold all data
-all_data <- data.frame()
-
-# Loop over each file to read and combine data
-for (file_name in files) {
-  replicate_number <- str_extract(basename(file_name), "\\d+")
-  
-  # Read the file into a data frame
-  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect))
-  
-  # Add columns for replicate number
-  file_data <- file_data %>%
-    mutate(Replicate = replicate_number)
-  
-  # Combine with the main data frame
-  all_data <- bind_rows(all_data, file_data)
-}
-
-# Transform the data from wide to long format if needed
-all_data_long <- all_data %>%
-  gather(key = "Position", value = "Frequency")
-
-
-# Transform the data from long to wide format
-all_data_wide <- all_data %>%
-  pivot_wider(names_from = Position, values_from = Frequency)
-
-
-# Set seed for reproducibility
-set.seed(6959705)
-
-# Randomly select 3 positions
-selected_positions <- sample(names(all_data_wide)[-c(1,2)], 30)
-
-# Filter the wide data frame for the selected positions
-filtered_data_wide <- all_data_wide %>%
-  select(c("Generation", "Replicate", selected_positions))
-
-# Convert the filtered wide data frame back to a long format
-filtered_data_long <- filtered_data_wide %>%
-  pivot_longer(cols = all_of(selected_positions),
-               names_to = "Position",
-               values_to = "Frequency")
-
-library(ggplot2)
-library(dplyr)
-
-ggplot(filtered_data_long %>%
-         filter(Generation == 1 | Generation %% 90 == 0) %>%
-         mutate(Generation = factor(Generation)),
-       aes(x = Generation, y = Position, fill = Frequency)) +
-  geom_tile() +
-  scale_fill_viridis_c(option = "C") +
-  theme_minimal() +
-  labs(title = "Heat Map of Frequency Over Generations",
-       x = "Generation",
-       y = "Position",
-       fill = "Frequency") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-```{r}
-# Define the directory and file pattern
-dirpath <- "../../output.dir/Selection_Models/WF.dir/CS.dir/"
-pattern <- "^genome10_n300_H0.5SD3"
-
-# List all files in the directory that match the pattern
-files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
-
-# Initialize an empty data frame to hold all data
-all_data <- data.frame()
-
-# Loop over each file to read and combine data
-for (file_name in files) {
-  replicate_number <- str_extract(basename(file_name), "\\d+")
-  
-  # Read the file into a data frame
-  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect)) # , -Effect
-  
-  # Add columns for replicate number
-  file_data <- file_data %>%
-    mutate(Replicate = replicate_number)
-  
-  # Combine with the main data frame
-  all_data <- bind_rows(all_data, file_data)
-}
-
-# Transform the data from wide to long format if needed
-#all_data_long <- all_data %>%
-#  gather(key = "Position", value = "Frequency")
-
-
-# Transform the data from long to wide format
-all_data_wide <- all_data %>%
-  pivot_wider(names_from = Position, values_from = Frequency)
-
-
-# Set seed for reproducibility
-set.seed(6959705)
-
-# Randomly select 3 positions
-selected_positions <- sample(names(all_data_wide)[-c(1,2)], 30)
-
-# Filter the wide data frame for the selected positions
-filtered_data_wide <- all_data_wide %>%
-  select(c("Generation", "Replicate", selected_positions))
-
-# Convert the filtered wide data frame back to a long format
-filtered_data_long <- filtered_data_wide %>%
-  pivot_longer(cols = all_of(selected_positions),
-               names_to = "Position",
-               values_to = "Frequency")
-
-library(ggplot2)
-library(dplyr)
-
-ggplot(filtered_data_long %>%
-         filter(Generation == 1 | Generation %% 90 == 0) %>%
-         mutate(Generation = factor(Generation)),
-       aes(x = Generation, y = Position, fill = Frequency)) +
-  geom_tile() +
-  scale_fill_viridis_c(option = "C") +
-  theme_minimal() +
-  labs(title = "Heat Map of Frequency Over Generations",
-       x = "Generation",
-       y = "Position",
-       fill = "Frequency") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
@@ -335,15 +147,16 @@ pattern <- "^genome10_n300_H0.5SD3Gen30"
 # List all files in the directory that match the pattern
 files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
 
-# Initialize an empty data frame to hold all data
-all_data <- data.frame()
+# Initialize an empty tibble to hold all data
+all_data <- tibble()
 
 # Loop over each file to read and combine data
 for (file_name in files) {
   replicate_number <- str_extract(basename(file_name), "\\d+")
   
   # Read the file into a data frame
-  file_data <- read.csv(file_name) %>% select(c(-Origin, -Effect))
+  file_data <- read.csv(file_name) %>% 
+    select(-Origin)
   
   # Add columns for replicate number
   file_data <- file_data %>%
@@ -353,39 +166,44 @@ for (file_name in files) {
   all_data <- bind_rows(all_data, file_data)
 }
 
-# Transform the data from wide to long format if needed
-# all_data_long <- all_data %>%
-#   gather(key = "Position", value = "Frequency")
+# Combine Position and Effect into Position_Effect
+all_data <- all_data %>%
+  mutate(Position_Effect = paste(Position, Effect, sep = ",")) %>%
+  select(-Effect, -Position)
 
 # Transform the data from long to wide format
 all_data_wide <- all_data %>%
-  pivot_wider(names_from = Position, values_from = Frequency)
-
-# Set seed for reproducibility
-set.seed(6959705)
+  pivot_wider(names_from = Position_Effect, values_from = Frequency)
 
 # Randomly select 30 positions
+set.seed(6959705)
 selected_positions <- sample(names(all_data_wide)[-c(1, 2)], 30)
 
 # Filter the wide data frame for the selected positions
 filtered_data_wide <- all_data_wide %>%
-  select(c("Generation", "Replicate", selected_positions))
+  select(Generation, Replicate, all_of(selected_positions))
 
 # Convert the filtered wide data frame back to a long format
 filtered_data_long <- filtered_data_wide %>%
   pivot_longer(cols = all_of(selected_positions),
-               names_to = "Position",
-               values_to = "Frequency")
+               names_to = "Position_Effect",
+               values_to = "Frequency") %>%
+  separate(Position_Effect, into = c("Position", "Effect"), sep = ",") %>%
+  mutate(Position = as.numeric(Position),
+         Effect = as.numeric(Effect))
 
-# Sort positions in ascending order
+# Sort by Position
 filtered_data_long <- filtered_data_long %>%
   arrange(Position)
 
+# Create a new column for Effect labels
+filtered_data_long <- filtered_data_long %>%
+  group_by(Position) %>%
+  mutate(Effect_label = ifelse(row_number() == 1 | row_number() %% n() == 0, Effect, NA)) %>%
+  ungroup()
+
 # Plot the heat map
-ggplot(filtered_data_long %>%
-         filter(Generation == 1 | Generation %% 30 == 0) %>%
-         mutate(Generation = factor(Generation)),
-       aes(x = Generation, y = Position, fill = Frequency)) +
+p <- ggplot(filtered_data_long, aes(x = Generation, y = factor(Position), fill = Frequency)) +
   geom_tile() +
   scale_fill_viridis_c(option = "C") +
   theme_minimal() +
@@ -393,7 +211,15 @@ ggplot(filtered_data_long %>%
        x = "Generation",
        y = "Position",
        fill = "Frequency") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom")
+
+# Add the secondary axis for Effect
+if (!any(is.na(filtered_data_long$Effect_label))) {
+  p <- p + scale_y_discrete(sec.axis = sec_axis(~., name = "Effect", labels = filtered_data_long$Effect_label))
+}
+
+# Print the plot
+print(p)
 
 ```
 
@@ -406,20 +232,21 @@ library(stringr)
 
 # Define the directory and file pattern
 dirpath <- "../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome10_n300_H0.5SD3Gen30"
+pattern <- "^genome10_n70_H0.8SD3Gen30"
 
 # List all files in the directory that match the pattern
 files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
 
-# Initialize an empty data frame to hold all data
-all_data <- data.frame()
+# Initialize an empty tibble to hold all data
+all_data <- tibble()
 
 # Loop over each file to read and combine data
 for (file_name in files) {
   replicate_number <- str_extract(basename(file_name), "\\d+")
   
   # Read the file into a data frame
-  file_data <- read.csv(file_name) %>% select(-Origin)
+  file_data <- read.csv(file_name, header = TRUE) %>% 
+    select(-Origin)  # Remove 'Origin' column if exists
   
   # Add columns for replicate number
   file_data <- file_data %>%
@@ -429,35 +256,48 @@ for (file_name in files) {
   all_data <- bind_rows(all_data, file_data)
 }
 
+# Combine Position and Effect into Position_Effect
+all_data <- all_data %>%
+  mutate(Position_Effect = paste(Position, Effect, sep = ",")) %>%
+  select(-Effect, -Position)
+
 # Transform the data from long to wide format
 all_data_wide <- all_data %>%
-  pivot_wider(names_from = Position, values_from = Frequency)
-
-# Set seed for reproducibility
-set.seed(6959705)
+  pivot_wider(names_from = Position_Effect, values_from = Frequency)
 
 # Randomly select 30 positions
-selected_positions <- sample(names(all_data_wide)[-c(1, 2, which(names(all_data_wide) == "Effect"))], 30)
+set.seed(6959705)
+num_positions <- min(30, length(names(all_data_wide)[-c(1, 2)]))
+selected_positions <- sample(names(all_data_wide)[-c(1, 2)], num_positions)
 
 # Filter the wide data frame for the selected positions
 filtered_data_wide <- all_data_wide %>%
-  select(c("Generation", "Replicate", "Effect", selected_positions))
+  select(Generation, Replicate, all_of(selected_positions))
 
 # Convert the filtered wide data frame back to a long format
 filtered_data_long <- filtered_data_wide %>%
   pivot_longer(cols = all_of(selected_positions),
-               names_to = "Position",
-               values_to = "Frequency")
+               names_to = "Position_Effect",
+               values_to = "Frequency") %>%
+  separate(Position_Effect, into = c("Position", "Effect"), sep = ",") %>%
+  mutate(Position = as.numeric(Position),
+         Effect = as.numeric(Effect))
 
-# Sort positions in ascending order
+# Sort by Position
 filtered_data_long <- filtered_data_long %>%
   arrange(Position)
 
+# Create a new column for Effect labels
+filtered_data_long <- filtered_data_long %>%
+  group_by(Position) %>%
+  mutate(Effect_label = ifelse(row_number() == 1 | row_number() %% n() == 0, Effect, NA)) %>%
+  ungroup()
+
+# Get maximum Generation for positioning the labels outside the plot
+max_generation <- max(filtered_data_long$Generation)
+
 # Plot the heat map
-ggplot(filtered_data_long %>%
-         filter(Generation == 1 | Generation %% 30 == 0) %>%
-         mutate(Generation = factor(Generation)),
-       aes(x = Generation, y = Position, fill = Frequency)) +
+p1 <- ggplot(filtered_data_long, aes(x = Generation, y = factor(Position), fill = Frequency)) +
   geom_tile() +
   scale_fill_viridis_c(option = "C") +
   theme_minimal() +
@@ -465,7 +305,599 @@ ggplot(filtered_data_long %>%
        x = "Generation",
        y = "Position",
        fill = "Frequency") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  facet_wrap(~ Effect, scales = "free_y")
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5))
+
+# Add text annotations for Effect labels on the right side
+p1 <- p1 +
+  geom_text(data = filtered_data_long %>% filter(!is.na(Effect_label)), 
+            aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+            hjust = 0, vjust = 0.5, size = 3, color = "black") #, fontface = "bold"
+
+p1
+
+```
+
+```{r}
+############## This is to help with packages in case theyre not there #####
+install_and_load <- function(packages) {
+  for (package in packages) {
+    if (!require(package, character.only = TRUE)) {
+      install.packages(package, dependencies = TRUE)
+      library(package, character.only = TRUE)
+    }
+  }
+}
+
+# List of required packages
+packages <- c("tidyverse", "stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
+
+# Install and load the packages
+#install_and_load(packages)
+
+############ Libraries and theme function ########
+
+#library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+}
+
+#################### Data Processing and plotting ###############
+
+# The first part deals with constant and sinusoidal II
+process_files <- function(dirpath, pattern, plot_type) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+
+  dataframes <- list()
+  for(file in files){
+    replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+    data <- read.csv(file, header = TRUE) %>%
+      select(Generation, Position, Frequency, Effect) %>%
+      group_by(Position) %>%
+      mutate(Position = factor(Position),
+             replicate = replicate_id,
+             herit = herit,
+             loci = loci,
+             sd = sd,
+             initFreq = Frequency[Generation == 1],
+             h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+             postion_effect_init = paste("position = ", Position," ",
+                                         "Effect = ", round(Effect, 2)," ", 
+                                         "Initial Freq = ", 
+                                         round(initFreq, 2)," ",
+                                         "repl = ", " ",replicate, sep = ""))
+
+
+    # argument for linear and sinusoidal I selections
+
+    if(!is.na(gen)) {
+      data$gen <- rep(gen, nrow(data))
+    }
+
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) %>%
+    mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+
+  # plots for either linear or sinusoidal selections
+
+  plots <- list()
+  if (plot_type == "loci_gen") {
+    loci_gens <- unique(combined_data$loci_gen)
+    for(loci_geni in loci_gens){
+      locus_data <- combined_data %>%
+        filter(loci_gen == loci_geni)
+
+      # Select up to 30 positions
+      set.seed(12345)
+      num_positions <- min(30, length(unique(locus_data$Position)))
+      selected_positions <- sample(unique(locus_data$Position), num_positions)
+      
+      # Filter the data for the selected positions
+      locus_data <- locus_data %>% 
+        filter(Position %in% selected_positions)
+      
+      # Convert Position to numeric
+      locus_data$Position <- as.numeric(as.character(locus_data$Position))
+      
+      # Get maximum Generation for positioning the labels outside the plot
+      max_generation <- max(locus_data$Generation)
+      
+      # Add Effect labels for selected positions
+      locus_data <- locus_data %>%
+        group_by(Position) %>%
+        mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
+        ungroup()
+
+      # Create the heat map
+      p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
+        geom_tile() +
+        scale_fill_viridis_c(option = "C") +
+        theme_minimal() +
+        labs(title = "Heat Map of Frequency Over Generations",
+             x = "Generation",
+             y = "Position",
+             fill = "Frequency") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+              legend.position = "bottom",
+              plot.title = element_text(hjust = 0.5)) +
+        geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+                  aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+                  hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold")
+
+      plots[[loci_geni]] <- p
+    }
+
+    # plots for constant or sinusoidal II selections
+
+  } else if (plot_type == "loci") {
+    loci <- unique(combined_data$loci)
+    for(locus in loci){
+      locus_data <- combined_data %>%
+        filter(loci == locus)
+      
+      # Select up to 30 positions
+      set.seed(12345)
+      num_positions <- min(30, length(unique(locus_data$Position)))
+      selected_positions <- sample(unique(locus_data$Position), num_positions)
+      
+      # Filter the data for the selected positions
+      locus_data <- locus_data %>% 
+        filter(Position %in% selected_positions)
+      
+      # Convert Position to numeric
+      locus_data$Position <- as.numeric(as.character(locus_data$Position))
+      
+      # Get maximum Generation for positioning the labels outside the plot
+      max_generation <- max(locus_data$Generation)
+      
+      # Add Effect labels for selected positions
+      locus_data <- locus_data %>%
+        group_by(Position) %>%
+        mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
+        ungroup()
+
+      # Create the heat map
+      p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
+        geom_tile() +
+        scale_fill_viridis_c(option = "C") +
+        theme_minimal() +
+        labs(title = "Heat Map of Frequency Over Generations",
+             x = "Generation",
+             y = "Position",
+             fill = "Frequency") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+              legend.position = "bottom",
+              plot.title = element_text(hjust = 0.5)) +
+        geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+                  aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+                  hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold")
+
+      plots[[locus]] <- p
+    }
+  }
+
+  return(list(combined_data = combined_data, plots = plots))
+}
+
+# Example usage
+result <- process_files(dirpath = "../../output.dir/Selection_Models/WF.dir/LinFS.dir/",
+                        pattern = "^genome1_n\\d+_H0.1_*",
+                        plot_type = "loci_gen")
+result$plots
+
+```
+
+```{r}
+############## This is to help with packages in case theyre not there #####
+install_and_load <- function(packages) {
+  for (package in packages) {
+    if (!require(package, character.only = TRUE)) {
+      install.packages(package, dependencies = TRUE)
+      library(package, character.only = TRUE)
+    }
+  }
+}
+
+# List of required packages
+packages <- c("tidyverse", "stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
+
+# Install and load the packages
+#install_and_load(packages)
+
+############ Libraries and theme function ########
+
+#library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+}
+
+#################### Data Processing and plotting ###############
+
+# The first part deals with constant and sinusoidal II
+process_files <- function(dirpath, pattern, plot_type) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+
+  dataframes <- list()
+  for(file in files){
+    replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+    data <- read.csv(file, header = TRUE) %>%
+      select(Generation, Position, Frequency, Effect) %>%
+      group_by(Position) %>%
+      mutate(Position = factor(Position),
+             replicate = replicate_id,
+             herit = herit,
+             loci = loci,
+             sd = sd,
+             initFreq = Frequency[Generation == 1],
+             h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+             postion_effect_init = paste("position = ", Position," ",
+                                         "Effect = ", round(Effect, 2)," ", 
+                                         "Initial Freq = ", 
+                                         round(initFreq, 2)," ",
+                                         "repl = ", " ",replicate, sep = ""))
+
+
+    # argument for linear and sinusoidal I selections
+
+    if(!is.na(gen)) {
+      data$gen <- rep(gen, nrow(data))
+    }
+
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) %>%
+    mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+
+  # plots for either linear or sinusoidal selections
+
+  plots <- list()
+  if (plot_type == "loci_gen") {
+    loci_gens <- unique(combined_data$loci_gen)
+    for(loci_geni in loci_gens){
+      locus_data <- combined_data %>%
+        filter(loci_gen == loci_geni)
+
+      # Select up to 30 positions
+      set.seed(12345)
+      num_positions <- min(30, length(unique(locus_data$Position)))
+      selected_positions <- sample(unique(locus_data$Position), num_positions)
+      
+      # Filter the data for the selected positions
+      locus_data <- locus_data %>% 
+        filter(Position %in% selected_positions)
+      
+      # Convert Position to numeric
+      locus_data$Position <- as.numeric(as.character(locus_data$Position))
+      
+      # Get maximum Generation for positioning the labels outside the plot
+      max_generation <- max(locus_data$Generation)
+      
+      # Add Effect labels for selected positions
+      locus_data <- locus_data %>%
+        group_by(Position) %>%
+        mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
+        ungroup()
+
+      # Create the heat map with faceting by h2_sd
+      p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
+        geom_tile() +
+        scale_fill_viridis_c(option = "C") +
+        theme_minimal() +
+        labs(title = "Heat Map of Frequency Over Generations",
+             x = "Generation",
+             y = "Position",
+             fill = "Frequency") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+              legend.position = "bottom",
+              plot.title = element_text(hjust = 0.5)) +
+        geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+                  aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+                  hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
+        facet_wrap(~h2_sd, ncol = 4)
+
+      plots[[loci_geni]] <- p
+    }
+
+    # plots for constant or sinusoidal II selections
+
+  } else if (plot_type == "loci") {
+    loci <- unique(combined_data$loci)
+    for(locus in loci){
+      locus_data <- combined_data %>%
+        filter(loci == locus)
+      
+      # Select up to 30 positions
+      set.seed(12345)
+      num_positions <- min(30, length(unique(locus_data$Position)))
+      selected_positions <- sample(unique(locus_data$Position), num_positions)
+      
+      # Filter the data for the selected positions
+      locus_data <- locus_data %>% 
+        filter(Position %in% selected_positions)
+      
+      # Convert Position to numeric
+      locus_data$Position <- as.numeric(as.character(locus_data$Position))
+      
+      # Get maximum Generation for positioning the labels outside the plot
+      max_generation <- max(locus_data$Generation)
+      
+      # Add Effect labels for selected positions
+      locus_data <- locus_data %>%
+        group_by(Position) %>%
+        mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
+        ungroup()
+
+      # Create the heat map with faceting by h2_sd
+      p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
+        geom_tile() +
+        scale_fill_viridis_c(option = "C") +
+        theme_minimal() +
+        labs(title = "Heat Map of Frequency Over Generations",
+             x = "Generation",
+             y = "Position",
+             fill = "Frequency") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+              legend.position = "bottom",
+              plot.title = element_text(hjust = 0.5)) +
+        geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+                  aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+                  hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
+        facet_wrap(~h2_sd, ncol = 4)
+
+      plots[[locus]] <- p
+    }
+  }
+
+  return(list(combined_data = combined_data, plots = plots))
+}
+
+# # Example usage
+# result <- process_files(dirpath = "../../output.dir/Selection_Models/WF.dir/SinFS.dir/",
+#                         pattern = "^genome15\\D",
+#                         plot_type = "loci_gen")
+# result$plots
+
+```
+
+```{r}
+############## This is to help with packages in case theyre not there #####
+install_and_load <- function(packages) {
+  for (package in packages) {
+    if (!require(package, character.only = TRUE)) {
+      install.packages(package, dependencies = TRUE)
+      library(package, character.only = TRUE)
+    }
+  }
+}
+
+# List of required packages
+packages <- c("tidyverse", "stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
+
+# Install and load the packages
+#install_and_load(packages)
+
+############ Libraries and theme function ########
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+}
+
+#################### Data Processing and plotting ###############
+
+# Directory path and pattern
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome15\\D"
+
+# List files
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+  data <- read.csv(file, header = TRUE) %>% 
+    select(Generation, Position, Frequency, Effect) %>% 
+    mutate(Position = factor(Position),
+           herit = herit,
+           loci = loci,
+           sd = sd,
+           gen = gen,
+           h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+           postion_effect_init = paste("position = ", Position," ",
+                                       "Effect = ", round(Effect, 2)," ", 
+                                       "Initial Freq = ", round(Frequency[1], 2)," ",
+                                       "repl = ", " ", row_number(), sep = ""))
+  dataframes[[file]] <- data
+}
+
+combined_data <- bind_rows(dataframes)
+
+plots <- list()
+loci_gens <- unique(combined_data$loci_gen)
+for(loci_geni in loci_gens){
+  locus_data <- combined_data %>% 
+    filter(loci_gen == loci_geni)
+  
+  # Select up to 30 positions
+  set.seed(12345)
+  num_positions <- min(30, length(unique(locus_data$Position)))
+  selected_positions <- sample(unique(locus_data$Position), num_positions)
+  
+  # Filter the data for the selected positions
+  locus_data <- locus_data %>% 
+    filter(Position %in% selected_positions)
+  
+  # Convert Position to numeric
+  locus_data$Position <- as.numeric(as.character(locus_data$Position))
+  
+  # Get maximum Generation for positioning the labels outside the plot
+  max_generation <- max(locus_data$Generation)
+  
+  # Add Effect labels for selected positions
+  locus_data <- locus_data %>%
+    group_by(Position) %>%
+    mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
+    ungroup()
+
+  # Create the heat map with faceting by h2_sd
+  p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
+    geom_tile() +
+    scale_fill_viridis_c(option = "C") +
+    theme_minimal() +
+    labs(title = "Heat Map of Frequency Over Generations",
+         x = "Generation",
+         y = "Position",
+         fill = "Frequency") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+          legend.position = "bottom",
+          plot.title = element_text(hjust = 0.5)) +
+    geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+              aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+              hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
+    facet_wrap(~h2_sd, ncol = 4)
+
+  plots[[loci_geni]] <- p
+}
+
+plots
+
+```
+
+# DELETE
+
+```{r}
+# Directory path and pattern
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome15\\D"
+
+# List files
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+  data <- read.csv(file, header = TRUE) %>% 
+    select(Generation, Position, Frequency, Effect) %>% 
+    mutate(Position = factor(Position),
+           herit = herit,
+           loci = loci,
+           sd = sd,
+           gen = gen,
+           h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+           position_effect_init = paste("position = ", Position," ",
+                                       "Effect = ", round(Effect, 2)," ", 
+                                       "Initial Freq = ", round(Frequency[1], 2)," ",
+                                       "repl = ", " ", row_number(), sep = ""))
+  dataframes[[file]] <- data
+}
+
+combined_data <- bind_rows(dataframes)
+
+plots <- list()
+loci_gens <- unique(combined_data$loci_gen)
+for(loci_geni in loci_gens){
+  locus_data <- combined_data %>% 
+    filter(loci_gen == loci_geni)
+  
+  # Select up to 30 positions
+  set.seed(12345)
+  num_positions <- min(30, length(unique(locus_data$Position)))
+  selected_positions <- sample(unique(locus_data$Position), num_positions)
+  
+  # Filter the data for the selected positions
+  locus_data <- locus_data %>% 
+    filter(Position %in% selected_positions)
+  
+  # Convert Position to numeric
+  locus_data$Position <- as.numeric(as.character(locus_data$Position))
+  
+  # Get maximum Generation for positioning the labels outside the plot
+  max_generation <- max(locus_data$Generation)
+  
+  # Add Effect labels for selected positions
+  locus_data <- locus_data %>%
+    group_by(Position) %>%
+    mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
+    ungroup()
+
+  # Create the heat map with faceting by h2_sd and Effect
+  p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
+    geom_tile() +
+    scale_fill_viridis_c(option = "C") +
+    theme_minimal() +
+    labs(title = "Heat Map of Frequency Over Generations",
+         x = "Generation",
+         y = "Position",
+         fill = "Frequency") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+          legend.position = "bottom",
+          plot.title = element_text(hjust = 0.5)) +
+    geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+              aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+              hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
+    facet_grid(Effect ~ h2_sd, scales = "free_y", space = "free_y", switch = "y")
+
+  plots[[loci_geni]] <- p
+}
+
+plots
 
 ```
