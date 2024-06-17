@@ -159,10 +159,15 @@ p2
 ```
 
 ```{r}
-Opti_Gen <- tibble(Generation = seq(1:200),
-                   Optimum1 = rep(c(rep(4, 25), rep(-4, 25)), 4))
+phenotypes <- rnorm(10000, 0, 1)
+lower = mean(phenotypes) - 4*(sd(phenotypes))
+upper = mean(phenotypes) + 4*(sd(phenotypes))
 
-mu_pheno = mean(Opti_Gen$Optimum1)
+
+Opti_Gen <- tibble(Generation = seq(1:200),
+                   Optimum1 = rep(c(rep(lower, 25), rep(upper, 25)), 4))
+
+mu_pheno = mean(phenotypes) #mean(Opti_Gen$Optimum1)
 
 Opt_Data <- Opti_Gen %>% 
   filter(Generation == 0 | Generation %% 25 != 0)
@@ -170,7 +175,7 @@ Opt_Data <- Opti_Gen %>%
 p2 <- ggplot()+
   geom_line(data = Opt_Data, aes(x = Generation, y = Optimum1), size = 2)+
   geom_hline(yintercept = mu_pheno, col = "darkred", size = 2)+
-  annotate("text", x = 82, y = mu_pheno + 0.1, 
+  annotate("text", x = 62, y = mu_pheno + 0.1, 
            label = "Mean Phenotype", 
            size = 5, vjust = 0.1, hjust = 0., 
            col = "darkred", angle = 85)+
@@ -189,6 +194,7 @@ p2
 
 ```{r, fig.width=6, fig.height=4}
 Generation <- seq(1, 100, length.out = 400) 
+phenotypes <- rnorm(10000, 0, 1)
 Optimum <- 100 + 10 *sin( pi* Generation / 25) 
 df <- data.frame(Generation, Optimum) 
 
@@ -217,9 +223,10 @@ p3
 # Generation sequence from 1 to 2000
 Generation <- c(1:200)
 Optimum = rep(0, length(Generation))
+phenotypes <- rnorm(10000, 0, 1)
 
-Optimum = Optimum + 4 * sin((pi) * Generation / 25)
-
+#Optimum = Optimum + 4 * sin((pi) * Generation / 25)
+Optimum = (mean(phenotypes) + sd(phenotypes)*4) * sin((22/7) * Generation / 25)
 #Optimum = Optimum / 4  
 #Optimum <- 100 + 10 *sin( pi* Generation / 25) 
 df <- data.frame(Generation, Optimum) 
@@ -247,7 +254,7 @@ p3
 ```{r, fig.width=12, fig.height=8}
 # Generation sequence from 1 to 2000
 Generation <- c(1:200)
-
+phenotypes <- rnorm(10000, 0, 1)
 # Signals vector
 signals = c(12, 22, 10, 16) # 5, 10, 20, 30
 
@@ -256,7 +263,8 @@ Optimum = rep(0, length(Generation))
 
 # Loop over each signal to calculate the Optimum
 for (i in signals) {
-    Optimum = Optimum + 4 * sin((pi) * Generation / i)
+    #Optimum = Optimum + 4 * sin((pi) * Generation / i)
+  Optimum = Optimum + (mean(phenotypes) + sd(phenotypes)*4) * sin((22/7) * Generation / i)
 }
 Optimum = Optimum / 4
 
@@ -271,10 +279,10 @@ library(dplyr)
 # Plot the Optimum over the first 501 generations
 p4 <- ggplot(df %>% filter(Generation < 502)) + 
     geom_line(aes(Generation, Optimum), size = 2) +
-    geom_hline(yintercept = mean(Optimum), color = "darkred", size = 2) +
+    geom_hline(yintercept = mean(phenotypes), color = "darkred", size = 2) +
     annotate("text", x = 75, y = 0.2, label = "Mean Phenotype", size = 11, vjust = 0.1, hjust = 0, col = "darkred", angle = 80) + 
-    #labs(x = NULL, y = NULL) +
-  labs(x = "Generation", y = "Optimum")+
+    labs(x = "Generation", y = "Optimum") +
+    ylim(-4, 4) +  # Set y-axis limits
     theme_cowplot() +
     theme(legend.position = "none",
           axis.text = element_text(size = 17, face = "bold"),
@@ -283,6 +291,7 @@ p4 <- ggplot(df %>% filter(Generation < 502)) +
           strip.text = element_text(size = 17, face = "bold"))
 
 print(p4)
+
 ```
 
 ```{r}
