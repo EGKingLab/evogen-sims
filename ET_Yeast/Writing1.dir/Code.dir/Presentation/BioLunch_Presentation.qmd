@@ -744,7 +744,7 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
 ```{r, fig.width = 12, fig.height = 6}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
 #source('../../../Writing1.dir/Code.dir/ComboSpec.R')
-pattern ="^genome\\d_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+pattern ="^genome\\d+_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```
 
@@ -1003,17 +1003,18 @@ process_files <- function(dirpath, pattern, plot_type) {
 } 
 
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(30))?\\.csv$"
+pattern <- "^MeanPhenotypes\\d+_n300_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
 
-result$plots
+print(result$plots)
 
 ```
 
-```{r}
+```{r, fig.width = 12, fig.height = 6}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^MeanPhenotypes\\d+_n300_H0\\.(1)(SD(1))?(Gen(10))?\\.csv$"
+pattern <- "^MeanPhenotypes\\d+_n1_H0\\.(8)(SD(1))?(Gen(30))?\\.csv$"
+# "^MeanPhenotypes\\d+_n300_H0\\.(8)(SD(4))?(Gen(30))?\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
 
 # Print combined data to check h2_sd
@@ -1402,4 +1403,84 @@ p4 <- ggplot(df %>% filter(Generation < 502)) +
 
 print(p4)
 
+```
+
+### Initial phenotype and their means
+
+```{r}
+############ Libraries and theme function ########
+rm(list = ls())
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"), 
+        plot.title = element_text(hjust = 0.5)) #,legend.position = "none"
+}
+
+#################### Data Processing and plotting ###############
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^InitialPhenotypes\\d\\D+"
+
+files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=InitialPhenotypes)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(herit = herit, loci = factor(loci), sd = sd,
+             replicate = as.factor(replicate),
+           identifier = paste(loci, herit, sep = "_")) %>% #, sd, gen, 
+      select(Phenotype, replicate, identifier, loci)
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) 
+  
+
+```
+
+```{r}
+str(combined_data)
+```
+
+```{r}
+sum_data <- combined_data %>%
+  group_by(identifier, loci) %>%
+  summarize(
+    mean_Phenotype = mean(Phenotype, na.rm = TRUE),
+    sd_Phenotype = sd(Phenotype, na.rm = TRUE),
+    .groups = 'drop'
+  )
+```
+
+```{r}
+# Define the order of the levels
+levels_order <- c("300_0.1", "300_0.5", "300_0.8", "100_0.1", "100_0.5", "100_0.8", "70_0.1", "70_0.5", "70_0.8", "10_0.1", "10_0.5", "10_0.8", "1_0.1", "1_0.5", "1_0.8")
+
+sum_data$identifier <- factor(sum_data$identifier, levels = levels_order)
+
+# Plot
+ggplot() +
+  geom_point(data = sum_data, aes(x = mean_Phenotype, y = identifier), size = 5) +
+  geom_errorbarh(
+    data = sum_data,
+    aes(xmin = mean_Phenotype - sd_Phenotype, xmax = mean_Phenotype + sd_Phenotype, y = identifier),
+    height = 0.2
+  ) +
+  facet_wrap(~loci, scales = "free")+
+  theme_bw()
 ```

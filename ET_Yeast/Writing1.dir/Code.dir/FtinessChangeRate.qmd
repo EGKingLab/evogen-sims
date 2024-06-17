@@ -6,7 +6,7 @@ editor: visual
 ---
 
 ```{r, message=FALSE}
-library(tidyverse)
+library(dplyr)
 
 # Setting up phenotypes and possible optimum values
 
@@ -56,7 +56,6 @@ ggplot()+
 ```
 
 ```{r}
-library(tidyverse)
 
 # Setting up phenotypes and possible optimum values
 phenotypes <- seq(-10, 10, by = 1)

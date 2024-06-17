@@ -11,8 +11,8 @@ library(ggplot2)
 library(stringr)
 
 # Define the directory and file pattern
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir"
-pattern <- "^genome\\d+_n10_H0.5SD4"
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome\\d+_n10_H0.5SD4Gen30"
 
 # List all files in the directory that match the pattern
 files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
@@ -68,7 +68,6 @@ ggplot()+
 ```
 
 ```{r}
-library(tidyverse)
 
 # Replace NA values in Frequency with 0
 #filtered_data_long$Frequency <- replace_na(filtered_data_long$Frequency, 0)
@@ -708,10 +707,10 @@ install_and_load <- function(packages) {
 }
 
 # List of required packages
-packages <- c("tidyverse", "stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
+packages <- c("stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
 
 # Install and load the packages
-#install_and_load(packages)
+install_and_load(packages)
 
 ############ Libraries and theme function ########
 
@@ -767,6 +766,7 @@ combined_data <- bind_rows(dataframes)
 
 plots <- list()
 loci_gens <- unique(combined_data$loci_gen)
+
 for(loci_geni in loci_gens){
   locus_data <- combined_data %>% 
     filter(loci_gen == loci_geni)
@@ -796,6 +796,9 @@ for(loci_geni in loci_gens){
   p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
     geom_tile() +
     scale_fill_viridis_c(option = "C") +
+    geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
+              aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
+              hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
     theme_minimal() +
     labs(title = "Heat Map of Frequency Over Generations",
          x = "Generation",
@@ -804,100 +807,12 @@ for(loci_geni in loci_gens){
     theme(axis.text.x = element_text(angle = 45, hjust = 1), 
           legend.position = "bottom",
           plot.title = element_text(hjust = 0.5)) +
-    geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
-              aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
-              hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
-    facet_wrap(~h2_sd, ncol = 4)
+    facet_wrap(~h2_sd, scales = "free_x", ncol = 4)
 
   plots[[loci_geni]] <- p
 }
-
-plots
-
 ```
 
-# DELETE
-
-```{r}
-# Directory path and pattern
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
-pattern <- "^genome15\\D"
-
-# List files
-files <- list.files(dirpath, pattern, full.names = TRUE)
-
-dataframes <- list()
-for(file in files){
-  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
-  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
-
-  data <- read.csv(file, header = TRUE) %>% 
-    select(Generation, Position, Frequency, Effect) %>% 
-    mutate(Position = factor(Position),
-           herit = herit,
-           loci = loci,
-           sd = sd,
-           gen = gen,
-           h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-           loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
-           position_effect_init = paste("position = ", Position," ",
-                                       "Effect = ", round(Effect, 2)," ", 
-                                       "Initial Freq = ", round(Frequency[1], 2)," ",
-                                       "repl = ", " ", row_number(), sep = ""))
-  dataframes[[file]] <- data
-}
-
-combined_data <- bind_rows(dataframes)
-
-plots <- list()
-loci_gens <- unique(combined_data$loci_gen)
-for(loci_geni in loci_gens){
-  locus_data <- combined_data %>% 
-    filter(loci_gen == loci_geni)
-  
-  # Select up to 30 positions
-  set.seed(12345)
-  num_positions <- min(30, length(unique(locus_data$Position)))
-  selected_positions <- sample(unique(locus_data$Position), num_positions)
-  
-  # Filter the data for the selected positions
-  locus_data <- locus_data %>% 
-    filter(Position %in% selected_positions)
-  
-  # Convert Position to numeric
-  locus_data$Position <- as.numeric(as.character(locus_data$Position))
-  
-  # Get maximum Generation for positioning the labels outside the plot
-  max_generation <- max(locus_data$Generation)
-  
-  # Add Effect labels for selected positions
-  locus_data <- locus_data %>%
-    group_by(Position) %>%
-    mutate(Effect_label = ifelse(row_number() == 1 | row_number() == n(), round(Effect, 2), NA)) %>%
-    ungroup()
-
-  # Create the heat map with faceting by h2_sd and Effect
-  p <- ggplot(locus_data, aes(x = Generation, y = factor(Position), fill = Frequency)) +
-    geom_tile() +
-    scale_fill_viridis_c(option = "C") +
-    theme_minimal() +
-    labs(title = "Heat Map of Frequency Over Generations",
-         x = "Generation",
-         y = "Position",
-         fill = "Frequency") +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1), 
-          legend.position = "bottom",
-          plot.title = element_text(hjust = 0.5)) +
-    geom_text(data = locus_data %>% filter(!is.na(Effect_label)), 
-              aes(x = max_generation + 50, y = factor(Position), label = Effect_label), 
-              hjust = 0, vjust = 0.5, size = 3, color = "black", fontface = "bold") +
-    facet_grid(Effect ~ h2_sd, scales = "free_y", space = "free_y", switch = "y")
-
-  plots[[loci_geni]] <- p
-}
-
+```{r, fig.height=6, fig.align='center', fig.width=12}
 plots
-
 ```
