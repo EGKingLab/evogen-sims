@@ -92,7 +92,7 @@ plot_fitness <- function(C) {
         legend.title = element_text(face = "bold"),
         legend.text = element_text(face = "bold"),
         plot.title = element_text(hjust = 0.5)) +  # Center the title
-  guides(color = guide_legend(ncol = 3, title = 'Distance to Optimum')) +
+        guides(color = guide_legend(ncol = 3, title = '         Optimum')) +
   ggtitle(paste("Fitness Plot for C =", C))
 
   
