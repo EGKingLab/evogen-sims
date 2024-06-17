@@ -1,0 +1,91 @@
+---
+title: "Initial Phenotype Means"
+format: pdf
+editor: visual
+---
+
+```{r}
+rm(list = ls())
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(cowplot)
+```
+
+```{r}
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^InitialPhenotypes\\d\\D+"
+
+files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=InitialPhenotypes)\\d+"))
+    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(herit = herit, loci = factor(loci), sd = sd,
+             replicate = as.factor(replicate),
+           identifier = paste(loci, herit, sep = "_")) %>% #, sd, gen, 
+      select(Phenotype, replicate, identifier, loci)
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) 
+  
+
+```
+
+```{r}
+head(combined_data)
+```
+
+```{r}
+sum_data <- combined_data %>%
+  group_by(identifier, loci) %>%
+  summarize(
+    mean_Phenotype = mean(Phenotype, na.rm = TRUE),
+    sd_Phenotype = sd(Phenotype, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+```
+
+```{r}
+head(sum_data)
+```
+
+```{r}
+# Define the order of the levels
+levels_order <- c("300_0.1", "300_0.5", "300_0.8", "100_0.1", "100_0.5", "100_0.8", "70_0.1", "70_0.5", "70_0.8", "10_0.1", "10_0.5", "10_0.8", "1_0.1", "1_0.5", "1_0.8")
+
+sum_data$identifier <- factor(sum_data$identifier, levels = levels_order)
+
+# Plot
+ggplot() +
+  geom_point(data = sum_data, aes(x = mean_Phenotype, y = identifier), size = 5) +
+  geom_errorbarh(
+    data = sum_data,
+    aes(xmin = mean_Phenotype - sd_Phenotype, xmax = mean_Phenotype + sd_Phenotype, y = identifier),
+    height = 0.2
+  ) +
+  facet_wrap(~loci, scales = "free")+
+  theme_bw()
+
+```
+
+```{r}
+ggplot() +
+  geom_point(data = sum_data, aes(x = mean_Phenotype, y = identifier, color = loci), size = 5)+
+  geom_errorbarh(
+    data = sum_data,
+    aes(xmin = mean_Phenotype - sd_Phenotype, xmax = mean_Phenotype + sd_Phenotype, y = identifier, color = loci),
+    height = 0.2
+  )  +
+  theme_bw()
+```
