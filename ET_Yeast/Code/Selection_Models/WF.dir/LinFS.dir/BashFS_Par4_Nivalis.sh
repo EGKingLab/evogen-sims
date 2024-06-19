@@ -1,5 +1,5 @@
 #!/bin/bash
-max_jobs=10
+#max_jobs=10
 
 echo -e "=== Beginning of SLiM run with different QTLs > $(date) ===" >> ../../../../output.dir/Selection_Models/WF.dir/LinFS.dir/FS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
 output="/storage/hpc/group/kinglab/etb68/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome5_100_0.5.csv"
@@ -34,7 +34,7 @@ for seed in "${!seeds_to_replicates[@]}"; do
           rang=${generations_to_ranges[$gen]}
           
           # Wait for free slot
-          while (( $(jobs | wc -l) >= max_jobs )); do sleep 1; done
+ #         while (( $(jobs | wc -l) >= max_jobs )); do sleep 1; done
           
           {
             slim -d seed=$seed -d repl=$repl -d loci=$loci -d region=$region -d h=$h -d gen=$gen -d rang=$rang -d SD=$SD FS_Par4.slim

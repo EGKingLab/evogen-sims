@@ -73,7 +73,7 @@ initialize() {
 	
 	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/InitialPhenotypes",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Individual,Phenotype"));
 	
-	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/FixedLoci",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Origin"));
+	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/FixedLoci",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0("Generation,Position,Frequency,Effect"));
 }
 // Function to calculate mutation effect
 mutationEffect(m2) {
@@ -115,7 +115,8 @@ mutationEffect(m2) {
 	}
 	
 	generations = seq(1,2001, 1);
-	nopt = stdv * sin((22/7) * generations / gener);
+	//nopt = nopt + (mean(phenotypes) + sd(phenotypes)*stdv) * sin((22/7) * generations / gener);
+	nopt = stdv*sd(phenotypes) * sin(2 * (22/7) * generations / gener) +  mean(phenotypes);
 	defineGlobal("newopt", nopt);
 	
 	// Get the mutation information and order them by frequency
@@ -142,9 +143,9 @@ mutationEffect(m2) {
 	// Loop through all mutations
 	for (i in seqAlong(qtls)) {
 		// If the frequency of a mutation is 1, then it is fixed
-		if (freq[i] == 1) {
+		if (freq[i] == 1| freq[i] == 0) {
 			// Output information about fixed mutation and the generation 
-			writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/FixedLoci",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", origin[i]), append = T);
+			writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/FixedLoci",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", freq[i], ",", selCoef[i]), append = T);
 		}
 	}
 
@@ -170,7 +171,7 @@ mutationEffect(m2) {
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
 	
-	inds.fitnessScaling = exp(-(1/200) * (phenotypes - newopt[sim.cycle])^2);
+	inds.fitnessScaling = exp(-(1/125) * (phenotypes - newopt[sim.cycle])^2);
 	
 	// Get the mean fitness and phenotype and write them to a FSV file
 	mean_fitness = mean(inds.fitnessScaling);
@@ -198,12 +199,12 @@ mutationEffect(m2) {
 	writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", mean_fitness,",",format("%.6f", meanPhenotype),",", newopt[sim.cycle]), append=T);
 	
 	
-	// Loop through all mutations
-	for (i in seqAlong(qtls)) {
-		// If the frequency of a mutation is 1, then it is fixed
-		if (freq[i] == 1) {
-			// Output information about fixed mutation and the generation 
-			writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/FixedLoci",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", origin[i]), append = T);
+		// Loop through all mutations
+        for (i in seqAlong(qtls)) {
+                // If the frequency of a mutation is 1, then it is fixed
+                if (freq[i] == 1| freq[i] == 0) {
+                        // Output information about fixed mutation and the generation
+                        writeFile(paste0("../../../../output.dir/Selection_Models/WF.dir/SinFS.dir/FixedLoci",repl,"_","n",loci,"_H",h,"SD",SD,"Gen",gen,".csv"), paste0(sim.cycle,",", posit[i], ",", freq[i], ",", selCoef[i]), append = T);
 		}
 	}
 }

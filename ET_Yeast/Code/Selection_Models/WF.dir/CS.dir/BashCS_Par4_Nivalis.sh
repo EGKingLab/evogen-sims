@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maximum number of parallel jobs
-max_jobs=10
+# max_jobs=10
 
 echo -e "=== Beginning of SLiM run with different QTLs > $(date) ===" >> ../../../../output.dir/Selection_Models/WF.dir/CS.dir/CS_par4${SLURM_JOBID}_${SLURM_ARRAY_TASK_ID}.log
 
@@ -28,7 +28,7 @@ if [[ ! -f "$output" ]]; then
           region=${loci_to_regions[$loci]}
           
           # Wait for free slot
-          while (( $(jobs | wc -l) >= max_jobs )); do sleep 1; done
+         # while (( $(jobs | wc -l) >= max_jobs )); do sleep 1; done
           
           {
             slim -d seed=$seed -d repl=$repl -d loci=$loci -d region=$region -d h=$h -d SD=$SD CS_Par4_Copy.slim

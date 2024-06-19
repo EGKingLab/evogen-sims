@@ -1,5 +1,6 @@
 #!/bin/bash
-#module load SLiM
+
+#module load slim
 
 max_jobs=10
 
