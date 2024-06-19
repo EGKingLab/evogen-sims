@@ -202,7 +202,7 @@ process_files <- function(dirpath, pattern, plot_type) {
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init,
                    color = postion_effect_init))+#ostion_effect_init
-        geom_line(linewidth = 0.2)+
+        geom_line(size = 0.2)+
         facet_wrap(~h2_sd, ncol = 4)+
         ylim(min = 0, max = 1)+
         theme_bw()+
@@ -231,7 +231,7 @@ process_files <- function(dirpath, pattern, plot_type) {
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init, #postion_effect_init 
                    color = postion_effect_init))+
-        geom_line(linewidth = 0.2)+
+        geom_line(size = 0.2)+
         facet_wrap(~h2_sd, ncol = 4)+
         ylim(min = 0, max = 1)+
         theme_bw()#+

@@ -338,7 +338,7 @@ pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Mod
 
  pa <- pheno %>% 
         ggplot(aes(Generation, Phenotype))+
-        geom_line(linewidth = 0.1, alpha = 1)+
+        geom_line(size = 0.2, alpha = 0.8)+
         theme_bw()
 ```
 
@@ -347,7 +347,7 @@ pheno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhe
   #filter(Generation == 0 | Generation %% 10 != 0)
 
 pb <-  pheno %>% ggplot(aes(Generation, Phenotype))+
-        geom_line(linewidth = 0.1, alpha = 1)+
+        geom_line(size = 0.2, alpha = 0.8)+
         theme_bw()
 ```
 
@@ -363,17 +363,17 @@ geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_
   filter(Generation == 0 | Generation %% 30 == 0) %>% 
   mutate(Position = factor(Position))
  pc <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
-   geom_line(linewidth = 0.1, alpha = 1)+
+   geom_line(size = 0.2, alpha = 0.8)+
    theme_bw()+
    theme(legend.position = "none")
 
 ```
 
 ```{r}
-geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD1Gen30.csv") %>% 
+geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome30_n1_H0.5SD3Gen10.csv") %>% 
   mutate(Position = factor(Position))
  pd <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
-   geom_line(linewidth = 0.1, alpha = 1)+
+   geom_line(alpha = .8, size = .2)+
    theme_bw()+
    theme(legend.position = "none")
 ```
@@ -404,7 +404,7 @@ Genome_dataset <- rbind(geno_file, geno_file2)
 freqplot <- Genome_dataset %>% filter(Generation <= 1000) %>% 
   ggplot(aes(x = Generation, y = Frequency, 
              color = factor(Position))) +
-  geom_line(linewidth = .1) +
+  geom_line(size = .1) +
   facet_wrap(Selection~.) +
   theme_set(theme_cowplot())+
   theme(axis.text = element_text(size = 12, angle = 15),
@@ -436,7 +436,7 @@ Genome_dataset <- rbind(geno_file, geno_file2)
 freqplot <- Genome_dataset %>% filter(Generation <= 1000) %>% 
   ggplot(aes(x = Generation, y = Frequency, 
              color = factor(Position))) +
-  geom_line(linewidth = .1) +
+  geom_line(size = .1) +
   facet_wrap(Selection~.) +
   theme_set(theme_cowplot())+
   theme(axis.text = element_text(size = 12, angle = 15),
@@ -465,7 +465,7 @@ Genome_dataset <- rbind(geno_file, geno_file2) %>%
 
 # Create the plot
 freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, group = (Position), color = factor(Position==61014))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~.) +
   theme_cowplot()+
   theme(legend.position = "none",
@@ -518,7 +518,7 @@ file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
- descriptors <- c("Selection Strength = 1", "Selection Strength = 2")
+ descriptors <- c("Selection Strength = 1", "Selection Strength = 3")
  plot_frequency_by_descriptor(file_paths, descriptors)
 
 ```
@@ -574,7 +574,7 @@ freqplot <- Genome_dataset %>%
   ggplot(aes(x = Generation, y = Frequency, 
              group = factor(Position), color = factor(Position))) + 
   #scale_color_manual(values = "grey") +
-  geom_line(linewidth = 0.5, alpha = 0.5) + #, color = "grey"
+  geom_line(size = 0.5, alpha = 0.5) + #, color = "grey"
   facet_wrap(~Selection) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -795,7 +795,7 @@ for(locus in loci){
     filter(loci == locus)
   p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
-    geom_line(linewidth = 0.1)+
+    geom_line(size = 0.1)+
   #geom_line(aes(y = Optimum), color = "darkred", size = 0.1, linewidth = 0.1) +
     facet_wrap(~h2_sd, ncol = 2, scales = "free_y")+
     mytheme
@@ -845,7 +845,7 @@ for(loci_geni in loci_gens){
     filter(loci_gen == loci_geni)
   p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
-    geom_line(linewidth = 0.3)+
+    geom_line(size = 0.3)+
     facet_wrap(~h2_sd, ncol = 2, scales = "free_y")+
     #geom_line(aes(y = Optimum), color = "darkred", size = 1.2, linewidth = 0.2) +
     mytheme
@@ -903,7 +903,7 @@ g1 <- geno %>%
 
 p1 <- pheno %>% 
   ggplot(aes(x = Generation, y = Phenotype)) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   theme_cowplot() +
   theme(legend.position = "none",
         axis.text = element_text(size = 17, face = "bold"),
@@ -952,7 +952,7 @@ process_files <- function(dirpath, pattern, plot_type) {
              replicate = as.factor(replicate),
              h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
            loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
-           Fitness = exp(-(1/200) * (Phenotype - Optimum)^2),
+           Fitness = exp(-(1/100) * (Phenotype - Optimum)^2),
          Optimum = ifelse(Optimum == max(Optimum), "High", "Low"))
     
     
@@ -1286,7 +1286,7 @@ result$plots
 
 ```
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 8, fig.height = 4}
 
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir//"
 pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|5)(SD(1|2))?(Gen(20|10))?\\.csv$"
@@ -1493,3 +1493,432 @@ ggplot() +
   facet_wrap(~loci, scales = "free")+
   theme_bw()
 ```
+> The above plot can probably help us explain the difference we see in phenotypes vs it's heritability when a trait is monogenic, oligogenic, and polygenic.
+
+### Fixed Alleles
+```{r}
+fxd <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/FixedLoci1_n10_H0.8SD1.csv") %>% 
+  group_by(Position, Frequency) %>% select(-Generation) %>% 
+  distinct()
+```
+
+
+```{r}
+unique(fxd$Frequency)
+```
+
+
+```{r}
+re <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/genome1_n10_H0.8SD1.csv") %>% dplyr::select(-Origin)
+re2<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n10_H0.8.csv") %>% dplyr::select(-Origin)
+```
+
+```{r}
+fixedlostfx <- function(genomefile, maxgeneration){
+  fixed_alleles <- genomefile %>%
+    group_by(Position) %>%
+    filter(Frequency == 1) %>%
+    select(Generation, Position, Frequency, Effect) %>%
+    distinct(Position, .keep_all = TRUE)
+  
+  lost_alleles <- genomefile %>%
+    group_by(Position) %>%
+    filter(max(Generation) < maxgeneration) %>%
+    summarize(
+      Position = unique(Position),
+      Generation = max(Generation) + 1,
+      Frequency = 0,
+      Effect = unique(Effect)
+    )
+  
+  fixedlost.df <- bind_rows(fixed_alleles, lost_alleles) %>%
+    arrange(Generation) %>%
+    mutate(Fixation = ifelse(Frequency == as.factor(1), "Fixed", "Lost"))
+  
+  initial_freqs <- genomefile %>%
+    filter(Generation == 1) %>%
+    select(Position, `Initial Frequency` = Frequency)
+  
+  fixedlost.df <- fixedlost.df %>%
+    left_join(initial_freqs, by = "Position")
+  
+  return(fixedlost.df)
+}
+
+```
+
+```{r}
+fixedlost.df <- fixedlostfx(re2, 2000)
+```
+
+```{r}
+fixedlost.df
+```
+```{r, fig.height=3,fig.width=5}
+fixedlost.df %>% 
+  ggplot(aes(Position, Effect, color = `Initial Frequency`)) +
+  geom_point(size = 3) +
+  facet_grid(~ Fixation) +
+  theme(panel.spacing = unit(3, "lines"))  
+
+```
+
+```{r, fig.height=3,fig.width=7}
+library(ggplot2)
+library(scales)
+
+fixedlost.df %>%
+  ggplot(aes(Position, Effect, color = `Initial Frequency`)) +
+  geom_point(size = 5) +
+  facet_wrap(~ Fixation, scales = "free") +
+  scale_x_continuous(labels = function(x) {
+    ifelse(x >= 1e6, paste0(x / 1e6, "MB"),
+           ifelse(x >= 1e3, paste0(x / 1e3, "kb"), x))
+  }) +
+  theme(panel.spacing = unit(3, "lines"))
+
+```
+
+
+```{r}
+# process_files <- function(dirpath, pattern, plot_type, maxgeneration) {
+#   files <- list.files(dirpath, pattern, full.names = TRUE)
+# 
+#   dataframes <- list()
+#   fixedlost_dataframes <- list()
+#   for(file in files){
+#     replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+#     herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+#     loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+#     sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+#     gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+# 
+#     data <- read.csv(file, header = TRUE) %>%
+#       select(Generation, Position, Frequency, Effect) %>%
+#       group_by(Position) %>%
+#       mutate(Position = factor(Position),
+#              replicate = replicate_id,
+#              herit = herit,
+#              loci = loci,
+#              sd = sd,
+#              initFreq = Frequency[Generation == 1],
+#              h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+#              loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""),
+#              postion_effect_init = paste("position = ", Position," ",
+#                                          "Effect = ", round(Effect, 2)," ", 
+#                                          "Initial Freq = ", 
+#                                          round(initFreq, 2)," ",
+#                                          "repl = ", " ",replicate, sep = ""))
+# 
+#     if(!is.na(gen)) {
+#       data$gen <- rep(gen, nrow(data))
+#     }
+# 
+#     dataframes[[file]] <- data
+# 
+#     # Calculate fixed and lost alleles
+#     fixedlost_df <- fixedlostfx(data, maxgeneration)
+#     fixedlost_df <- fixedlost_df %>%
+#       mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+#              loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+#     fixedlost_dataframes[[file]] <- fixedlost_df
+#   }
+# 
+#   combined_data <- bind_rows(dataframes)
+#   combined_fixedlost_data <- bind_rows(fixedlost_dataframes)
+# 
+#   # Generate plots
+#   plots <- list()
+#   if (plot_type == "loci_gen") {
+#     loci_gens <- unique(combined_data$loci_gen)
+#     for(loci_geni in loci_gens){
+#       locus_data <- combined_data %>%
+#         filter(loci_gen == loci_geni)
+#       
+#       p <- locus_data %>%
+#         ggplot(aes(Generation, Frequency, group = postion_effect_init, color = postion_effect_init))+
+#         geom_line(linewidth = 0.2)+
+#         facet_wrap(~h2_sd, ncol = 4)+
+#         ylim(min = 0, max = 1)+
+#         theme_bw()+
+#         theme(legend.position = "none")
+#       
+#       plots[[loci_geni]] <- ggplotly(p)
+#     }
+#   } else if (plot_type == "loci") {
+#     loci <- unique(combined_data$loci)
+#     for(locus in loci){
+#       locus_data <- combined_data %>%
+#         filter(loci == locus)
+#       
+#       p <- locus_data %>%
+#         ggplot(aes(Generation, Frequency, group = postion_effect_init, color = postion_effect_init))+
+#         geom_line(linewidth = 0.2)+
+#         facet_wrap(~h2_sd, ncol = 4)+
+#         ylim(min = 0, max = 1)+
+#         theme_bw()
+#       
+#       plots[[locus]] <- ggplotly(p)
+#     }
+#   }
+# 
+#   # Generate fixed and lost alleles plots for each combination
+#   fixedlost_plots <- list()
+#   combinations <- unique(combined_fixedlost_data$loci_gen)
+#   for(combo in combinations){
+#     combo_data <- combined_fixedlost_data %>%
+#       filter(loci_gen == combo)
+#     
+#     p_fixedlost <- combo_data %>%
+#       ggplot(aes(Position, Effect, color = `Initial Frequency`)) +
+#       geom_point(size = 3) +
+#       facet_grid(~ Fixation) +
+#       theme(panel.spacing = unit(3, "lines"))
+# 
+#     fixedlost_plots[[combo]] <- ggplotly(p_fixedlost)
+#   }
+# 
+#   return(list(combined_data = combined_data, plots = plots, fixedlost_plots = fixedlost_plots))
+# }
+
+```
+
+
+```{r}
+# fixedlostfx <- function(genomefile, maxgeneration){
+#   fixed_alleles <- genomefile %>%
+#     group_by(Position) %>%
+#     filter(Frequency == 1) %>%
+#     select(Generation, Position, Frequency, Effect) %>%
+#     distinct(Position, .keep_all = TRUE)
+#   
+#   lost_alleles <- genomefile %>%
+#     group_by(Position) %>%
+#     filter(max(Generation) < maxgeneration) %>%
+#     summarize(
+#       Position = unique(Position),
+#       Generation = max(Generation) + 1,
+#       Frequency = 0,
+#       Effect = unique(Effect)
+#     )
+#   
+#   fixedlost.df <- bind_rows(fixed_alleles, lost_alleles) %>%
+#     arrange(Generation) %>%
+#     mutate(Fixation = ifelse(Frequency == 1, "Fixed", "Lost"))
+#   
+#   initial_freqs <- genomefile %>%
+#     filter(Generation == 1) %>%
+#     select(Position, `Initial Frequency` = Frequency)
+#   
+#   fixedlost.df <- fixedlost.df %>%
+#     left_join(initial_freqs, by = "Position")
+#   
+#   return(fixedlost.df)
+# }
+# 
+
+```
+
+```{r}
+# dirpath <- "../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
+# pattern <- "^genome15\\D"
+# result <- process_files(dirpath, pattern, "loci_gen", maxgeneration = 2000)
+# 
+# # Access the combined data and plots
+# combined_data <- result$combined_data
+# plots <- result$plots
+# fixedlost_plots <- result$fixedlost_plots
+# 
+# # Display the allele frequency plots
+# for(plot in plots){
+#   print(plot)
+# }
+# 
+# # Display the fixed/lost alleles plots
+# for(plot in fixedlost_plots){
+#   print(plot)
+# }
+
+```
+
+#### another one
+
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome15\\D" #(\\D|$)
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files){
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+data <- read.csv(file, header = TRUE) %>% 
+  select(Generation, Position, Frequency, Effect) %>% 
+  mutate(Position = factor(Position))
+
+data$herit <- rep(herit, nrow(data))
+data$loci <- rep(loci, nrow(data))
+data$sd <- rep(sd, nrow(data))
+data$gen <- rep(gen, nrow(data))
+
+dataframes[[file]] <- data
+}
+```
+
+
+```{r}
+combined_data <- bind_rows(dataframes) %>% 
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+```
+
+
+```{r}
+fixedlostfx <- function(genomedata, maxgeneration){
+  fixed_alleles <- genomedata %>%
+    group_by(Position, h2_sd, loci_gen) %>%
+    filter(Frequency == 1) %>%
+    select(Generation, Position, Frequency, Effect) %>%
+    distinct(Position, .keep_all = TRUE)
+  
+  lost_alleles <- genomedata %>%
+    group_by(Position, h2_sd, loci_gen) %>%
+    filter(max(Generation) < maxgeneration) %>%
+    summarize(
+      Position = unique(Position),
+      Generation = max(Generation) + 1,
+      Frequency = 0,
+      Effect = unique(Effect)
+    )
+  
+  fixedlost.df <- bind_rows(fixed_alleles, lost_alleles) %>%
+    arrange(Generation) %>%
+    mutate(Fixation = ifelse(Frequency == 1, "Fixed", "Lost"))
+  
+  initial_freqs <- genomedata %>%
+    filter(Generation == 1) %>%
+    select(Position, `Initial Frequency` = Frequency)
+  
+  fixedlost.df <- fixedlost.df %>%
+    left_join(initial_freqs, by = "Position")
+  
+  return(fixedlost.df)
+}
+
+```
+
+
+```{r}
+fixedlost.df <- fixedlostfx(combined_data, 2000)
+```
+
+
+
+```{r}
+
+fixplots <- list()
+loci_gens <- unique(fixedlost.df$loci_gen)
+for(loci_geni in loci_gens){
+  fixation_data <- fixedlost.df %>% 
+    filter(loci_gen == loci_geni)
+  myfix <- fixation_data %>% 
+    ggplot(aes(Position, Effect, color = `Initial Frequency`))+
+    geom_line(linewidth = 0.1)+
+    facet_wrap(~interaction(Fixation, h2_sd), ncol = 4)+
+  scale_x_continuous(labels = function(x) {
+    ifelse(x >= 1e6, paste0(x / 1e6, "MB"),
+           ifelse(x >= 1e3, paste0(x / 1e3, "kb"), x))
+  }) +
+  theme(panel.spacing = unit(3, "lines"))
+  
+  fixplots[[loci_geni]] <- (myfix) #ggplotly
+}
+fixplots
+```
+
+```{r}
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome15\\D"
+files <- list.files(dirpath, pattern, full.names = TRUE)
+
+dataframes <- list()
+for(file in files) {
+  herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+  loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+  sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+  gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+
+  data <- read.csv(file, header = TRUE) %>%
+    select(Generation, Position, Frequency, Effect) %>%
+    mutate(Position = factor(Position))
+  
+  data$herit <- rep(herit, nrow(data))
+  data$loci <- rep(loci, nrow(data))
+  data$sd <- rep(sd, nrow(data))
+  data$gen <- rep(gen, nrow(data))
+  
+  dataframes[[file]] <- data
+}
+
+combined_data <- bind_rows(dataframes) %>%
+  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+
+fixedlostfx <- function(genomedata, maxgeneration) {
+  fixed_alleles <- genomedata %>%
+    group_by(Position, h2_sd, loci_gen) %>%
+    filter(Frequency == 1) %>%
+    select(Generation, Position, Frequency, Effect) %>%
+    distinct(Position, .keep_all = TRUE)
+  
+  lost_alleles <- genomedata %>%
+    group_by(Position, h2_sd, loci_gen) %>%
+    filter(max(Generation) < maxgeneration) %>%
+    summarize(
+      Position = unique(Position),
+      Generation = max(Generation) + 1,
+      Frequency = 0,
+      Effect = unique(Effect),
+      .groups = 'drop'
+    )
+  
+  fixedlost.df <- bind_rows(fixed_alleles, lost_alleles) %>%
+    arrange(Generation) %>%
+    mutate(Fixation = ifelse(Frequency == 1, "Fixed", "Lost"))
+  
+  initial_freqs <- genomedata %>%
+    filter(Generation == 1) %>%
+    select(Position, `Initial Frequency` = Frequency)
+  
+  fixedlost.df <- fixedlost.df %>%
+    left_join(initial_freqs, by = "Position")
+  
+  return(fixedlost.df)
+}
+fixedlost.df <- fixedlostfx(combined_data, 2000)
+
+fixplots <- list()
+loci_gens <- unique(fixedlost.df$loci_gen)
+for(loci_geni in loci_gens) {
+  fixation_data <- fixedlost.df %>%
+    filter(loci_gen == loci_geni)
+  myfix <- fixation_data %>%
+    ggplot(aes(Position, Effect, color = `Initial Frequency`)) +
+    geom_line(size = 0.1) +
+    facet_wrap(~interaction(Fixation, h2_sd), ncol = 4) +
+    scale_x_continuous(labels = function(x) {
+      ifelse(x >= 1e6, paste0(x / 1e6, "MB"),
+             ifelse(x >= 1e3, paste0(x / 1e3, "kb"), x))
+    }) +
+    theme(panel.spacing = unit(3, "lines"))
+  
+  fixplots[[loci_geni]] <- myfix
+}
+fixplots
+
+```
+

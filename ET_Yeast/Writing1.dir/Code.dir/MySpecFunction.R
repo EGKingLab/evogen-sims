@@ -156,7 +156,7 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
       mutate(Frequency = 1 / Frequency) %>%
       filter(Frequency < threshold) %>%
       ggplot(aes(Frequency, spec, color = File)) + 
-      geom_line(linewidth = 1.1) +
+      geom_line(size = 1.1) +
       facet_wrap(~SD_H2, scales = "free_y") +
       xlab("Periodicity") +
       ylab("Spectral Density") +

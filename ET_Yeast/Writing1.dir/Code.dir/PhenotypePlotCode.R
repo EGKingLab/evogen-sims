@@ -57,7 +57,7 @@ process_files <- function(dirpath, pattern, plot_type) {
         filter(loci_gen == loci_geni)
       p <- locus_data %>% 
         ggplot(aes(Generation, Phenotype, group = replicate, color = replicate))+
-        geom_line(linewidth = 0.1, alpha = 1)+
+        geom_line(size = 0.1, alpha = 1)+
         #geom_line(aes(y = Optimum), color = "darkred", linewidth = 0.05) +
         #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 0.1, color = "magenta") +
         facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
@@ -75,7 +75,7 @@ process_files <- function(dirpath, pattern, plot_type) {
         filter(loci == locus)
       p <- locus_data %>% 
         ggplot(aes(Generation, Phenotype, group = replicate, color = replicate))+
-        geom_line(linewidth = 0.1, alpha = 1)+
+        geom_line(size = 0.1, alpha = 1)+
         #geom_line(aes(y = Optimum), color = "darkred",linewidth = 0.05) +
         #geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 0.1, color = "magenta")+
         facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
