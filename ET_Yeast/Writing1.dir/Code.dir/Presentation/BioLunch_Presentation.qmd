@@ -1826,7 +1826,7 @@ for(loci_geni in loci_gens){
     filter(loci_gen == loci_geni)
   myfix <- fixation_data %>% 
     ggplot(aes(Position, Effect, color = `Initial Frequency`))+
-    geom_line(linewidth = 0.1)+
+    geom_point(size = 3)+
     facet_wrap(~interaction(Fixation, h2_sd), ncol = 4)+
   scale_x_continuous(labels = function(x) {
     ifelse(x >= 1e6, paste0(x / 1e6, "MB"),
@@ -1865,8 +1865,8 @@ for(file in files) {
 }
 
 combined_data <- bind_rows(dataframes) %>%
-  mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
-         loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
+  mutate(h2_sd = paste("h2 = ", herit, " ", "sd = ", sd, sep = ""),
+         loci_gen = paste("loci = ", loci, " ", "gen = ", gen, sep = ""))
 
 fixedlostfx <- function(genomedata, maxgeneration) {
   fixed_alleles <- genomedata %>%
@@ -1899,16 +1899,19 @@ fixedlostfx <- function(genomedata, maxgeneration) {
   
   return(fixedlost.df)
 }
-fixedlost.df <- fixedlostfx(combined_data, 2000)
+fixedlost.df <- fixedlostfx(combined_data, 2000) %>% distinct()
 
 fixplots <- list()
 loci_gens <- unique(fixedlost.df$loci_gen)
+
 for(loci_geni in loci_gens) {
   fixation_data <- fixedlost.df %>%
-    filter(loci_gen == loci_geni)
+    filter(loci_gen == loci_geni) %>%
+    mutate(Position = as.numeric(as.character(Position)))
+  
   myfix <- fixation_data %>%
     ggplot(aes(Position, Effect, color = `Initial Frequency`)) +
-    geom_line(size = 0.1) +
+    geom_point(size =3) +
     facet_wrap(~interaction(Fixation, h2_sd), ncol = 4) +
     scale_x_continuous(labels = function(x) {
       ifelse(x >= 1e6, paste0(x / 1e6, "MB"),
@@ -1918,7 +1921,10 @@ for(loci_geni in loci_gens) {
   
   fixplots[[loci_geni]] <- myfix
 }
+
 fixplots
+
+```
 
 ```
 
