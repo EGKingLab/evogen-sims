@@ -66,7 +66,7 @@ run_fft_analysis <-
       mutate(Frequency = 1 / Frequency) %>%
       filter(Frequency < 30) %>%
       ggplot(aes(Frequency, spec, color = File)) +
-      geom_line(linewidth = 1.1) +
+      geom_line(size = 1.1) +
       facet_wrap(~myGen, scales = "free_y") +
       mytheme
   }

@@ -16,7 +16,7 @@ optimum <- seq(-5, 5, by = 0.5)
 ## Used fitness function
 
 fitfx <- function(p, o){
-  w = exp(-(1/200)*(p-o)^2)
+  w = exp(-(1/125)*(p-o)^2)
   return(w)
 }
 
@@ -55,7 +55,7 @@ ggplot()+
   guides(color = guide_legend(ncol = 3, title = '               Optimum'))
 ```
 
-```{r}
+```{r, fig.width=12, fig.height=8}
 
 # Setting up phenotypes and possible optimum values
 phenotypes <- seq(-10, 10, by = 1)
@@ -78,23 +78,29 @@ plot_fitness <- function(C) {
            y_at_optimum = fitfx(optimum, optimum))
 
   p <- ggplot() +
-  geom_line(data = dfw, 
-            aes(x = phenotypes, y = fitness, color = factor(optimum))) +
-  geom_hline(data = dfw, aes(yintercept = y_at_x0, color = factor(optimum)), linetype = "dashed") +
-  geom_text(data = dfw %>% filter(phenotypes == 0), 
-            aes(x = 0, y = y_at_x0, label = round(y_at_x0, 5)), 
-            hjust = -0.1, vjust = 0.5, size = 3) +
-  facet_wrap(~abs(optimum), ncol = 3) +
-  theme_classic() +
-  theme(legend.position = c(0.85, 0.2),
-        legend.box = "square", 
-        legend.title = element_text(face = "bold"),
-        legend.text = element_text(face = "bold"),
-        plot.title = element_text(hjust = 0.5)) +  # Center the title
-  guides(color = guide_legend(ncol = 3, title = 'Distance to Optimum')) +
-  ggtitle(paste("Fitness Plot for C =", C))
+    geom_line(data = dfw, 
+              aes(x = phenotypes, y = fitness, color = factor(optimum)), size = 2) +  # Increased line size
+    geom_hline(data = dfw, aes(yintercept = y_at_x0, color = factor(optimum)), linetype = "dashed", size = 1.5) +  # Increased line size
+    geom_text(data = dfw %>% filter(phenotypes == 0), 
+              aes(x = 0, y = y_at_x0, label = round(y_at_x0, 5)), 
+              hjust = -0.1, vjust = 0.5, size = 5) +
+    facet_wrap(~abs(optimum), ncol = 3) +
+    theme_classic() +
+    theme(
+      legend.position = c(0.85, 0.2),
+      legend.box = "square", 
+      legend.key.size = unit(1.5, "cm"),
+      legend.title = element_text(face = "bold", size = 16),  
+      legend.text = element_text(face = "bold", size = 14),   
+      plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),  
+      axis.title.x = element_text(size = 16, face = "bold"),  
+      axis.title.y = element_text(size = 16, face = "bold"),  
+      axis.text.x = element_text(size = 14, face = "bold"),  
+      axis.text.y = element_text(size = 14, face = "bold"),   
+      strip.text = element_text(size = 16, face = "bold")) +
+    guides(color = guide_legend(ncol = 3, title = 'Distance to Optimum', size = 20)) +  # Increased size for legend guide
+    ggtitle(paste("Fitness Plot for C =", C))
 
-  
   return(p)
 }
 
@@ -102,7 +108,7 @@ plot_fitness <- function(C) {
 plots <- lapply(C_values, plot_fitness)
 
 # Display the plots (optional, only shows the last plot)
-print(plots[[3]])  # Replace with other indices to see different plots
+print(plots[[5]])  # Replace with other indices to see different plots
 
 ```
 
