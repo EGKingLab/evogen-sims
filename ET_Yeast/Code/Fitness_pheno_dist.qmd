@@ -7,7 +7,7 @@ format: html
 
 ```{r}
 set.seed(2361522)
-library(tidyverse)
+library(dplyr)
 library(cowplot)
 theme_set(theme_cowplot())
 
@@ -20,9 +20,9 @@ To explore whether the number of loci produces a different distribution of pheno
 
 ```{r}
 rm(list = ls())
-niter <- 100
+niter <- 500
 
-nlocis <- c(10, 100,1000)
+nlocis <- c(1, 10, 100,1000)
 ninds <- 10000
 h2s <- c(0.1,0.5,0.9)
 
@@ -48,7 +48,8 @@ for(kk in 1:nrow(pp))
       additive[ind] <- sum(effs)
     }
     V_A <- (1/3)*nloci
-    V_E <- (V_A/h2)- V_A
+    #V_E <- (V_A/h2)- V_A
+    V_E <- (V_A - h2 * V_A) / h2
     env <- rnorm(ninds, 0.0, sqrt(V_E))
     
     mup <- 0.5*nloci
@@ -93,15 +94,15 @@ mm.all$h2F <- factor(mm.all$h2)
 
 mm.all |>
   ggplot(aes(value, color = h2F, group = rep_code)) +
-  geom_density(linewidth = 0.1) + 
+  geom_density(size = 0.1) + 
   facet_grid(nlociF~.)
 
 ```
 
 ```{r}
-mm.all |> filter(h2F == "0.9") %>% 
+mm.all |> filter(h2F == "0.1") %>% 
   ggplot(aes(value, color = h2F, group = rep_code)) +
-  geom_density(linewidth = 0.1) + 
+  geom_density(size = 0.1) + 
   facet_grid(nlociF~., scales = "free_x")
 ```
 

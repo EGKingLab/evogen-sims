@@ -5,7 +5,8 @@ editor: visual
 ---
 
 ```{r}
-library(tidyverse)
+library(tidyr)
+library(dplyr)
 library(patchwork)
 library(cowplot)
 
@@ -70,7 +71,9 @@ p1|p2
 ```
 
 ```{r}
-library(tidyverse)
+library(tidyr)
+library(tidyselect)
+library(dplyr)
 library(cowplot)
 theme_set(theme_cowplot())
 
@@ -229,7 +232,6 @@ phenotypes |>
 
 ```{r}
 rm(list = ls())
-library(tidyverse)
 
 nloci <- c(1, 10, 100) #, 500, 1000, 10000
 ninds <- 10000
@@ -375,8 +377,8 @@ newdataset <- df %>% group_by(sd, locus, h2, optimum) %>%
   mutate(
     heritability = factor(h2),
     stand_dev = factor(sd),
-    Fitness = ifelse(locus == 1, exp(-(1/150) * (phenotype - optimum)^2),
-                     exp(-(1/(150 * sqrt(locus))) * (phenotype - optimum)^2))
+    Fitness = ifelse(locus == 1, exp(-(1/125) * (phenotype - optimum)^2),
+                     exp(-(1/(125 * sqrt(locus))) * (phenotype - optimum)^2))
   )
 
 ```
@@ -403,18 +405,18 @@ ggplot(newdataset2, aes(y = optimum, x = Fitness, color = heritability)) +
 ## Fitness vs Phenotype
 
 ```{r}
-newdataset2 <- df %>% group_by(seed, sd, locus, h2) %>%
-  mutate(heritability = factor(h2),
-    stand_dev = factor(sd),
-    Fitness = as.factor(round(Fitness, digits = 5)))
-
-ggplot(newdataset2, aes(phenotype, Fitness, fill = heritability)) +
-  geom_density_ridges(aes(fill = heritability), alpha = 0.3) +
-  facet_grid(~locus, scales = "free_y")+
-  theme(axis.text = element_text(size = 12, face = "bold"),
-        axis.line = element_line(size = 2),
-        axis.title = element_text(size = 12, face = "bold"),
-        strip.text = element_text(size = 12, face = "bold"))
+# newdataset2 <- newdataset %>% group_by(seed, sd, locus, h2) %>%
+#   mutate(heritability = factor(h2),
+#     stand_dev = factor(sd),
+#     Fitness = as.factor(round(Fitness, digits = 5)))
+# 
+# ggplot(newdataset2, aes(phenotype, Fitness, fill = heritability)) +
+#   geom_density_ridges(aes(fill = heritability), alpha = 0.3) +
+#   facet_grid(~locus, scales = "free_y")+
+#   theme(axis.text = element_text(size = 12, face = "bold"),
+#         axis.line = element_line(size = 2),
+#         axis.title = element_text(size = 12, face = "bold"),
+#         strip.text = element_text(size = 12, face = "bold"))
 ```
 
 ```{r}
@@ -504,7 +506,6 @@ ggplot(newdataset %>% filter(stand==4, heritability == 0.5), aes(x = Fitness, y 
 ## Seq Pheno
 
 ```{r}
-library(tidyverse)
 library(cowplot)
 library(ggridges)
 sds <- 1:4

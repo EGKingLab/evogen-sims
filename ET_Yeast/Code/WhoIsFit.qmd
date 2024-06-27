@@ -3,7 +3,8 @@ title: "WhoIsFit"
 format: html
 editor: visual
 ---
-## Simulations in R 
+
+## Simulations in R
 
 ### Optimum based on µ and sd
 
@@ -12,7 +13,7 @@ This is the simulation done in R, where the phenotype is scaled based on the num
 ```{r, echo=FALSE, message=FALSE}
 rm(list = ls())
 library(tibble)
-library(tidyverse)
+library(tidyr)
 library(dplyr)
 
 nloci <- c(1, 10, 100, 300) # Number of loci
@@ -123,16 +124,15 @@ myplot <- ggplot(data = newdataset2,
 ```{r, fig.width=12, fig.height=6, echo=FALSE}
 myplot
 ```
+
 ### Fitness / selection strength assessment
 
-Note, this is based on the difference between fitnesses from one sd to another.
-{***D***} represents the distance between mean and optimum. {***difd***} represences the lag difference
+Note, this is based on the difference between fitnesses from one sd to another. {***D***} represents the distance between mean and optimum. {***difd***} represences the lag difference
 
 ```{r}
-library(tidyverse)
 
 fitfx <- function(D){
-  w = exp(-(1/200)*D^2)
+  w = exp(-(1/125)*D^2)
   return(w)
 }
 ```
@@ -152,6 +152,7 @@ nfdf <- fdf %>%
 knitr::kable(nfdf)
 
 ```
+
 ```{r}
 nfdf %>% 
   ggplot(aes(factor(D), factor(round(fitness, digits = 4))))+
@@ -162,8 +163,7 @@ nfdf %>%
 
 ### Using sds only for optimum (i.e instead of µ and sd)
 
-Still, we are looking at the data from R simulation, but here with optimum based on n.
-That is, without mean phenotype and standard deviation.
+Still, we are looking at the data from R simulation, but here with optimum based on n. That is, without mean phenotype and standard deviation.
 
 ```{r, echo=FALSE}
 newdataset3 <- combined_df %>%
@@ -179,7 +179,7 @@ newdataset3 <- combined_df %>%
           # locus == 1 ~ exp(-(sd(phenotype)/5) *  (phenotype - optimum)^2),
          #TRUE ~ exp(-(sd(phenotype)/100) * (phenotype - optimum)^2)),
          Fitness = case_when(
-           locus == 1 ~ exp(-(1/200) *  (phenotype - optimum)^2),
+           locus == 1 ~ exp(-(1/125) *  (phenotype - optimum)^2),
          TRUE ~ exp(-(1/200) * (phenotype - optimum)^2)),
          #mean_fit = mean(Fitness),
          heritability = factor(heritability),
@@ -230,8 +230,7 @@ myplot4
 
 ### Optimum based on µ and sd: Single locus
 
-Here, we start by exploring a single locus only, with a heritability of 0.1.
-The optimum is based on mean and standard deviation of the phenotype.
+Here, we start by exploring a single locus only, with a heritability of 0.1. The optimum is based on mean and standard deviation of the phenotype.
 
 ```{r, echo=FALSE}
 library(tidyverse)
@@ -253,7 +252,6 @@ initphenofit <- initpheno %>%
          Fitness = exp(-(1/200)*(Phenotype - Optimum)^2))
 
 ```
-
 
 ```{r, fig.width = 8, fig.height = 4, echo=FALSE}
 pheno.value <- 0
@@ -338,6 +336,7 @@ ggplot() +
   theme_bw()
 
 ```
+
 > Here, we are looking at a single simulation
 
 ```{r,echo=FALSE}
@@ -446,5 +445,3 @@ ggplot() +
         strip.text = element_text(size = 12, face = "bold"))+
   theme_bw()
 ```
-
-
