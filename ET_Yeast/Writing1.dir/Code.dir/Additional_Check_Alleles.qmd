@@ -63,7 +63,7 @@ process_plots <- function(file) {
          aes(Generation, Frequency, group = postion_effect_init, 
              color = postion_effect_init, 
              linetype = postion_effect_init))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     labs(x = "", y = "") +
     ylim(min = 0, max = 1)+
     theme_bw()#+
@@ -123,7 +123,7 @@ process_plots <- function(file) {
   
  p <- ggplot(data, 
          aes(Generation, Frequency, group = interaction(postion_effect_init, replicate), color = interaction(postion_effect_init, replicate)))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     labs(x = "", y = "") +
     ylim(min = 0, max = 1)+
     theme_bw()#+
@@ -195,7 +195,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
     filter(Position %in% selected_positions)
 
 p <- ggplot(locus_data, aes(Generation, Frequency, group = postion_effect_init, color = postion_effect_init))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
@@ -259,7 +259,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
     #filter(Position %in% selected_positions)
 
 p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(postion_effect_init, replicate), color = interaction(postion_effect_init, replicate)))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
@@ -349,7 +349,7 @@ for(loci_geni in loci_gens){
   # Create a plot
   p <- locus_data %>%
     ggplot(aes(Generation, Frequency, group = postion_effect_init, color = postion_effect_init))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
@@ -422,7 +422,7 @@ plots <- lapply(unique(combined_data$loci_gen), function(loci_geni) {
   #locus_data <- locus_data %>% filter(Position %in% selected_positions)
 
   p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(postion_effect_init, replicate), color = interaction(postion_effect_init, replicate)))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
@@ -517,7 +517,7 @@ plots <- lapply(unique(combined_data$loci_gen), function(loci_geni) {
   #  filter(Position %in% selected_positions)
 
 p <- ggplot(locus_data, aes(Generation, Frequency, group = position_effect_init, color = position_effect_init))+
-    geom_line(linewidth = 0.5)+ #interaction(position_effect_init), replicate
+    geom_line(size = 0.5)+ #interaction(position_effect_init), replicate
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
@@ -662,7 +662,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
     filter(Position %in% selected_positions)
   
   p <- ggplot(locus_data, aes(Generation, Frequency, group = postion_effect_init, color = postion_effect_init))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
@@ -726,7 +726,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
   #locus_data <- locus_data %>% filter(Position %in% selected_positions)
 
   p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(position_effect_init, replicate), color = interaction(position_effect_init, replicate)))+
-    geom_line(linewidth = 0.5)+
+    geom_line(size = 0.5)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()
@@ -824,7 +824,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
     filter(Position %in% selected_positions)
 
   p <- ggplot(locus_data, aes(Generation, Frequency, group = position_effect_init, color = position_effect_init))+
-    geom_line(linewidth = 0.5)+ #interaction(position_effect_init), replicate
+    geom_line(size = 0.5)+ #interaction(position_effect_init), replicate
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()

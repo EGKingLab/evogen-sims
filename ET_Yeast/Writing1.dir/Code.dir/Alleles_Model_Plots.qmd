@@ -6,7 +6,7 @@ editor: visual
 ---
 
 ```{r, echo=FALSE, message=FALSE}
-library(tidyverse)
+library(dplyr)
 library(stringr)
 library(cowplot)
 library(plotly)
@@ -38,7 +38,7 @@ Loci_n <- as.numeric(str_extract(file_path, "(?<=_n)\\d+"))
 
 genome_file %>% 
   ggplot(aes(Generation, Frequency, color = Position))+
-  geom_line(linewidth = 0.2)+
+  geom_line(size = 0.2)+
   ggtitle(paste(" ", Loci_n, " Loci", " for 0.", heritability, " Heritability", sep = ""))+
   mytheme()
 ```
@@ -100,7 +100,7 @@ for (genome_file in genome_files) {
   # Create a ggplot and add it to the list of plots
   plots[[genome_file]] <- (df %>%
     ggplot(aes(Generation, Frequency, color = interaction(postion_effect_init, replicate))) +
-    geom_line(linewidth = 0.2) +
+    geom_line(size = 0.2) +
     labs(x = "", y = "") +
     ylim(min = 0, max = 1)+
     #ggtitle(paste(Loci_n, "L", " for 0.", heritability, " H", sep = "")) +
@@ -159,7 +159,7 @@ mytheme <- function(){
 
 allele_data %>% filter(loci==70) %>%
        ggplot(aes(x = Generation, y = Frequency, color = Position)) +
-       geom_line(linewidth = 0.2) +
+       geom_line(size = 0.2) +
        facet_wrap(~loci_herit, ncol = 1) +
        labs(y = "Mean Frequency")+
        mytheme()
@@ -206,7 +206,7 @@ for(locus in loci){
   p <- locus_data %>% 
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
     #geom_point(size = 0.2)+
-    geom_line(linewidth = 0.1)+
+    geom_line(size = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
@@ -223,7 +223,7 @@ combined_data %>%
     filter(loci == 100) %>%
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
     #geom_point()+
-    geom_line(linewidth = 0.2)+
+    geom_line(size = 0.2)+
     facet_wrap(~h2_sd, ncol = 4)+
     theme_bw()+
     theme(legend.position = "none")
@@ -274,7 +274,7 @@ for(loci_geni in loci_gens){
     filter(loci_gen == loci_geni)
    p <- locus_data %>% 
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
-    geom_line(linewidth = 0.1)+
+    geom_line(size = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
@@ -292,7 +292,7 @@ plots
 combined_data %>% 
     filter(loci == 70, gen == 30) %>% 
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
-    geom_line(linewidth = 0.1)+
+    geom_line(size = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
@@ -342,7 +342,7 @@ for(loci_geni in loci_gens){
     filter(loci_gen == loci_geni)
   p <- locus_data %>% 
     ggplot(aes(Generation, Frequency, group = interaction(Position, Effect), color = interaction(Position, Effect)))+
-    geom_line(linewidth = 0.1)+
+    geom_line(size = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
@@ -404,7 +404,7 @@ for(locus in loci){
   
   p <- locus_data %>% 
     ggplot(aes(Generation, Frequency, group = interaction(Position,Effect, Init_Freq), color = interaction(Position,Effect, Init_Freq)))+
-    geom_line(linewidth = 0.1)+
+    geom_line(size = 0.1)+
     facet_wrap(~h2_sd, ncol = 4)+
     ylim(min = 0, max = 1)+
     theme_bw()+
@@ -421,7 +421,7 @@ plots
 pr <- combined_data %>%
     filter(loci == 70) %>%
     ggplot(aes(Generation, Frequency, group = Position, color = Position))+
-    geom_line(linewidth = 0.2)+
+    geom_line(size = 0.2)+
     facet_wrap(~h2_sd, ncol = 4)+
     theme_bw()+
     theme(legend.position = "none")
