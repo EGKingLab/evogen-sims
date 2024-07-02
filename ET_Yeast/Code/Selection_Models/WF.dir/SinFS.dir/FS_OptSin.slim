@@ -92,16 +92,17 @@ mutationEffect(m2) {
 	
 	// Calculate the genetic variance and define the environmental variance
 	//V_A = var(additive);//sd(additive)^2;
-	V_A = loci/3;
+	V_A = 2*loci/3;
 	defineConstant("V_E",(V_A - h2 * V_A) / h2);
 	env = rnorm(size(inds), 0.0, sqrt(V_E));
-	defineConstant("mup", 0.5*loci); // Expected mean;
+	defineConstant("mup", loci); // Expected mean;
 	
 	// Calculate the phenotypes by adding the genetic and environmental components
 	phenotypes = additive + env;
 	
-	sdp = sqrt(loci/(3*h2));
-	
+	//mup = nloci; // Expected mean
+
+        sdp = sqrt(V_A/h2);
 	phenotypes = ((phenotypes - mup)/sdp); // Phenotype scaling
 	
 	
@@ -165,8 +166,9 @@ mutationEffect(m2) {
 	
 	// Calculate phenotype values for each individual as the sum of their additive genetic and environmental values
 	phenotypes = additive + env;
-	
-	sdp = sqrt(nloci / (3 * h2));
+	//mup = nloci; // Expected mean
+
+        sdp = sqrt(V_A/h2);
 	phenotypes = ((phenotypes - mup)/sdp); // Phenotype scaling
 	
 	// Calculate fitness scaling for each individual based on their deviation from the target phenotype (newopt) 
