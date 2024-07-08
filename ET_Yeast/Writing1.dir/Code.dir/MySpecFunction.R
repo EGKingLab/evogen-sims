@@ -1,22 +1,26 @@
 # Main function to run FFT analysis
-
+#theme_set(theme_cowplot())
 run_fft_analysis <-
   function(dirpath,
            pattern = "^genome\\d+_n\\d+_H0.(1|8|5)(SD[1-4])?(Gen\\d+)?\\.csv$",
            spectrum_span = 2) {
   #library(tidyverse)
     library(tidyr)
+    library(stringr)
+    library(cowplot)
     library(forcats)
     library(dplyr)
     library(tidyselect)
     library(ggplot2)
-  library(future)
-  library(future.apply)
+    library(future)
+    library(future.apply)
 
-    mytheme <- theme(axis.title = element_text(face = "bold"),
-                     axis.text = element_text(face = "italic"),
-                     plot.title = element_text(hjust = 0.5),
-                     legend.position = "none")
+    # mytheme <- theme(axis.title = element_text(face = "bold"),
+    #                  axis.text = element_text(face = "italic"),
+    #                  plot.title = element_text(hjust = 0.5),
+    #                  legend.position = "none")
+    
+    
   # Set up parallel backend
   plan(multisession) # Use multicore, if available
 
@@ -68,7 +72,10 @@ run_fft_analysis <-
       ggplot(aes(Frequency, spec, color = File)) +
       geom_line(size = 1.1) +
       facet_wrap(~myGen, scales = "free_y") +
-      mytheme
+      theme(axis.title = element_text(face = "bold"),
+            axis.text = element_text(face = "italic"),
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "none")
   }
 
   return(fft1)
@@ -82,15 +89,15 @@ library(cowplot)
 library(lubridate)
 library(future)
 library(future.apply)
-theme_set(theme_cowplot())
+#theme_set(theme_cowplot())
 
 # Define a custom theme function
-mytheme <- theme(
-  axis.title = element_text(face = "bold"),
-  axis.text = element_text(face = "italic"),
-  plot.title = element_text(hjust = 0.5),
-  legend.position = "none"
-)
+# mytheme <- theme(
+#   axis.title = element_text(face = "bold"),
+#   axis.text = element_text(face = "italic"),
+#   plot.title = element_text(hjust = 0.5),
+#   legend.position = "none"
+# )
 
 run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
   
@@ -160,7 +167,10 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
       facet_wrap(~SD_H2, scales = "free_y") +
       xlab("Periodicity") +
       ylab("Spectral Density") +
-      mytheme
+      theme(axis.title = element_text(face = "bold"),
+            axis.text = element_text(face = "italic"),
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "none")
   }
   
   return(fft1)

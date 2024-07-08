@@ -6,7 +6,10 @@ editor: visual
 ---
 
 ```{r, message=FALSE, echo=FALSE}
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(forcats)
 library(stringr)
 library(cowplot)
 library(patchwork)
@@ -87,44 +90,36 @@ plot_grid(plotlist = plots)
 
 ```
 
-```{r, message=FALSE, fig.width = 16, fig.height = 8}
-# Load necessary libraries
-library(dplyr)
-library(ggplot2)
-library(stringr)
-library(patchwork)
+```{r, message=FALSE, fig.width = 16, fig.height = 8, echo=FALSE}
+# # Define the path to genome files
+# pheno_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^MeanPhenotypes15", full.names = TRUE)
+# 
+# plots <- list()
+# 
+# # Loop through phenotype files and create plots
+# for (pheno_file in pheno_files) {
+#   df <- read.csv(pheno_file)
+#   
+#   heritability <- as.numeric(str_extract(pheno_file, "(?<=H0\\.)\\d+"))
+#   Loci_n <- as.numeric(str_extract(pheno_file, "(?<=_n)\\d+"))
+#   
+#   # Create a ggplot and add it to the list of plots
+#   plots[[pheno_file]] <- df %>%
+#     ggplot(aes(Generation,Phenotype)) +
+#     geom_line(linewidth = 0.2) +
+#     labs(x = "", y = "") +
+#     #ggtitle(paste(Loci_n, "L", " for 0.", heritability, " H", sep = "")) +
+#     mytheme()  # Make sure mytheme() is defined or loaded correctly
+# }
+# 
+# # Combine the plots into a single plot grid
+# combined_plot <- wrap_plots(plots, ncol = 3, scales = "free_y")
 
-# Define the path to genome files
-genome_files <- list.files("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "^MeanPhenotypes15", full.names = TRUE)
-
-plots <- list()
-
-# Loop through phenotype files and create plots
-for (pheno_file in pheno_files) {
-  df <- read.csv(pheno_file)
-  
-  heritability <- as.numeric(str_extract(pheno_file, "(?<=H0\\.)\\d+"))
-  Loci_n <- as.numeric(str_extract(pheno_file, "(?<=_n)\\d+"))
-  
-  # Create a ggplot and add it to the list of plots
-  plots[[pheno_file]] <- df %>%
-    ggplot(aes(Generation,Phenotype)) +
-    geom_line(linewidth = 0.2) +
-    labs(x = "", y = "") +
-    #ggtitle(paste(Loci_n, "L", " for 0.", heritability, " H", sep = "")) +
-    mytheme()  # Make sure mytheme() is defined or loaded correctly
-}
-
-# Combine the plots into a single plot grid
-combined_plot <- wrap_plots(plots, ncol = 3, scales = "free_y")
-
-
-combined_plot
 ```
 
 ### Constant Selection
 
-```{r, message=FALSE}
+```{r, message=FALSE, echo=FALSE}
 
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
 pattern <- "^MeanPhenotypes15\\D" #(\\D|$)
@@ -146,12 +141,12 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, echo=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8}
+```{r, fig.width = 16, fig.height = 8, echo=FALSE}
 
 #path <- "~/OneDrive - University of Missouri/Test_Test/CS.dir/Plots/"
 
@@ -163,8 +158,8 @@ for(locus in loci){
   p <- locus_data %>% 
     ggplot(aes(Generation, Phenotype))+
     #geom_point(size = 0.2)+
-    geom_line(linewidth = 0.1)+
-  geom_line(aes(y = Optimum), color = "darkred", linewidth = 0.2) +
+    geom_line(linewidth = 0.5)+
+  geom_line(aes(y = Optimum), color = "darkred", linewidth = 0.5) +
   geom_point(data = filter(locus_data, Generation == 1), aes(y = Optimum), size = 1, color = "magenta") +
     facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
     #ylim(min = 100, max = 125)+
@@ -177,7 +172,7 @@ for(locus in loci){
 plots
 ```
 
-```{r, echo=FALSE, results='hold'}
+```{r, echo=FALSE, results='hold', echo=FALSE}
 combined_data %>%
     filter(loci == 100) %>%
     ggplot(aes(Generation, Phenotype))+
@@ -192,9 +187,9 @@ combined_data %>%
 
 #### Linear
 
-```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
+```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8, warning=FALSE}
 data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen30.csv")%>% 
-  mutate(Optimum = Optimum - 100, Phenotype = Phenotype - 100)
+  mutate(Optimum = Optimum , Phenotype = Phenotype)
 
 p <- plot_ly(data, x= ~Generation, y = ~round(Phenotype, 3), z = ~ round(meanFitness, 3), color = ~factor(round(Optimum, 0)), type = "scatter3d", mode = "markers", marker = list(size = 2))
 p <- p %>% layout(scene = list(yaxis = list(title = "Phenotype"), xaxis = list(title = "Generation"), zaxis = list(title = "Mean Fitness")), 
@@ -204,18 +199,20 @@ p
 ```
 
 ```{r, echo=FALSE, results='hold', fig.width = 16, fig.height = 8}
-plt <- data %>% 
-  ggplot(aes((round(meanFitness, 3)), round(Phenotype, 3), 
-             color = factor(round(Optimum, 0))))+
-  geom_boxplot()+
-  geom_hline(yintercept = mean(data$Phenotype), color = "darkred")+
-  labs(x = "Mean Fitness", y = "Phenotype", color = "Optimum")
 
-ggplotly(plt, tooltip = "all")
+# plt <- data %>% 
+#   ggplot(aes((round(meanFitness, 3)), round(Phenotype, 3), 
+#              color = factor(round(Optimum, 0))))+
+#   geom_boxplot()+
+#   geom_hline(yintercept = mean(data$Phenotype), color = "darkred")+
+#   labs(x = "Mean Fitness", y = "Phenotype", color = "Optimum")
+# 
+# #ggplotly(plt, tooltip = "all")
+# plt
 
 ```
 
-```{r, message=FALSE}
+```{r, message=FALSE, echo=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -238,13 +235,13 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r, message=FALSE}
+```{r, message=FALSE, echo=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-```{r, message=FALSE, fig.width = 16, fig.height = 8}
+```{r, message=FALSE, fig.width = 16, fig.height = 8, echo=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/LinFS.dir/Plots/"
 
 plots <- list()
@@ -268,7 +265,7 @@ for(loci_geni in loci_gens){
 plots
 ```
 
-```{r, echo=FALSE, results='hide'}
+```{r, echo=FALSE, results='hide', echo=FALSE}
 # combined_data %>% 
 #     filter(loci == 70, gen == 30) %>% 
 #     ggplot(aes(Generation, Phenotype, group = Position, color = Position))+
@@ -281,7 +278,7 @@ plots
 
 #### Sinusoidal I
 
-```{r}
+```{r, echo=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^MeanPhenotypes15\\D" 
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -304,13 +301,13 @@ for(file in files){
 }
 ```
 
-```{r}
+```{r, echo=FALSE}
 combined_data <- bind_rows(dataframes) %>%
   mutate(h2_sd = paste("h2 = ", herit, " ", "sd = ", sd, sep = ""),
          loci_gen = paste("loci = ", loci, " ", "gen = ", gen, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8, message=FALSE}
+```{r, fig.width = 16, fig.height = 8, message=FALSE, echo=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/SinFS.dir/Plots/"
 
 plots <- list()
@@ -334,7 +331,7 @@ plots
 
 #### Sinusoidal II
 
-```{r}
+```{r, echo=FALSE}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^MeanPhenotypes15\\D" #(\\D|$)
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -355,12 +352,12 @@ dataframes[[file]] <- data
 }
 ```
 
-```{r}
+```{r, echo=FALSE}
 combined_data <- bind_rows(dataframes) %>% 
   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""))
 ```
 
-```{r, fig.width = 16, fig.height = 8, message=FALSE}
+```{r, fig.width = 16, fig.height = 8, message=FALSE, echo=FALSE}
 #path <- "~/OneDrive - University of Missouri/Test_Test/CS.dir/Plots/"
 
 plots <- list()

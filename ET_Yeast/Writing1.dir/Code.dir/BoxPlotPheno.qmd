@@ -4,10 +4,10 @@ format: html
 editor: visual
 ---
 
-```{r}
+```{r, echo=FALSE}
 ############ Libraries and theme function ########
 rm(list = ls())
-library(tidyverse)
+library(dplyr)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -109,9 +109,11 @@ result$plots
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Load necessary libraries
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
 library(stringr)
 library(cowplot)
 library(purrr)
@@ -197,8 +199,7 @@ result$plots
 
 ```
 
-```{r}
-library(tidyverse)
+```{r, echo=FALSE}
 library(stringr)
 
 # Define directory path and file pattern
@@ -237,11 +238,11 @@ combined_data <- bind_rows(df)
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 str(combined_data)
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Initialize list for storing plots
   plots <- list()
   
@@ -263,49 +264,50 @@ str(combined_data)
     }
 ```
 
-```{r, fig.width=8, fig.height=4}
+```{r, fig.width=8, fig.height=4, echo=FALSE}
 plots
 ```
 
 ```{r}
-plots <- list()
-  if (plot_type == "loci_gen") {
-    loci_gens <- unique(combined_data$loci_gen)
-    for(loci_geni in loci_gens){
-      locus_data <- combined_data %>% 
-        filter(loci_gen == loci_geni)
-      p <- locus_data %>% 
-        ggplot(aes(Generation, Phenotype, group = repl))+
-        geom_boxplot(linewidth = 0.1, alpha = 1)+
-        facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
-        theme_bw()
-        #theme(legend.position = "none")
-      plots[[loci_geni]] <- (p) #ggplotly
-    }
-    
-    # plots for constant or sinusoidal II selections
-    
-  } else if (plot_type == "loci") {
-    loci <- unique(combined_data$loci)
-    for(locus in loci){
-      locus_data <- combined_data %>% 
-        filter(loci == locus)
-      ggplot(locus_data, aes(Generation, Phenotype, group = repl)) +
-        geom_boxplot() +
-        facet_wrap(~h2_sd, ncol = 4, scales = "free_y") +
-        theme_classic()
-      plots[[locus]] <- (p) #ggplotly
-    }
-  }
-  
-  return(list(combined_data = combined_data, plots = plots))
-}
+# plots <- list()
+#   if (plot_type == "loci_gen") {
+#     loci_gens <- unique(combined_data$loci_gen)
+#     for(loci_geni in loci_gens){
+#       locus_data <- combined_data %>% 
+#         filter(loci_gen == loci_geni)
+#       p <- locus_data %>% 
+#         ggplot(aes(Generation, Phenotype, group = repl))+
+#         geom_boxplot(linewidth = 0.1, alpha = 1)+
+#         facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
+#         theme_bw()
+#         #theme(legend.position = "none")
+#       plots[[loci_geni]] <- (p) #ggplotly
+#     }
+#     
+#     # plots for constant or sinusoidal II selections
+#     
+#   } else if (plot_type == "loci") {
+#     loci <- unique(combined_data$loci)
+#     for(locus in loci){
+#       locus_data <- combined_data %>% 
+#         filter(loci == locus)
+#       ggplot(locus_data, aes(Generation, Phenotype, group = repl)) +
+#         geom_boxplot() +
+#         facet_wrap(~h2_sd, ncol = 4, scales = "free_y") +
+#         theme_classic()
+#       plots[[locus]] <- (p) #ggplotly
+#     }
+#   }
+# 
+#   return(list(combined_data = combined_data, plots = plots))
+# }
 
 ```
 
-```{r}
-library(tidyverse)
+```{r, echo=FALSE}
+library(dplyr)
 library(stringr)
+library(ggplot2)
 
 # Define directory path and file pattern
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
@@ -332,9 +334,13 @@ process_files <- function(dirpath, pattern, plot_type) {
     data <- read.csv(file, header = TRUE)
     
     # Add metadata to data frame
-    data <- mutate(data, herit = herit, loci = loci, sd = sd, repl = repl,
-                   h2_sd = paste("h2 = ", herit, " ", "sd = ", sd, sep = ""),
-                   loci_gen = paste("loci = ", loci, " ", "gen = ", gen, sep = ""))
+    data <- data %>%
+      mutate(herit = herit, 
+             loci = loci, 
+             sd = sd, 
+             repl = repl,
+             h2_sd = paste("h2 = ", herit, " ", "sd = ", sd, sep = ""),
+             loci_gen = paste("loci = ", loci, " ", "gen = ", gen, sep = ""))
     
     # Add data frame to list
     df[[file]] <- data
@@ -342,7 +348,7 @@ process_files <- function(dirpath, pattern, plot_type) {
   
   # Combine all data frames into one
   combined_data <- bind_rows(df) %>% 
-    filter(Generation <=100)
+    filter(Generation <= 100)
   
   # Initialize list for storing plots
   plots <- list()
@@ -353,11 +359,20 @@ process_files <- function(dirpath, pattern, plot_type) {
     for (loci_geni in loci_gens) {
       locus_data <- combined_data %>% 
         filter(loci_gen == loci_geni)
-      p <- ggplot(locus_data, aes(Generation, Phenotype, fill = factor(repl))) +
+      
+      unique_repl <- unique(locus_data$repl)
+      if (length(unique_repl) > 30) {
+        selected_repl <- sample(unique_repl, 30)
+        locus_data <- locus_data %>%
+          filter(repl %in% selected_repl)
+      }
+      
+      p <- ggplot(locus_data, aes(Generation, Phenotype, color = factor(repl))) +
         geom_line(alpha = 0.5) +
-        facet_wrap(~loci_geni, ncol = 2, scales = "free_y") +
+        facet_wrap(~ h2_sd, ncol = 2, scales = "free_y") +
         labs(title = loci_geni) +
         theme_bw()
+      
       plots[[loci_geni]] <- p
     }
   }
@@ -373,6 +388,7 @@ result <- process_files(dirpath, pattern, plot_type)
 
 # Print result
 result$plots
+
 ```
 
 ```{r}
@@ -409,14 +425,14 @@ process_files <- function(dirpath, pattern, plot_type) {
   combined_data <- bind_rows(df)
   
   # # Calculate summary statistics for each generation
-  # summary_stats <- combined_data %>%
-  #   group_by(Generation, repl) %>%
-  #   summarise(mean_phenotype = mean(Phenotype, na.rm = TRUE),
-  #             sd_phenotype = sd(Phenotype, na.rm = TRUE),
-  #             .groups = "drop")
+   summary_stats <- combined_data %>%
+     group_by(Generation, repl) %>%
+     summarise(mean_phenotype = mean(Phenotype, na.rm = TRUE),
+               sd_phenotype = sd(Phenotype, na.rm = TRUE),
+               .groups = "drop")
   
   # Create plot
-  p <- ggplot(summary_stats, aes(x = Generation, y = mean_phenotype, color = repl, group = repl)) +
+  p <- ggplot(summary_stats, aes(x = Generation, y = mean_phenotype, color = factor(repl), group = repl)) +
     geom_line() +
     geom_errorbar(aes(ymin = mean_phenotype - sd_phenotype, ymax = mean_phenotype + sd_phenotype), width = 0.2) +
     theme_bw()

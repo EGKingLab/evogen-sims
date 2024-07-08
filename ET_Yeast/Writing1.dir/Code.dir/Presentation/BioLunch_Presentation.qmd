@@ -27,7 +27,7 @@ mytheme <- function(){
 }
 ```
 
-```{r}
+```{r, echo=FALSE}
 ########### Infinitisimal Model #################
 a = 5
 b = 25
@@ -74,7 +74,7 @@ p1
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 Generation <- seq(1, 100)
 Optimum <- seq(90, 110, length.out = 100)
 df <- data.frame(Generation, Optimum)
@@ -99,7 +99,7 @@ p1
 
 ```
 
-```{r, fig.width=12, fig.height=8}
+```{r, fig.width=12, fig.height=8, echo=FALSE}
 # Generation sequence from 1 to 2000
 Generation <- c(1:2000)
 
@@ -127,7 +127,7 @@ annotate("text", x = 100, y = 2.1, label = "Optium", size = 10, vjust = -.5, col
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 Opti_Gen <- tibble(Generation = seq(1:100),
                    Optimum1 = rep(c(rep(110, 10), rep(90, 10)), 5),
                    Optimum2 = rep(c(rep(105, 10), rep(95, 10)), 5))
@@ -158,7 +158,7 @@ p2
 
 ```
 
-```{r, fig.width=12, fig.height=8}
+```{r, fig.width=12, fig.height=8, echo=FALSE}
 phenotypes <- rnorm(10000, 0, 1)
 lower = mean(phenotypes) - 4*(sd(phenotypes))
 upper = mean(phenotypes) + 4*(sd(phenotypes))
@@ -192,7 +192,7 @@ p2
 
 ```
 
-```{r, fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=4, echo=FALSE}
 Generation <- seq(1, 100, length.out = 400) 
 phenotypes <- rnorm(10000, 0, 1)
 Optimum <- 100 + 10 *sin( pi* Generation / 25) 
@@ -219,7 +219,7 @@ p3
 
 ```
 
-```{r, fig.width=12, fig.height=8}
+```{r, fig.width=12, fig.height=8, echo=FALSE}
 # Generation sequence from 1 to 2000
 Generation <- c(1:200)
 Optimum = rep(0, length(Generation))
@@ -251,7 +251,7 @@ p3 <- ggplot(df) +
 p3
 ```
 
-```{r, fig.width=12, fig.height=8}
+```{r, fig.width=12, fig.height=8, echo=FALSE}
 # Generation sequence from 1 to 2000
 Generation <- c(1:200)
 phenotypes <- rnorm(10000, 0, 1)
@@ -294,7 +294,7 @@ print(p4)
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 Generation <- seq(1, 100, length.out = 400)
 
 Optimum <- 100 + 10 * sin(2 * pi * Generation / 25) + 2 * sin(2 * pi * Generation / 10) + 5 * sin(2 * pi * Generation / 5) + 1 * sin(2 * pi * Generation / 2)
@@ -332,7 +332,7 @@ mygrid
 
 ### Ignore
 
-```{r}
+```{r, echo=FALSE}
 pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n1_H0.5SD4Gen30.csv") %>% 
   filter(Generation == 0 | Generation %% 10 == 0)
 
@@ -342,7 +342,7 @@ pheno <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Mod
         theme_bw()
 ```
 
-```{r}
+```{r, echo=FALSE}
 pheno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n100_H0.5SD1Gen10.csv") # %>% 
   #filter(Generation == 0 | Generation %% 10 != 0)
 
@@ -351,14 +351,14 @@ pb <-  pheno %>% ggplot(aes(Generation, Phenotype))+
         theme_bw()
 ```
 
-```{r}
+```{r, echo=FALSE}
 library(patchwork)
-pa/pb
+plot_grid(pa,pb)
 ```
 
 ### Allele Frequency
 
-```{r}
+```{r, echo=FALSE}
 geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD1Gen30.csv") %>% 
   filter(Generation == 0 | Generation %% 30 == 0) %>% 
   mutate(Position = factor(Position))
@@ -369,7 +369,7 @@ geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n1_H0.5SD3Gen10.csv") %>% 
   mutate(Position = factor(Position))
  pd <- geno %>% ggplot(aes(Generation, Frequency, color = Position))+
@@ -378,15 +378,15 @@ geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10
    theme(legend.position = "none")
 ```
 
-```{r}
-pc/pd
+```{r, echo=FALSE}
+plot_grid(pc,pd)
 ```
 
 ### Figure: Monogenic Two-Season
 
 > In monogenic traits, the fluctuations are more noticeable and less complex for models with two equal seasons, facilitating the observation of seasonality
 
-```{r}
+```{r, echo=FALSE}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 mono1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n100_H0.8SD3Gen10.csv")
 mono2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/SinFS.dir/genome10_n100_H0.8SD3Gen10.csv")
@@ -417,7 +417,7 @@ freqplot
 
 ### Figure: Oligogenic and Polygenic
 
-```{r}
+```{r, echo=FALSE}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 Oligo1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD1Gen10.csv")
 Oligo2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n70_H0.1SD1Gen10.csv")
@@ -444,17 +444,17 @@ freqplot <- Genome_dataset %>% filter(Generation <= 1000) %>%
         axis.title = element_text(face = "bold"),
         legend.position = "none")
 
-ggplotly(freqplot)
+(freqplot)
 ```
 
 ### Heritability's Effect
 
-```{r}
+```{r, echo=FALSE}
 Heri1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD2Gen10.csv")
 Herit2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.8SD2Gen10.csv")
 ```
 
-```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 # Add a column to distinguish the datasets
 geno_file <- Heri1 %>% mutate(Selection = "Heritability = 0.1")
 geno_file2 <- Herit2 %>% mutate(Selection = "Heritability = 0.8")
@@ -479,7 +479,7 @@ freqplot
 
 ### Selection Effect
 
-```{r}
+```{r, echo=FALSE}
 
 plot_frequency_by_descriptor <- function(file_paths, descriptors) {
   datasets <- list()
@@ -512,7 +512,7 @@ plot_frequency_by_descriptor <- function(file_paths, descriptors) {
 
 ```
 
-```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 file1 <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD1Gen10.csv"
 file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD4Gen10.csv"
 
@@ -525,7 +525,7 @@ file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0
 
 ### Season Length
 
-```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 file1 <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD2Gen10.csv"
 file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD2Gen30.csv"
 
@@ -538,7 +538,7 @@ file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0
 
 ### Combined Effect
 
-```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 file1 <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.1SD1Gen10.csv"
 file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.8SD4Gen30.csv"
 
@@ -550,7 +550,7 @@ file2 <-  "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0
 
 ### Genome Size Effect
 
-```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 library(forcats)
 
 Mono <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n1_H0.1SD1Gen20.csv")
@@ -589,7 +589,7 @@ freqplot
 
 ### Model Comparison
 
-```{r,  warning=FALSE, fig.width = 8, fig.height = 4}
+```{r,  warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 mono1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n70_H0.5SD4Gen20.csv")
 mono2 <-  read.csv("../../../output.dir/Selection_Models/WF.dir/SinFS.dir/genome10_n70_H0.5SD4Gen20.csv")
 mono3 <- read.csv("../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome10_n70_H0.5SD4.csv")
@@ -644,7 +644,7 @@ freqplot <- Genome_dataset %>%
 
 Here you might want to select 30 loci for both models!!!!!!!!!
 
-```{r, warning=FALSE, fig.width = 8, fig.height = 4}
+```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
 file1 <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/genome10_n10_H0.5.csv"
 file2 <-  "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome10_n10_H0.5SD4.csv"
 
@@ -656,7 +656,7 @@ file2 <-  "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome10_n10
 
 ### Spectral Analysis
 
-```{r}
+```{r, echo=FALSE}
 run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
   library(cowplot)
   library(lubridate)
@@ -740,7 +740,7 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
       mutate(Frequency = 1 / Frequency) %>%
       filter(Frequency < threshold) %>%
       ggplot(aes(Frequency, spec, color = File, fill = File)) + 
-      geom_line(linewidth = 1) +
+      geom_line(size = 1) +
       facet_wrap(~SD_H2, scales = "free_y") +
       xlab("Periodicity") +
       ylab("Spectral Density") +
@@ -752,16 +752,16 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
 
 ```
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
 #source('../../../Writing1.dir/Code.dir/ComboSpec.R')
-pattern ="^genome\\d+_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+pattern ="^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```
 
 ### Phenotypes
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^MeanPhenotypes10_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -807,7 +807,7 @@ for(locus in loci){
 plots
 ```
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes[10]_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -858,7 +858,7 @@ plots
 
 ### Population
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 mytheme <- theme(
   axis.text = element_text(size = 17, face = "bold"),
         axis.line = element_line(size = 2),
@@ -886,7 +886,8 @@ p
 
 ### Signs of FS
 
-```{r, warning=FALSE, fig.width = 12, fig.height = 6}
+```{r, warning=FALSE, fig.width = 12, fig.height = 6, echo=FALSE}
+library(patchwork)
 
 geno <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n70_H0.5SD4Gen30.csv") %>% 
   filter(Generation <= 500)
@@ -913,11 +914,10 @@ p1 <- pheno %>%
         axis.title = element_text(size = 17, face = "bold"),
         strip.text = element_text(size = 17, face = "bold"))
 
-g1|p1
-
+plot_grid(g1,p1)
 ```
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 ############ Libraries and theme function ########
 rm(list = ls())
 library(stringr)
@@ -1022,7 +1022,7 @@ print(result$plots)
 
 ```
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n1_H0\\.(8)(SD(1))?(Gen(30))?\\.csv$"
 # "^MeanPhenotypes\\d+_n300_H0\\.(8)(SD(4))?(Gen(30))?\\.csv$"
@@ -1035,7 +1035,7 @@ result <- process_files(dirpath, pattern, "loci_gen")
 result$plots
 ```
 
-```{r}
+```{r, echo=FALSE}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n1+_H0.8SD4Gen30\\.csv$"
 result <- process_files(dirpath, pattern, "loci_gen")
@@ -1049,7 +1049,7 @@ result$plots
 
 ### Fitness landscape
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, echo=FALSE}
 # ph1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n10_H0.1SD1Gen10.csv")
 # ph11 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n10_H0.8SD4Gen30.csv")
 # ph2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/MeanPhenotypes1_n10_H0.1SD4Gen10.csv")
@@ -1102,7 +1102,7 @@ result$plots
 
 ```
 
-```{r, fig.width = 12, fig.height = 6}
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
 # # Clear the environment
 # rm(list = ls())
 # 
@@ -1189,7 +1189,7 @@ result$plots
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Clear the environment
 rm(list = ls())
 
@@ -1288,7 +1288,7 @@ result$plots
 
 ```
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4, echo=FALSE}
 
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir//"
 pattern <- "^MeanPhenotypes\\d+_n100_H0\\.(1|5)(SD(1|2))?(Gen(20|10))?\\.csv$"
@@ -1300,44 +1300,44 @@ result$plots
 
 #### Optimum vs Fitness
 
-```{r}
-ph1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD1Gen10.csv")
-ph11 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD2Gen10.csv")
-ph2 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD3Gen10.csv")
-ph22 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD4Gen10.csv")
-
-# Add a new column 'source' to each dataframe
-ph1$standv <- "1 values"
-ph11$standv <- "2 values"
-ph2$standv <- "3 values"
-ph22$standv <- "4 values"
-
-# Combine all dataframes into one
-all_data <- bind_rows(ph1, ph11, ph2, ph22)%>% 
-  filter(Optimum > 0) %>% 
-  mutate(Optimum = factor(Optimum)) 
-
-
-dataf2 <- all_data 
-
-# Calculate the mean fitness for each standv group
-mean_fitness <- dataf2 %>%
-  group_by(standv) %>% 
-  summarize(mean_optimum = mean(meanFitness))
-
-ggplot(dataf2) +
-  geom_density_ridges(aes(y = Optimum, x = meanFitness, color = standv, fill = standv), alpha = 0.3) +
-  geom_vline(data = mean_fitness, aes(xintercept = mean_optimum), color = "blue") +
-  geom_text(data = mean_fitness, aes(x = mean_optimum, label = paste("Mean =", round(mean_optimum, 2))), 
-            y = 5, vjust = 0.5, hjust = 0.5, color = "darkred", size = 2) +  #size = 3
-  facet_grid(~standv, scales = "free_y") +
-  theme(axis.text = element_text(size = 12, face = "bold"),
-        axis.line = element_line(size = 2),
-        axis.title = element_text(size = 12, face = "bold"),
-        strip.text = element_text(size = 12, face = "bold"))
+```{r, echo=FALSE}
+# ph1 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD1Gen10.csv")
+# ph11 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD2Gen10.csv")
+# ph2 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD3Gen10.csv")
+# ph22 <- read.csv("../../../output.dir/Selection_Models/WF.dir/LinFS.dir/MeanPhenotypes10_n10_H0.1SD4Gen10.csv")
+# 
+# # Add a new column 'source' to each dataframe
+# ph1$standv <- "1 values"
+# ph11$standv <- "2 values"
+# ph2$standv <- "3 values"
+# ph22$standv <- "4 values"
+# 
+# # Combine all dataframes into one
+# all_data <- bind_rows(ph1, ph11, ph2, ph22)%>% 
+#   filter(Optimum > 0) %>% 
+#   mutate(Optimum = factor(Optimum)) 
+# 
+# 
+# dataf2 <- all_data 
+# 
+# # Calculate the mean fitness for each standv group
+# mean_fitness <- dataf2 %>%
+#   group_by(standv) %>% 
+#   summarize(mean_optimum = mean(meanFitness))
+# 
+# ggplot(dataf2) +
+#   geom_density_ridges(aes(y = Optimum, x = meanFitness, color = standv, fill = standv), alpha = 0.3) +
+#   geom_vline(data = mean_fitness, aes(xintercept = mean_optimum), color = "blue") +
+#   geom_text(data = mean_fitness, aes(x = mean_optimum, label = paste("Mean =", round(mean_optimum, 2))), 
+#             y = 5, vjust = 0.5, hjust = 0.5, color = "darkred", size = 2) +  #size = 3
+#   facet_grid(~standv, scales = "free_y") +
+#   theme(axis.text = element_text(size = 12, face = "bold"),
+#         axis.line = element_line(size = 2),
+#         axis.title = element_text(size = 12, face = "bold"),
+#         strip.text = element_text(size = 12, face = "bold"))
 ```
 
-```{r}
+```{r, echo=FALSE}
  #rm(list = ls())
  #Generation <- seq(1, 100, length.out = 400)
  Generation <- c(1:2000)
@@ -1371,11 +1371,11 @@ ggplot(dataf2) +
          strip.text = element_text(size = 17, face = "bold"))
 ```
 
-```{r}
+```{r, echo=FALSE}
 p4
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Generation sequence from 1 to 2000
 Generation <- c(1:2000)
 
@@ -1418,7 +1418,7 @@ print(p4)
 
 ### Initial phenotype and their means
 
-```{r}
+```{r, echo=FALSE}
 ############ Libraries and theme function ########
 rm(list = ls())
 library(stringr)
@@ -1464,11 +1464,11 @@ files <- list.files(dirpath, pattern, full.names = TRUE)
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 str(combined_data)
 ```
 
-```{r}
+```{r, echo=FALSE}
 sum_data <- combined_data %>%
   group_by(identifier, loci) %>%
   summarize(
@@ -1478,7 +1478,7 @@ sum_data <- combined_data %>%
   )
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Define the order of the levels
 levels_order <- c("300_0.1", "300_0.5", "300_0.8", "100_0.1", "100_0.5", "100_0.8", "70_0.1", "70_0.5", "70_0.8", "10_0.1", "10_0.5", "10_0.8", "1_0.1", "1_0.5", "1_0.8")
 
@@ -1495,27 +1495,27 @@ ggplot() +
   facet_wrap(~loci, scales = "free")+
   theme_bw()
 ```
+
 > The above plot can probably help us explain the difference we see in phenotypes vs it's heritability when a trait is monogenic, oligogenic, and polygenic.
 
 ### Fixed Alleles
-```{r}
+
+```{r, echo=FALSE}
 fxd <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/FixedLoci10_n300_H0.8SD1.csv") %>% 
   group_by(Position, Frequency) %>% select(-Generation) %>% 
   distinct()
 ```
-
-
+, echo=FALSE
 ```{r}
 unique(fxd$Frequency)
 ```
 
-
-```{r}
-re <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/genome10_n10_H0.8SD1.csv") %>% dplyr::select(-Origin)
-re2<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome10_n100_H0.8.csv") %>% dplyr::select(-Origin)
+```{r, echo=FALSE}
+re <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.8SD2Gen10.csv") %>% dplyr::select(-Origin)
+re2<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n100_H0.8SD2Gen10.csv") %>% dplyr::select(-Origin)
 ```
 
-```{r}
+```{r, echo=FALSE}
 fixedlostfx <- function(genomefile, maxgeneration){
   fixed_alleles <- genomefile %>%
     group_by(Position) %>%
@@ -1549,23 +1549,32 @@ fixedlostfx <- function(genomefile, maxgeneration){
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 fixedlost.df <- fixedlostfx(re2, 2000)
 ```
 
-```{r}
-fixedlost.df
+```{r, echo=FALSE}
+head(fixedlost.df, 10)
 ```
-```{r, fig.height=3,fig.width=5}
-fixedlost.df %>% 
+
+```{r, fig.height=5,fig.width=8, echo=FALSE}
+fixedlost.df %>%
   ggplot(aes(Position, Effect, color = `Initial Frequency`)) +
   geom_point(size = 3) +
   facet_grid(~ Fixation) +
-  theme(panel.spacing = unit(3, "lines"))  
+  theme(panel.spacing = unit(3, "lines"))+ 
+  theme(panel.spacing = unit(3, "lines"),
+        legend.position = "bottom",
+        legend.justification = c(0.5, 0.5),
+        legend.box = "horizontal",
+        legend.text = element_text(size = 15), # Adjust text size for readability
+        legend.title = element_text(size = 15),
+        legend.spacing.x = unit(0.5, "cm"), # Increase space between legend items
+        legend.key.size = unit(3, "lines")) # Increase size of legend keys
 
 ```
 
-```{r, fig.height=3,fig.width=7}
+```{r, fig.height=5,fig.width=8, echo=FALSE}
 library(ggplot2)
 library(scales)
 
@@ -1576,13 +1585,20 @@ fixedlost.df %>%
   scale_x_continuous(labels = function(x) {
     ifelse(x >= 1e6, paste0(x / 1e6, "MB"),
            ifelse(x >= 1e3, paste0(x / 1e3, "kb"), x))
-  }) +
-  theme(panel.spacing = unit(3, "lines"))
+  }) + 
+  theme(panel.spacing = unit(3, "lines"),
+        legend.position = "bottom",
+        legend.justification = c(0.5, 0.5),
+        legend.box = "horizontal",
+        legend.text = element_text(size = 15), # Adjust text size for readability
+        legend.title = element_text(size = 15),
+        legend.spacing.x = unit(0.5, "cm"), # Increase space between legend items
+        legend.key.size = unit(3, "lines")) # Increase size of legend keys
+
 
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 # process_files <- function(dirpath, pattern, plot_type, maxgeneration) {
 #   files <- list.files(dirpath, pattern, full.names = TRUE)
 # 
@@ -1685,8 +1701,7 @@ fixedlost.df %>%
 
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 # fixedlostfx <- function(genomefile, maxgeneration){
 #   fixed_alleles <- genomefile %>%
 #     group_by(Position) %>%
@@ -1721,7 +1736,7 @@ fixedlost.df %>%
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 # dirpath <- "../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 # pattern <- "^genome15\\D"
 # result <- process_files(dirpath, pattern, "loci_gen", maxgeneration = 2000)
@@ -1745,7 +1760,7 @@ fixedlost.df %>%
 
 #### another one
 
-```{r}
+```{r, echo=FALSE}
 # dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 # pattern <- "^genome10\\D" #(\\D|$)
 # files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -1770,15 +1785,13 @@ fixedlost.df %>%
 # }
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 # combined_data <- bind_rows(dataframes) %>% 
 #   mutate(h2_sd = paste("h2 = ", herit," ", "sd = ", sd, sep = ""),
 #          loci_gen = paste("loci = ", loci," ", "gen = ", gen, sep = ""))
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 # fixedlostfx <- function(genomedata, maxgeneration){
 #   fixed_alleles <- genomedata %>%
 #     group_by(Position, h2_sd, loci_gen) %>%
@@ -1812,14 +1825,11 @@ fixedlost.df %>%
 
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 # fixedlost.df <- fixedlostfx(combined_data, 2000)
 ```
 
-
-
-```{r}
+```{r, echo=FALSE}
 
 # fixplots <- list()
 # loci_gens <- unique(fixedlost.df$loci_gen)
@@ -1841,8 +1851,7 @@ fixedlost.df %>%
 # fixplots
 ```
 
-```{r}
-
+```{r, echo=FALSE, fig.width=12, fig.height=6}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 pattern <- "^genome10\\D"
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -1925,8 +1934,6 @@ for(loci_geni in loci_gens) {
 }
 
 fixplots
-
-```
 
 ```
 

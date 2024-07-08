@@ -1,7 +1,8 @@
 
 ############ Libraries and theme function ########
 
-library(tidyverse)
+library(dplyr)
+library(tidyr)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -21,7 +22,7 @@ mytheme <- function(){
 # File: reusable_plotting_function.R
 
 gen_plotting_function <- function(dirpath, pattern, ncol_plots = 2, label_size = 14, label_x = 0, label_y = 1) {
-  library(tidyverse)
+  
   library(cowplot)
   
   # Data Processing
@@ -64,7 +65,7 @@ gen_plotting_function <- function(dirpath, pattern, ncol_plots = 2, label_size =
     nest() %>%
     mutate(plot = map(data, ~{
       ggplot(.x, aes(Generation, Frequency, group = Pos_Effect, color = Pos_Effect)) +
-        geom_line(linewidth = 0.1) +
+        geom_line(size = 0.1) +
         facet_wrap(~h2_sd, ncol = 4) +
         ylim(min = 0, max = 1) +
         mytheme()
@@ -128,7 +129,7 @@ gen2_plotting_function <- function(dirpath, pattern, ncol_plots = 2, label_size 
     nest() %>%
     mutate(plot = map(data, ~{
       p <- ggplot(.x, aes(Generation, Frequency, group = Pos_Effect, color = Pos_Effect)) +
-        geom_line(linewidth = 0.1) +
+        geom_line(size = 0.1) +
         facet_wrap(~h2_sd, ncol = 4) +
         ylim(0, 1) +
         theme_minimal() +

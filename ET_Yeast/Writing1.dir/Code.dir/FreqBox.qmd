@@ -4,7 +4,9 @@ format: html
 editor: visual
 ---
 
-```{r}
+## Instantaneous all replicates 10 loci, 0.5, sd4, gen 30
+
+```{r, echo=FALSE}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -67,7 +69,7 @@ ggplot()+
   facet_grid(Position~.)
 ```
 
-```{r}
+```{r, echo=FALSE}
 
 # Replace NA values in Frequency with 0
 #filtered_data_long$Frequency <- replace_na(filtered_data_long$Frequency, 0)
@@ -92,7 +94,7 @@ ggplot() +
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 library(ggplot2)
 library(dplyr)
 
@@ -113,7 +115,7 @@ ggplot() +
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 library(ggplot2)
 library(dplyr)
 
@@ -132,7 +134,9 @@ ggplot() +
 
 ```
 
-```{r}
+## Instantaneous single replicate 30 out of 300 loci, 0.5, sd3, gen 30
+
+```{r, echo=FALSE}
 # Load required libraries
 library(ggplot2)
 library(dplyr)
@@ -222,7 +226,9 @@ print(p)
 
 ```
 
-```{r}
+## Instantaneous single replicate 30 out of 70 loci, 0.8, sd3, gen 30
+
+```{r, echo=FALSE}
 # Load required libraries
 library(ggplot2)
 library(dplyr)
@@ -317,7 +323,9 @@ p1
 
 ```
 
-```{r}
+## Instantaneous all replicate all at most 30 out of loci, h2 = 0.1
+
+```{r, echo=FALSE}
 ############## This is to help with packages in case theyre not there #####
 install_and_load <- function(packages) {
   for (package in packages) {
@@ -505,7 +513,7 @@ result$plots
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 ############## This is to help with packages in case theyre not there #####
 install_and_load <- function(packages) {
   for (package in packages) {
@@ -687,15 +695,17 @@ process_files <- function(dirpath, pattern, plot_type) {
   return(list(combined_data = combined_data, plots = plots))
 }
 
-# # Example usage
-# result <- process_files(dirpath = "../../output.dir/Selection_Models/WF.dir/SinFS.dir/",
-#                         pattern = "^genome15\\D",
-#                         plot_type = "loci_gen")
-# result$plots
+# Example usage
+result <- process_files(dirpath = "../../output.dir/Selection_Models/WF.dir/SinFS.dir/",
+                        pattern = "^genome1\\D",
+                        plot_type = "loci_gen")
+result$plots
 
 ```
 
-```{r}
+## Single replicate for all
+
+```{r, echo=FALSE}
 ############## This is to help with packages in case theyre not there #####
 install_and_load <- function(packages) {
   for (package in packages) {
@@ -813,6 +823,6 @@ for(loci_geni in loci_gens){
 }
 ```
 
-```{r, fig.height=6, fig.align='center', fig.width=12}
+```{r, fig.height=6, fig.align='center', fig.width=12, echo=FALSE}
 plots
 ```

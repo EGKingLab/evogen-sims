@@ -6,7 +6,7 @@ editor: visual
 ---
 
 ```{r, echo=FALSE, message=FALSE}
-library(tidyverse)
+library(dplyr)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -71,7 +71,7 @@ process_plots <- function(file) {
  
   plotname <- paste(path, basename(file), ".png", sep = "")
   ggsave(filename = plotname, plot =  (p), width = 12, height = 8, units = "in")
-  ggplotly(p)
+  (p)
 }
 
 # Apply the function to each file to get a list of plots
@@ -203,7 +203,7 @@ p <- ggplot(locus_data, aes(Generation, Frequency, group = postion_effect_init, 
   plotname <- paste(path, "plot_for_loci ","Loci ", locus, ".png", sep = "")
 
   ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  ggplotly(p)
+  (p)
 })
 
 plots
@@ -270,7 +270,7 @@ p <- ggplot(locus_data, aes(Generation, Frequency, group = interaction(postion_e
   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
 
   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  ggplotly(p)
+  (p)
 })
 
 plots
@@ -322,7 +322,7 @@ combined_data <- bind_rows(dataframes) %>%
          postion_effect_init = paste("position = ", Position," ","Effect = ", round(Effect, 2)," ", "Initial Freq = ", round(initFreq, 2) , sep = ""))
 
 # Define the path for output
-path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Output.dir/Add_Check.dir/LF.dir/"
+path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Output.dir/Add_Check.dir/LinFS.dir/"
 
 # Initialize an empty list to store plots
 plots <- list()
@@ -355,7 +355,7 @@ for(loci_geni in loci_gens){
     theme_bw()
 
   # Convert the plot to a ggplotly object and store it in the list
-  plots[[loci_geni]] <- ggplotly(p)
+  plots[[loci_geni]] <- (p)
 
   # Define the filename for the plot
   plotname <- paste(path, "Plot_Loci_Gen ", loci_geni, ".png", sep = "")
@@ -432,7 +432,7 @@ plots <- lapply(unique(combined_data$loci_gen), function(loci_geni) {
   # If you want to save the plot, uncomment the lines below
   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  plots[[loci_geni]] <- ggplotly(p)
+  plots[[loci_geni]] <- (p)
 })
 
 plots
@@ -526,7 +526,7 @@ p <- ggplot(locus_data, aes(Generation, Frequency, group = position_effect_init,
   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
 
   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  plots[[loci_geni]] <- ggplotly(p)
+  plots[[loci_geni]] <- (p)
 })
 
 plots
@@ -619,7 +619,7 @@ plots
 ### Sinusoidal II
 
 ```{r}
-path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Output.dir/Add_Check.dir/SinII.dir/"
+path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Output.dir/Add_Check.dir/SinFSGen.dir/"
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir//"
 pattern <- "^genome15\\D"
 files <- list.files(dirpath, pattern, full.names = TRUE)
@@ -671,7 +671,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
 
   # Save the plot
   ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  ggplotly(p)
+  (p)
 })
 
 plots
@@ -736,7 +736,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
   # If you want to save the plot, uncomment the lines below
   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  plots[[locus]] <- ggplotly(p)
+  plots[[locus]] <- (p)#ggplotly
 })
 
 plots
@@ -833,7 +833,7 @@ plots <- lapply(unique(combined_data$loci), function(locus) {
   #plotname <- paste(path, "Loci ", locus, ".png", sep = "")
 
   #ggsave(filename = plotname, plot = p, width = 12, height = 8, units = "in")
-  plots[[locus]] <- ggplotly(p)
+  plots[[locus]] <- (p)
 })
 
 plots
