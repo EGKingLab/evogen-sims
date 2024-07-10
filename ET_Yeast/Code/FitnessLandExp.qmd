@@ -265,7 +265,7 @@ for (seed in seeds) {
        for (sd in sds) {
          #sdp <- sqrt(locus / (3 * h2))
         if (locus == 1) {
-          sdp <- sqrt(locus*3/h2)
+          sdp <- sqrt(locus*(3/h2))
         } else {
           sdp <- sqrt(locus / (3 * h2))
         }
@@ -293,8 +293,8 @@ for (seed in seeds) {
 newdataset <- df %>% #group_by(sd, locus, h2) %>%
   mutate(heritability = factor(h2),
     stand_dev = factor(sd),
-    Fitness = ifelse(locus==1, exp(-(1/150) * (phenotype - optimum)^2), 
-                           exp(-(1/150) * (phenotype - optimum)^2))
+    Fitness = ifelse(locus==1, exp(-(1/125) * (phenotype - optimum)^2), 
+                           exp(-(1/125) * (phenotype - optimum)^2))
     )
 
 ```
@@ -352,7 +352,7 @@ for (seed in seeds) {
       
       for (sd in sds) {
         if (locus == 1) {
-          sdp <- sqrt(locus * 3 / h2)
+          sdp <- sqrt(locus * (3 / h2))
         } else {
           sdp <- sqrt(locus / (3 * h2))
         }
@@ -463,11 +463,11 @@ df <- tibble()#numeric(length = ninds)
         myphedata <- tibble(
           phenotypes = additive + env,
           mup = 0.5 * locus, # Expected mean
-          sdp = ifelse(locus == 1, sqrt((3*locus) / h2), sqrt(locus / (3 * h2))), 
+          sdp = ifelse(locus == 1, sqrt(locus / (3 * h2)), sqrt(locus / (3 * h2))), 
           phenotype = (phenotypes - mup) / sdp, # Phenotype scaling
           optimum = mean(phenotype) + (stand * sd(phenotype)),
-          Fitness = ifelse(locus <= 10, exp(-(1/100) * (phenotype - optimum)^2), 
-                           exp(-(1/(100*sdp)) * (phenotype - optimum)^2)),
+          Fitness = ifelse(locus <= 10, exp(-(1/125) * (phenotype - optimum)^2), 
+                           exp(-(1/125) * (phenotype - optimum)^2)),
           stand = stand,  
           h2 = h2,  
           locus = locus
