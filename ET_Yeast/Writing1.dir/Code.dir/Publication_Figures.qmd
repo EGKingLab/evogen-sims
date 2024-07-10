@@ -10,7 +10,7 @@ editor: visual
 ```{r}
 ############ Libraries and theme function ########
 
-library(tidyverse)
+library(dplyr)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -25,6 +25,470 @@ mytheme <- function(){
         legend.position = "none")
 }
 ```
+
+## Linear Polygenic Models
+
+### Small vs High parameters
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+
+# Read and mutate datasets
+geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Smaller Parameters")
+geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.8SD4Gen30.csv")  %>% mutate(Selection = "Higher parameters")
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Smaller Parameters", 
+                                 "Higher parameters"))
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(Genome_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~., strip.position = "top") +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"))
+
+# Print the plot
+print(freqplot)
+```
+
+### Heritability Effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Read and mutate datasets
+geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
+geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.5SD1Gen10.csv")  %>% mutate(Selection = "Intermediate")
+geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.8SD1Gen10.csv") %>% mutate(Selection = "High")
+
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, "Small","Intermediate", "High"))
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(Genome_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~., strip.position = "top", ncol=3) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"))
+
+# Print the plot
+print(freqplot)
+```
+
+### Heritability and Selection Pressure
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Read and mutate datasets
+geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
+geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.5SD4Gen10.csv")  %>% mutate(Selection = "Intermediate")
+geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.8SD4Gen10.csv") %>% mutate(Selection = "High")
+
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, "Small","Intermediate", "High"))
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(Genome_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~., strip.position = "top", ncol=3) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"))
+
+# Print the plot
+print(freqplot)
+```
+
+### Selection Length Effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Read and mutate datasets
+geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
+geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen20.csv")  %>% mutate(Selection = "Intermediate")
+geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen30.csv") %>% mutate(Selection = "High")
+
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, "Small","Intermediate", "High"))
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(Genome_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~., strip.position = "top", ncol=3) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"))
+
+# Print the plot
+print(freqplot)
+```
+
+### Selection Length vs Heritability Effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Read and mutate datasets
+geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
+geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.8SD1Gen30.csv") %>% mutate(Selection = "High")
+
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, "Small", "High"))
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(Genome_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~., strip.position = "top", ncol=3) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"))
+
+# Print the plot
+print(freqplot)
+```
+
+### Selection Length vs Selection Strength Effect
+
+```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+# Read and mutate datasets
+geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD4Gen10.csv") %>% mutate(Selection = "Small")
+geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD4Gen30.csv") %>% mutate(Selection = "High")
+
+
+# Combine the datasets
+Genome_dataset <- rbind(geno_file, geno_file3) %>% 
+  mutate(Selection = fct_relevel(Selection, "Small", "High"))
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(Genome_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(Selection~., strip.position = "top", ncol=3) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"))
+
+# Print the plot
+print(freqplot)
+```
+
+## All in one
+
+```{r, , warning=FALSE, fig.width = 12, fig.height = 8}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(linewidth = 0.5) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+### Many replicates
+
+```{r}
+
+# Function to extract H, SD, Gen, and Replicate values from filename
+extract_params <- function(filename) {
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  replicate_value <- str_extract(filename, "(?<=genome)\\d+")
+  
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  replicate_value <- as.numeric(replicate_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value, Replicate = replicate_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", 
+                        pattern = "genome(1|2|3|4|5|6|7|8|9|10)_n300_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen, Replicate = params$Replicate)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Aggregate data to compute mean and standard deviation for each position, generation, and combination of H, SD, Gen
+aggregated_dataset <- filtered_dataset %>%
+  group_by(H, SD, Gen, Generation, Position) %>%
+  summarise(MeanFrequency = mean(Frequency),
+            SDFrequency = sd(Frequency),
+            .groups = 'drop')
+
+# Create a list to store individual plots
+plot_list <- list()
+
+# Loop over unique combinations of H, SD, and Gen to create individual plots
+unique_combinations <- aggregated_dataset %>%
+  distinct(H, SD, Gen)
+
+for (i in 1:nrow(unique_combinations)) {
+  subset_data <- aggregated_dataset %>%
+    filter(H == unique_combinations$H[i],
+           SD == unique_combinations$SD[i],
+           Gen == unique_combinations$Gen[i])
+  
+  p <- subset_data %>%
+    ggplot(aes(x = Generation, y = MeanFrequency, color = factor(Position), fill = factor(Position))) +
+    geom_line(linewidth = 0.5) +
+    geom_ribbon(aes(ymin = MeanFrequency - SDFrequency, ymax = MeanFrequency + SDFrequency), alpha = 0.1) +
+    theme_cowplot() +
+    ggtitle(paste("H =", unique_combinations$H[i], 
+                  "SD =", unique_combinations$SD[i], 
+                  "Gen =", unique_combinations$Gen[i])) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+          axis.text.y = element_text(size = 15, face = "bold"),
+          axis.line = element_line(size = 3),
+          axis.title = element_text(size = 15, face = "bold"),
+          plot.title = element_text(size = 18, face = "bold", hjust = 0.5))
+  
+  plot_list[[i]] <- p
+}
+
+# Print the plots
+for (plot in plot_list) {
+  print(plot)
+}
+```
+
+```{r}
+
+# Function to extract H, SD, Gen, and Replicate values from filename
+extract_params <- function(filename) {
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  replicate_value <- str_extract(filename, "(?<=genome)\\d+")
+  
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  replicate_value <- as.numeric(replicate_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value, Replicate = replicate_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", 
+                        pattern = "genome(1|2|3|4|5|6|7|8|9|10)_n300_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen, Replicate = params$Replicate)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create a list to store individual plots
+plot_list <- list()
+
+# Loop over unique combinations of H, SD, and Gen to create individual plots
+unique_combinations <- filtered_dataset %>%
+  distinct(H, SD, Gen)
+
+for (i in 1:nrow(unique_combinations)) {
+  subset_data <- filtered_dataset %>%
+    filter(H == unique_combinations$H[i],
+           SD == unique_combinations$SD[i],
+           Gen == unique_combinations$Gen[i])
+  
+  p <- subset_data %>%
+    ggplot(aes(x = Generation, y = factor(Position), fill = Frequency)) +
+    geom_tile() +
+    scale_fill_gradient(low = "blue", high = "red") +
+    theme_cowplot() +
+    ggtitle(paste("H =", unique_combinations$H[i], 
+                  "SD =", unique_combinations$SD[i], 
+                  "Gen =", unique_combinations$Gen[i])) +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+          axis.text.y = element_text(size = 15, face = "bold"),
+          axis.line = element_line(size = 3),
+          axis.title = element_text(size = 15, face = "bold"),
+          plot.title = element_text(size = 18, face = "bold", hjust = 0.5))
+  
+  plot_list[[i]] <- p
+}
+
+# Print the plots
+for (plot in plot_list) {
+  print(plot)
+}
+```
+
+## Comparisons
 
 ```{r}
 ### Function for allele frequency
@@ -156,13 +620,13 @@ Genome_dataset <- rbind(geno_file,
 freqplot <- Genome_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.2) +
+  geom_line(linewidth = 0.5) +
   facet_wrap(Selection~.) +
   theme_cowplot()+
   theme(legend.position = "none",
-        axis.text = element_text( size = 12, face = "bold"),
-        axis.line = element_line(size = 1),
-        axis.title = element_text( size = 12, face = "bold"))
+        axis.text = element_text( size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text( size = 15, face = "bold"))
 
 freqplot
 ```
@@ -224,7 +688,7 @@ freqplot <- Genome_dataset %>%
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
   geom_line(linewidth = 0.2) +
-  facet_grid(Selection~.) +
+  facet_wrap(~Selection, ncol = 3) +
   theme_cowplot()+
   theme(legend.position = "none",
         axis.text = element_text( size = 12, face = "bold"),
