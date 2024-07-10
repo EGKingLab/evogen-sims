@@ -33,14 +33,14 @@ editor: visual
 -   Several generation intervals for the shift (3 different intervals 10, 20, 30)
 -   Even shift high low (same time interval)
 
-```         
-1.  Run above models (by Th 8)
-    -   finalize fitness function
-    -   choose parameter values for your 12 combos
-2.  Analyze & visualize output
-    -   spectral analysis approach
-    -   genome-wide visuals
-```
+<!-- -->
+
+    1.  Run above models (by Th 8)
+        -   finalize fitness function
+        -   choose parameter values for your 12 combos
+    2.  Analyze & visualize output
+        -   spectral analysis approach
+        -   genome-wide visuals
 
 So far, I have modeled linear and sinusoïdal optimum change, but what about modelling stochastic optimum? For example:
 
