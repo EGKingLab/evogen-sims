@@ -323,7 +323,7 @@ p1
 
 ```
 
-## Instantaneous all replicate all at most 30 out of loci, h2 = 0.1
+## Instantaneous single replicate all parameters for at most 30 out of loci, h2 = 0.1
 
 ```{r, echo=FALSE}
 ############## This is to help with packages in case theyre not there #####
@@ -512,6 +512,8 @@ result <- process_files(dirpath = "../../output.dir/Selection_Models/WF.dir/LinF
 result$plots
 
 ```
+
+## SinI single replicate all parameters for at most 30 out of loci
 
 ```{r, echo=FALSE}
 ############## This is to help with packages in case theyre not there #####
@@ -703,7 +705,7 @@ result$plots
 
 ```
 
-## Single replicate for all
+## SinII Single replicate for all
 
 ```{r, echo=FALSE}
 ############## This is to help with packages in case theyre not there #####
@@ -743,7 +745,7 @@ mytheme <- function(){
 #################### Data Processing and plotting ###############
 
 # Directory path and pattern
-dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
 pattern <- "^genome15\\D"
 
 # List files
@@ -825,4 +827,75 @@ for(loci_geni in loci_gens){
 
 ```{r, fig.height=6, fig.align='center', fig.width=12, echo=FALSE}
 plots
+```
+
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(purrr)
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(10, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+
+# Create the plot with faceting by H, SD, and Gen
+heatmap_plot <- filtered_dataset %>% 
+  ggplot(aes(x = Generation, y = factor(Position), fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5),
+        strip.text = element_text(size = 10, face = "bold"),
+        panel.spacing = unit(1, "lines"))
+
+# Add text annotations for Effect labels on the right side
+heatmap_plot <- heatmap_plot +
+  geom_text(data = filtered_dataset %>% filter(!is.na(Effect)), 
+            aes(x = max(Generation) + 50, y = factor(Position), label = round(Effect, 1)), 
+            hjust = 0, vjust = 0.5, size = 2, color = "black")
+
+# Print the plot
+print(heatmap_plot)
+
 ```
