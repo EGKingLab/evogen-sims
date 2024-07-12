@@ -355,7 +355,7 @@ for(classifier in seq_along(classifiers)){
 
 ```
 
-```{r}
+```{r, warning=FALSE, fig.width = 26, fig.height = 8}
 plots
 ```
 
