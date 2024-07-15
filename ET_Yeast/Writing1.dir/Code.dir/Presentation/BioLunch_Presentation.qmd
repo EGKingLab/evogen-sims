@@ -1505,7 +1505,9 @@ fxd <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Model
   group_by(Position, Frequency) %>% select(-Generation) %>% 
   distinct()
 ```
+
 , echo=FALSE
+
 ```{r}
 unique(fxd$Frequency)
 ```
@@ -1936,4 +1938,3 @@ for(loci_geni in loci_gens) {
 fixplots
 
 ```
-
