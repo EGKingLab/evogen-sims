@@ -1,22 +1,23 @@
 ---
 title: "Publication_Figures"
 author: "ET"
-format: html
+format: docx
 editor: visual
 ---
 
 ## Allele Frequency
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 ############ Libraries and theme function ########
-
+library(forcats)
 library(dplyr)
 library(stringr)
-library(plotly)
+library(ggplot2)
 library(patchwork)
 library(cowplot)
 library(purrr)
 library(doParallel)
+
 theme_set(theme_cowplot())
 mytheme <- function(){
   theme(axis.title = element_text(face = "bold"),
@@ -30,7 +31,7 @@ mytheme <- function(){
 
 ### Small vs High parameters
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 16, fig.height = 8, echo=FALSE}
 
 # Read and mutate datasets
 geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Smaller Parameters")
@@ -55,7 +56,7 @@ filtered_dataset <- Genome_dataset %>%
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~., strip.position = "top") +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -71,7 +72,7 @@ print(freqplot)
 
 ### Heritability Effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Read and mutate datasets
 geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
 geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.5SD1Gen10.csv")  %>% mutate(Selection = "Intermediate")
@@ -95,7 +96,7 @@ filtered_dataset <- Genome_dataset %>%
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~., strip.position = "top", ncol=3) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -111,7 +112,7 @@ print(freqplot)
 
 ### Heritability and Selection Pressure
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Read and mutate datasets
 geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
 geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.5SD4Gen10.csv")  %>% mutate(Selection = "Intermediate")
@@ -135,7 +136,7 @@ filtered_dataset <- Genome_dataset %>%
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~., strip.position = "top", ncol=3) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -151,7 +152,7 @@ print(freqplot)
 
 ### Selection Length Effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Read and mutate datasets
 geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
 geno_file2 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen20.csv")  %>% mutate(Selection = "Intermediate")
@@ -175,7 +176,7 @@ filtered_dataset <- Genome_dataset %>%
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~., strip.position = "top", ncol=3) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -191,7 +192,7 @@ print(freqplot)
 
 ### Selection Length vs Heritability Effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Read and mutate datasets
 geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD1Gen10.csv") %>% mutate(Selection = "Small")
 geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.8SD1Gen30.csv") %>% mutate(Selection = "High")
@@ -214,7 +215,7 @@ filtered_dataset <- Genome_dataset %>%
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~., strip.position = "top", ncol=3) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -230,7 +231,7 @@ print(freqplot)
 
 ### Selection Length vs Selection Strength Effect
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Read and mutate datasets
 geno_file <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD4Gen10.csv") %>% mutate(Selection = "Small")
 geno_file3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n300_H0.1SD4Gen30.csv") %>% mutate(Selection = "High")
@@ -253,7 +254,7 @@ filtered_dataset <- Genome_dataset %>%
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~., strip.position = "top", ncol=3) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -269,7 +270,7 @@ print(freqplot)
 
 ## All in one
 
-```{r, , warning=FALSE, fig.width = 12, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 
 # Function to extract H, SD, and Gen values from filename
 extract_params <- function(filename) {
@@ -310,8 +311,9 @@ filtered_dataset <- combined_dataset %>%
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
   filter(Generation <= 500) %>% 
-  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 0.5) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
   facet_grid(H ~ SD + Gen, labeller = label_both) +
   theme_cowplot() +
   theme(legend.position = "none",
@@ -327,9 +329,251 @@ freqplot <- filtered_dataset %>%
 print(freqplot)
 ```
 
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+# 
+# 
+# freqplot2 <- filtered_dataset %>%
+#   filter(Generation <= 500) %>%
+#   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+#   geom_line(linewidth = 0.5) +
+#   facet_wrap(H + Gen ~ SD , labeller = label_both) +
+#   geom_text(data = unique_combinations, aes(x = -Inf, y = Inf, label = label),
+#             hjust = -2, vjust = 1.1, size = 6, fontface = "bold",
+#             inherit.aes = FALSE) +
+#   theme_cowplot() +
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+#         axis.text.y = element_text(size = 15, face = "bold"),
+#         axis.line = element_line(linewidth = 3),
+#         axis.title = element_text(size = 15, face = "bold"),
+#         strip.text = element_text(size = 15, face = "bold"),
+#         panel.spacing = unit(3, "lines")) +
+#   theme(panel.grid = element_blank())
+# 
+# # Add position effect for each line
+# freqplot2 <- freqplot2 +
+#   geom_text(data = filtered_dataset %>%
+#   filter(Generation <= 500)  %>% filter(!is.na(Effect)),
+#             aes(x = max(Generation) + 10, y = Frequency, label = round(Effect, 1)),
+#             hjust = 0, vjust = 0.15, size = 3, angle = 45)
+# 
+# freqplot2
+
+```
+
+
+####Let's try frequency with Effect
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# # Add the labels to your plot
+# freqplot2 <- filtered_dataset %>% 
+#   filter(Generation <= 500) %>% 
+#   ggplot(aes(x = Generation, y = Frequency, group = factor(Position), 
+#              color = factor(Position)=="644619")) +
+#   geom_line(size = 0.5) +
+#   facet_grid(H ~ SD + Gen, labeller = label_both) +
+#   geom_text(data = unique_combinations, aes(x = -Inf, y = Inf, label = label), 
+#             hjust = -2, vjust = 1.1, size = 6, fontface = "bold", inherit.aes = FALSE) +
+#   theme_minimal() +
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+#         axis.text.y = element_text(size = 15, face = "bold"),
+#         axis.line = element_line(size = 3),
+#         axis.title = element_text(size = 15, face = "bold"),
+#         strip.text = element_text(size = 15, face = "bold"),
+#         panel.spacing = unit(3, "lines")) +
+#   theme(panel.grid = element_blank())
+# 
+# # Add position effect for each line
+# freqplot2 <- freqplot2 +
+#   geom_text(data = filtered_dataset %>% 
+#   filter(Generation <= 500)  %>% filter(!is.na(Effect)) %>% 
+#   group_by(Position) %>% 
+#   filter(Generation == max(Generation)),  # keep only the maximum Generation for each Position
+#             aes(x = Generation + 50, y = Frequency, label = round(Effect, 1)), 
+#             hjust = 0, vjust = 0.15, size = 5, angle = 25, alpha = 0.5)
+# 
+# freqplot2
+
+```
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+# Add the labels to your plot
+freqplot2 <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(size = 0.5) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Calculate the standard deviation of Frequency for each Position
+position_sd <- filtered_dataset %>%
+  group_by(Position) %>%
+  summarise(sd = sd(Frequency))
+
+# Find the Position with the highest standard deviation
+highlight_position <- position_sd %>%
+  filter(sd == max(sd)) %>%
+  pull(Position)
+
+# Highlight only the Position with the highest fluctuations
+freqplot2 <- freqplot2 +
+  geom_line(data = filter(filtered_dataset, Position == highlight_position, Generation <= 500), size = 1.5, color = "red")
+
+freqplot2
+
+```
+
+
+### Effect of QTL and Initial Frequency
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+# Create the plot with faceting by H, SD, and Gen
+heatmap_plot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = factor(Position), fill = Frequency)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_minimal() +
+  labs(title = "Heat Map of Frequency Over Generations",
+       x = "Generation",
+       y = "Position",
+       fill = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5),
+        strip.text = element_text(size = 10, face = "bold"),
+        panel.spacing = unit(1, "lines"))
+
+# Add text annotations for Effect labels on the right side
+heatmap_plot <- heatmap_plot +
+  geom_text(data = filtered_dataset %>% 
+  filter(Generation <= 500)  %>% filter(!is.na(Effect)), 
+            aes(x = max(Generation) + 10, y = factor(Position), label = round(Effect, 1)), 
+            hjust = 0, vjust = 0.15, size = 3, angle = 30)
+
+
+# Print the plot
+print(heatmap_plot)
+
+```
+
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+
+# Manually specify the labels and their positions in correct order
+unique_combinations <- data.frame(
+  H = rep(c(0.1, 0.5, 0.8), each = 4),
+  Gen = rep(c(10, 10, 30, 30), times = 3),
+  SD = rep(c(1, 4, 1, 4), times = 3),
+  label = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"),
+  x = rep(50, 12),  # Adjust as necessary to position labels
+  y = rep(0.95, 12)  # Adjust as necessary to position labels
+)
+
+
+freqplot2 <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+  facet_wrap(SD ~ Gen + H , labeller = label_both) +
+  geom_text(data = unique_combinations, aes(x = x, y = y, label = label), 
+            hjust = 2, vjust = 1, size = 6, fontface = "bold", inherit.aes = FALSE) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+freqplot2
+
+```
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+# 
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot4 <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot4)
+```
+
 ### Many replicates
 
-```{r}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 
 # Function to extract H, SD, Gen, and Replicate values from filename
 extract_params <- function(filename) {
@@ -390,7 +634,7 @@ for (i in 1:nrow(unique_combinations)) {
   
   p <- subset_data %>%
     ggplot(aes(x = Generation, y = MeanFrequency, color = factor(Position), fill = factor(Position))) +
-    geom_line(linewidth = 0.5) +
+    geom_line(size = 0.5) +
     geom_ribbon(aes(ymin = MeanFrequency - SDFrequency, ymax = MeanFrequency + SDFrequency), alpha = 0.1) +
     theme_cowplot() +
     ggtitle(paste("H =", unique_combinations$H[i], 
@@ -412,7 +656,7 @@ for (plot in plot_list) {
 }
 ```
 
-```{r}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 
 # Function to extract H, SD, Gen, and Replicate values from filename
 extract_params <- function(filename) {
@@ -488,9 +732,304 @@ for (plot in plot_list) {
 }
 ```
 
+### Phenotypes
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "MeanPhenotypes1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+phenoplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line(size = 0.5) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoplot)
+```
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+freqplot <- freqplot + labs(title = "A")
+phenoplot <- phenoplot + labs(title = "B")
+plot_grid(freqplot, phenoplot, ncol = 2)
+
+```
+
+#### Monogenic model
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "genome1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+   ylim(0, 1) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+freqplot
+
+```
+
+```{r, echo=FALSE}
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "MeanPhenotypes1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# Create the plot with faceting by H, SD, and Gen
+phenoplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line(size = 0.5) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+```
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+freqplot <- freqplot + labs(title = "A")
+phenoplot <- phenoplot + labs(title = "B")
+plot_grid(freqplot, phenoplot, ncol = 2)
+```
+
+#### Oligogenic model
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "genome1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="915217", "highlighted", "other")), size = 0.5, alpha = 0.7) +
+  scale_color_manual(values = c("highlighted" = "darkred", "other" = "grey")) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+```{r, echo=FALSE}
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir", pattern = "MeanPhenotypes1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+
+# Create the plot with faceting by H, SD, and Gen
+phenoplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line(size = 0.5) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+```
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+freqplot <- freqplot + labs(title = "A")
+phenoplot <- phenoplot + labs(title = "B")
+plot_grid(freqplot, phenoplot, ncol = 2)
+```
+
+## 
+
 ## Comparisons
 
-```{r}
+```{r, echo=FALSE}
 ### Function for allele frequency
 
 #################### Data Processing and plotting ###############
@@ -548,7 +1087,7 @@ process_files <- function(dirpath, pattern, plot_type) {
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init,
                    color = postion_effect_init))+#ostion_effect_init
-        geom_line(linewidth = 0.2)+
+        geom_line(size = 0.2)+
         facet_wrap(~h2_sd, ncol = 4)+
         ylim(min = 0, max = 1)+
         theme_bw()+
@@ -577,7 +1116,7 @@ process_files <- function(dirpath, pattern, plot_type) {
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init, #postion_effect_init 
                    color = postion_effect_init))+
-        geom_line(linewidth = 0.2)+
+        geom_line(size = 0.2)+
         facet_wrap(~h2_sd, ncol = 4)+
         ylim(min = 0, max = 1)+
         theme_bw()#+
@@ -595,14 +1134,14 @@ process_files <- function(dirpath, pattern, plot_type) {
 
 ### Figure 2: Models Comparison
 
-```{r}
+```{r, echo=FALSE}
 #dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 mono1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
 mono2 <-  read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/genome1_n10_H0.1SD2Gen10.csv")
 mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.1SD2.csv")
 ```
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Add a column to distinguish the datasets
 geno_file <- mono1 %>% mutate(Selection = "Instantaneous Model")
 geno_file2 <- mono2 %>% mutate(Selection = "Gradual 2-Seasons Model")
@@ -620,7 +1159,7 @@ Genome_dataset <- rbind(geno_file,
 freqplot <- Genome_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(Selection~.) +
   theme_cowplot()+
   theme(legend.position = "none",
@@ -633,12 +1172,12 @@ freqplot
 
 ### Neutral vs Gradual 4 seasons
 
-```{r}
+```{r, echo=FALSE}
 neutr1 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n10_H0.5.csv")
 mono3 <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.5SD2.csv")
 ```
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Add a column to distinguish the datasets
 geno_file <- neutr1 %>% mutate(Selection = "Neutral Model")
 geno_file3 <- mono3 %>% mutate(Selection = "Gradual 4-Seasons Model")
@@ -651,7 +1190,7 @@ Genome_dataset <- rbind(geno_file, geno_file3) %>%
 
 # Create the plot
 freqplot <- Genome_dataset %>% ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.2) +
+  geom_line(size = 0.2) +
   facet_wrap(Selection~.) +
   theme_cowplot()+
   theme(legend.position = "none",
@@ -664,13 +1203,13 @@ freqplot
 
 ### Genome Size
 
-```{r}
+```{r, echo=FALSE}
 Mono <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n1_H0.1SD3Gen10.csv")
 Oligo <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.1SD3Gen10.csv")
 Poly<- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n100_H0.1SD3Gen10.csv")
 ```
 
-```{r, warning=FALSE, fig.width = 16, fig.height = 8}
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Add a column to distinguish the datasets
 geno_file <- Mono %>% mutate(Selection = "Monogenic")
 geno_file2 <- Oligo %>% mutate(Selection = "Oligogenic")
@@ -687,7 +1226,7 @@ Genome_dataset <- rbind(geno_file, geno_file2, geno_file3) %>%
 freqplot <- Genome_dataset %>% 
   filter(Generation <= 500) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
-  geom_line(linewidth = 0.2) +
+  geom_line(size = 0.2) +
   facet_wrap(~Selection, ncol = 3) +
   theme_cowplot()+
   theme(legend.position = "none",
@@ -697,3 +1236,1218 @@ freqplot <- Genome_dataset %>%
 
 freqplot
 ```
+
+ 
+### Gradual I
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir", pattern = "genome1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="915217", "highlighted", "other")), size = 0.5) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir", pattern = "genome1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)Gen(10|30)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD, Gen = params$Gen)
+  return(data)
+})
+
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+   ylim(0, 1) +
+  scale_color_manual(values = "red") +
+  facet_grid(H ~ SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+freqplot
+```
+
+
+## Gradual II
+
+### Allele Frequency
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/", pattern = "genome1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="915217", "highlighted", "other")), size = 0.5) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/", pattern = "genome1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+   ylim(0, 1) +
+  scale_color_manual(values = "red") +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+freqplot
+```
+
+
+### Phenotypes
+
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+library(stringr)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(cowplot)
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/", pattern = "MeanPhenotypes1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/", pattern = "MeanPhenotypes1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/", pattern = "MeanPhenotypes1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+
+## Constant
+
+### Allele Frequency
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/", pattern = "genome1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="915217", "highlighted", "other")), size = 0.5) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/", pattern = "genome1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+   ylim(0, 1) +
+  scale_color_manual(values = "red") +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+freqplot
+```
+
+
+### Phenotypes
+
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+library(stringr)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(cowplot)
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/", pattern = "MeanPhenotypes1_n300_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/", pattern = "MeanPhenotypes1_n10_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  
+  return(list(H = h_value, SD = sd_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/", pattern = "MeanPhenotypes1_n1_H(0\\.1|0\\.5|0\\.8)SD(1|4)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H, SD = params$SD)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(H ~ SD, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+## Neutral
+
+### Allele Frequency
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  
+  return(list(H = h_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "genome1_n300_H(0\\.1|0\\.5|0\\.8)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_wrap(~H, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  
+  return(list(H = h_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "genome1_n10_H(0\\.1|0\\.5|0\\.8)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H)
+  return(data)
+})
+
+# Set seed for reproducibility and randomly select at most 30 positions
+set.seed(123)
+unique_positions <- unique(combined_dataset$Position)
+selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+
+# Filter dataset to include only selected positions
+filtered_dataset <- combined_dataset %>% 
+  filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- filtered_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(aes(color = ifelse(factor(Position)=="915217", "highlighted", "other")), size = 0.5) +
+  scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+  facet_wrap(~H , labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  
+  return(list(H = h_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "genome1_n1_H(0\\.1|0\\.5|0\\.8)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H)
+  return(data)
+})
+
+# # Set seed for reproducibility and randomly select at most 30 positions
+# set.seed(123)
+# unique_positions <- unique(combined_dataset$Position)
+# selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+# 
+# # Filter dataset to include only selected positions
+# filtered_dataset <- combined_dataset %>% 
+#   filter(Position %in% selected_positions)
+
+# Create the plot with faceting by H, SD, and Gen
+freqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Frequency, color = factor(Position))) +
+  geom_line(size = 0.5) +
+   ylim(0, 1) +
+  scale_color_manual(values = "red") +
+  facet_wrap(~H, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+freqplot
+```
+
+
+### Phenotypes
+
+
+#### Polygenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+library(stringr)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(cowplot)
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  
+  return(list(H = h_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "MeanPhenotypes1_n300_H(0\\.1|0\\.5|0\\.8)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(~H, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+#### Oligogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  
+  return(list(H = h_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "MeanPhenotypes1_n10_H(0\\.1|0\\.5|0\\.8)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(~H, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+```
+
+
+#### Monogenic
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+
+
+# Function to extract H and SD values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  
+  return(list(H = h_value))
+}
+
+# List all relevant files using specific numbers in the pattern
+file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/", pattern = "MeanPhenotypes1_n1_H(0\\.1|0\\.5|0\\.8)\\.csv", full.names = TRUE)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(H = params$H)
+  return(data)
+})
+
+# Create the plot with faceting by H and SD
+phenoqplot <- combined_dataset %>% 
+  filter(Generation <= 500) %>% 
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_line() +
+  facet_wrap(~H, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 17, face = "bold"),
+        axis.text.y = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 5),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"),
+        panel.spacing = unit(3, "lines")) +
+  theme(panel.grid = element_blank())
+
+# Print the plot
+print(phenoqplot)
+
+
+```
+
+
+
