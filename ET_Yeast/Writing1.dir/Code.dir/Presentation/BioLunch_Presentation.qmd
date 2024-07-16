@@ -587,6 +587,157 @@ freqplot <- Genome_dataset %>%
 freqplot
 ```
 
+#### Many files
+
+```{r, fig.height=18, fig.width=26}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(cowplot)
+library(stringr)
+
+# Function to read in the files based on the specified parameters and extract Selection, H, SD, and Gen values using regex
+read_files <- function() {
+  file_list <- list.files(path = "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/", pattern = "genome10_n(1|10|70)_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$", full.names = TRUE)
+  
+  datasets <- lapply(file_list, function(file) {
+    data <- read.csv(file)
+    matches <- str_match(file, "genome10_n([0-9]+)_H([0-9\\.]+)SD([0-9]+)Gen([0-9]+)")
+    selection_type <- as.numeric(matches[2])
+    selection_label <- ifelse(selection_type == 1, "Monogenic",
+                              ifelse(selection_type == 10, "Oligogenic", "Polygenic"))
+    
+    data <- data %>% 
+      mutate(Selection = selection_label,
+             H = as.numeric(matches[3]),
+             SD = as.numeric(matches[4]),
+             Gen = as.numeric(matches[5]))
+    return(data)
+  })
+  
+  return(bind_rows(datasets))
+}
+
+# Read in the data
+Genome_dataset <- read_files() %>% 
+  filter(Generation <= 500) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Monogenic",  
+                                 "Oligogenic", 
+                                 "Polygenic"))
+
+# Create the plot
+freqplot <- Genome_dataset %>% 
+  ggplot(aes(x = Generation, y = Frequency, 
+             group = factor(Position), color = factor(Position))) + 
+  geom_line(size = 0.5, alpha = 0.5) + 
+  facet_grid(Selection~H + SD + Gen) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 15, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(1, "lines"))
+
+freqplot
+
+```
+
+```{r, fig.height=14, fig.width=26}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(cowplot)
+library(stringr)
+
+# Function to read in the files based on the specified parameters and extract Selection, H, SD, and Gen values using regex
+read_files <- function() {
+  file_list <- list.files(path = "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/", pattern = "genome10_n(1|10|70)_H0\\.(1|8)(SD(1|4))?Gen(10|30)\\.csv$", full.names = TRUE)
+  
+  datasets <- lapply(file_list, function(file) {
+    data <- read.csv(file)
+    matches <- str_match(file, "genome10_n([0-9]+)_H([0-9\\.]+)SD([0-9]+)Gen([0-9]+)")
+    selection_type <- as.numeric(matches[2])
+    selection_label <- ifelse(selection_type == 1, "Monogenic",
+                              ifelse(selection_type == 10, "Oligogenic", "Polygenic"))
+    
+    data <- data %>% 
+      mutate(Selection = selection_label,
+             H = as.numeric(matches[3]),
+             SD = as.numeric(matches[4]),
+             Gen = as.numeric(matches[5]))
+    return(data)
+  })
+  
+  return(bind_rows(datasets))
+}
+
+# Read in the data
+Genome_dataset <- read_files() %>% 
+  filter(Generation <= 500) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Monogenic",  
+                                 "Oligogenic", 
+                                 "Polygenic"))
+
+# Set seed for reproducibility
+set.seed(8450)
+
+# Group by Selection and select up to 30 unique positions for each group
+selected_positions <- Genome_dataset %>%
+  group_by(Selection) %>%
+  group_map(~ {
+    positions <- unique(.x$Position)
+    if (length(positions) > 10) {
+      sample(positions, 10)
+    } else {
+      positions
+    }
+  }) %>%
+  unlist()
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>%
+  filter(Position %in% selected_positions)
+
+# Assign specific positions to be highlighted
+highlighted_positions <- c("915217", "644619")
+filtered_dataset <- filtered_dataset %>%
+  mutate(Color = case_when(
+    Selection == "Monogenic" ~ "darkred",
+    Selection == "Oligogenic" & Position == "915217" ~ "darkred",
+    Selection == "Polygenic" & Position == "1054696" ~ "darkred",
+    TRUE ~ "black"
+  ),
+  LineSize = case_when(
+    Color == "darkred" ~ 1.5,
+    TRUE ~ 0.5
+  ))
+
+# Create the plot
+freqplot <- filtered_dataset %>%
+  filter(Generation <= 500) %>%
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position), color = Color, linewidth = LineSize)) +
+  geom_line(alpha = 0.5) +
+  scale_color_identity() +
+  scale_linewidth_identity() +
+  facet_grid(Selection ~ H + SD + Gen, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
+        axis.line = element_line(linewidth = 3),
+        axis.title = element_text(size = 15, face = "bold"),
+        strip.text = element_text(size = 15, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+
+```
+
 ### Model Comparison
 
 ```{r,  warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
@@ -756,6 +907,13 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
 #source('../../../Writing1.dir/Code.dir/ComboSpec.R')
 pattern ="^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run2_fft_analysis(dirpath, pattern)
+```
+
+```{r, fig.width = 12, fig.height = 6, echo=FALSE}
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFS.dir/" 
+#source('../../../Writing1.dir/Code.dir/ComboSpec.R')
+pattern ="^genome\\d+_n300_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```
 
