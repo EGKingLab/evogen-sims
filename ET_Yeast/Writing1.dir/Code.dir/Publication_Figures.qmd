@@ -1880,6 +1880,7 @@ print(heatmap_plot)
 
 
 ### don't delete tho there might be no use
+
 ```{r, echo=FALSE}
 ### Function for allele frequency
 
@@ -2463,7 +2464,6 @@ freqplot
 
 ### Phenotypes
 
-
 #### Polygenic
 
 ```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
@@ -2569,7 +2569,6 @@ phenoqplot <- combined_dataset %>%
 print(phenoqplot)
 
 ```
-
 
 #### Monogenic
 
@@ -2808,7 +2807,6 @@ freqplot
 
 ### Phenotypes
 
-
 #### Polygenic
 
 ```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
@@ -2914,7 +2912,6 @@ phenoqplot <- combined_dataset %>%
 print(phenoqplot)
 
 ```
-
 
 #### Monogenic
 
@@ -3649,13 +3646,14 @@ heatmap_plot <- filtered_dataset %>%
 
 # Add text annotations for Effect labels on the right side
 heatmap_plot <- heatmap_plot +
-  geom_text(data = filtered_dataset %>% 
-  filter(Selection=="Polygenic")  %>% filter(!is.na(Effect)), 
-            aes(x = max(Generation) + 15, y = factor(Position), label = round(Effect, 1)), 
+  geom_text(data = filtered_dataset %>%
+  filter(Selection=="Polygenic")  %>% filter(!is.na(Effect)),
+            aes(x = max(Generation) + 15, y = factor(Position), label = round(Effect, 1)),
             hjust = 0, vjust = 0.15, size = 3, angle = 30)
-
 
 # Print the plot
 print(heatmap_plot)
 ```
+
+
 

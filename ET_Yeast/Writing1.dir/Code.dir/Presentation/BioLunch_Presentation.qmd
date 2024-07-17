@@ -796,8 +796,8 @@ freqplot <- Genome_dataset %>%
 Here you might want to select 30 loci for both models!!!!!!!!!
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
-file1 <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/genome10_n10_H0.5.csv"
-file2 <-  "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome10_n10_H0.5SD4.csv"
+file1 <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/genome10_n70_H0.5.csv"
+file2 <-  "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome70_n10_H0.5SD4.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)
