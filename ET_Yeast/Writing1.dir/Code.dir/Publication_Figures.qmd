@@ -3345,7 +3345,7 @@ set.seed(8450)
 
 # Filter for positions with Frequency between 0.25 and 0.75 at Generation 1
 positions_at_gen1 <- Genome_dataset %>%
-  filter(Generation == 1, Effect > 3.5, Frequency > 0.20, Frequency < 0.75) %>%
+  filter(Generation == 1, Effect > 1.5, Frequency > 0.20, Frequency < 0.75) %>%
   pull(Position) %>%
   unique()
 
@@ -3443,7 +3443,7 @@ set.seed(8450)
 
 # Filter for positions with Frequency between 0.25 and 0.75 at Generation 1
 positions_at_gen1 <- Genome_dataset %>%
-  filter(Generation == 1, Effect > 3.5, Frequency > 0.20, Frequency < 0.75) %>%
+  filter(Generation == 1, Effect > 1.5, Frequency > 0.20, Frequency < 0.75) %>%
   pull(Position) %>%
   unique()
 
@@ -3526,7 +3526,7 @@ read_files <- function() {
 
 # Read in the data
 Genome_dataset <- read_files() %>% 
-  filter(Generation <= 2000) %>% 
+  filter(Generation <= 500) %>% 
   mutate(Selection = fct_relevel(Selection, 
                                  "Monogenic",  
                                  "Oligogenic", 
@@ -3566,7 +3566,7 @@ filtered_dataset <- filtered_dataset %>%
 
 # Create the plot
 freqplot <- filtered_dataset %>%
-  filter(Generation <= 2000) %>%
+  filter(Generation <= 500) %>%
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position), color = Color, linewidth = LineSize)) +
   geom_line(alpha = 1) +
   scale_color_identity() +
