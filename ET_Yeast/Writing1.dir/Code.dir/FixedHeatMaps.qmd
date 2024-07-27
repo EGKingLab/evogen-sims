@@ -177,7 +177,7 @@ print(summary_df)
 
 ```
 
-```{r, warning=FALSE, fig.width = 20, fig.height = 20, echo=FALSE}
+```{r, warning=FALSE, fig.width = 22, fig.height = 20, echo=FALSE}
 # # Create a scatter plot with text labels for Position and formatted Effect values
 # ggplot(mydata4, aes(x = Effect, y = InitFreq, color = Fixation, size = Effect)) +
 #   geom_point(alpha = 0.7) +
@@ -386,5 +386,163 @@ new_dataframe <- fixed_lost_counts %>%
 
 # Display the new dataframe
 head(new_dataframe)
+
+```
+
+### Does Gen affect fixation or loss?
+
+```{r}
+############ Libraries and theme function ########
+rm(list = ls())
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+library(data.table)
+library(ggplot2)
+
+theme_set(theme_cowplot())
+mytheme <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+}
+
+#################### Data Processing and plotting ###############
+
+# Directory path and pattern
+path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome\\d+_n(1|10|300)_H0.(1|8)(SD[1|2|3|4])?(Gen(10|20|30))?\\.csv$"
+
+# Function to process files in chunks
+process_files_in_chunks <- function(files, chunk_size, num_cores) {
+  combined_data <- list()
+  
+  for (i in seq(1, length(files), by = chunk_size)) {
+    chunk <- files[i:min(i + chunk_size - 1, length(files))]
+    
+    cl <- makeCluster(num_cores)
+    registerDoParallel(cl)
+    
+    data_list <- foreach(file = chunk, .packages = c("dplyr", "stringr", "data.table"), .errorhandling = 'remove') %dopar% {
+      repl <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+      herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+      loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+      sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+      gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+      
+      data <- fread(file) %>%
+        select(-Origin) %>%
+        mutate(Position = factor(Position), repl = repl,
+               herit = herit, loci = loci, sd = sd, gen = gen,
+               h2_sd = paste("h2 = ", herit, " ", "sd = ", sd, sep = ""),
+               loci_gen = paste("loci = ", loci, " ", "gen = ", gen, sep = ""),
+               Loci_h_gen_sd = paste("Loci = ", loci, " ",
+                                     "Herit = ", round(herit, 2), " ", 
+                                     "Gen = ", gen, " ",
+                                     "sd = ", sd, sep = ""))
+      return(data)
+    }
+    
+    stopCluster(cl)
+    closeAllConnections()  # Close all connections
+    
+    combined_data <- c(combined_data, data_list)
+  }
+  
+  combined_data <- bind_rows(combined_data)
+  
+  return(combined_data)
+}
+
+# Main function to list files and process them in chunks
+myheatmaps <- function(path, pattern, chunk_size = 50, num_cores = 8) {
+  files <- list.files(path, pattern, full.names = TRUE)
+  combined_data <- process_files_in_chunks(files, chunk_size, num_cores)
+  return(combined_data)
+}
+
+mydata <- myheatmaps(path, pattern)
+
+mydata2 <- mydata %>%
+  group_by(herit, loci, sd, gen, repl, Position) %>%
+  mutate(
+    Fixation = case_when(
+      Frequency == 1 ~ "Fixed",
+      Frequency < 1 & Generation == max(Generation) & max(Generation) < 2000 ~ "Lost",
+      TRUE ~ NA_character_
+    ),
+    InitFreq = case_when(Generation == 1 ~ Frequency, 
+                         TRUE ~ NA_real_)
+  ) %>%
+  ungroup()
+
+mydata3 <- mydata2 %>% dplyr::select(Generation, Position, Fixation, Frequency, Effect, InitFreq, repl, loci, Loci_h_gen_sd)
+```
+
+```{r}
+mydata4 <- mydata3 %>% 
+  group_by(Loci_h_gen_sd, repl, Position) %>% 
+  mutate(InitFreq = ifelse(is.na(InitFreq), lag(InitFreq), InitFreq)) %>% 
+  fill(InitFreq) %>% drop_na() %>% select(-Generation, -Frequency) %>% distinct()
+
+```
+
+```{r}
+# library(dplyr)
+# 
+# summary_df <- mydata4 %>%
+#   group_by(loci, Loci_h_gen_sd, repl) %>%
+#   summarize(
+#     num_fixed = sum(Fixation == "Fixed", na.rm = TRUE),
+#     num_lost = sum(Fixation == "Lost", na.rm = TRUE)
+#   ) %>%
+#   ungroup()
+```
+
+```{r, fig.width = 20, fig.height = 28, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+
+# Create a summary data frame
+summary_df <- mydata4 %>%
+  group_by(Loci_h_gen_sd) %>%
+  summarize(
+    num_fixed = sum(Fixation == "Fixed", na.rm = TRUE),
+    num_lost = sum(Fixation == "Lost", na.rm = TRUE)
+  ) %>%
+  mutate(label = paste("F: ", num_fixed, "\nL: ", num_lost))
+
+# Apply the custom labels to the plot
+ggplot(mydata4, aes(x = Effect, y = InitFreq, size = Effect, color = Fixation)) +
+  geom_point(alpha = 0.5) +
+  geom_text(aes(label = paste0(sprintf("%.2f", Effect))), 
+            vjust = 1, hjust = 1, size = 5, check_overlap = TRUE, fontface = "bold") +
+  labs(title = "Relationship among Position, Fixation, Effect, and Initial Frequency",
+       x = "Effect",
+       y = "Initial Frequency",
+       color = "Fixation Status",
+       size = "Effect") +
+  facet_wrap(~ Loci_h_gen_sd, ncol = 4, scales = "free_y") +  # Use actual facet values
+  geom_label(data = summary_df, aes(x = Inf, y = Inf, label = label), 
+            vjust = 1.1, hjust = 1.1, size = 10, fontface = "bold", inherit.aes = FALSE, label.padding = unit(0.2, "lines"), label.size = 0.5) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 20),
+    axis.title = element_text(face = "bold", size = 25),
+    axis.text = element_text(face = "bold", size = 18),
+    legend.title = element_text(face = "bold", size = 25),
+    legend.text = element_text(face = "bold", size = 25),
+    legend.position = "bottom",
+    legend.justification = "center",
+    panel.grid = element_line(size = 3),
+    strip.text = element_text(face = "bold", size = 25)  # Bold facet labels
+  ) +
+  scale_color_manual(values = c("Fixed" = "blue", "Lost" = "red"))
 
 ```
