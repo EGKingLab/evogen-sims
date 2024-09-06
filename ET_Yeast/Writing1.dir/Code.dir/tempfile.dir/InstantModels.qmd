@@ -1,0 +1,29 @@
+---
+title: "Instantaneous"
+format: docx
+editor: visual
+---
+
+```{r, message=FALSE}
+required_packages <- c("parallel", "foreach", "doParallel", "pryr", "dplyr", "tools", "stringr", "future", "forcats")
+
+# Specify a CRAN mirror
+cran_mirror <- "https://cloud.r-project.org/"
+
+# Install and load required packages
+for(pkg in required_packages){
+  if(!require(pkg, character.only = TRUE)){
+    install.packages(pkg, repos = cran_mirror)
+    library(pkg, character.only = TRUE)
+  }
+}
+```
+
+### Instantaneous Selection
+
+```{r, fig.width = 16, fig.height = 8}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+pattern = "^genome\\d+_n\\d+_H0\\.(1|5|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run2_fft_analysis(dirpath, pattern)
+```

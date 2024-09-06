@@ -58,12 +58,8 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
     
     # Apply FFT and calculate spectrum
     ttest <- spectrum(ff1, spans = spectrum_span, plot = FALSE)
-    
-    # if (!is.matrix(ttest$spec)) {
-    #   next
-    # }
-    # 
-    # out.spect <- rowMeans(ttest$spec)
+
+   # This helps us deal with a single locus vs other loci
     
     out.spect <- if (is.matrix(ttest$spec)) {
       rowMeans(ttest$spec)

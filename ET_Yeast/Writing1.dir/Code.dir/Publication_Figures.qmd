@@ -310,7 +310,7 @@ filtered_dataset <- combined_dataset %>%
 
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
-  filter(Generation <= 500) %>% 
+  filter(Generation <= 2000) %>% 
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
   geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 0.5) +
   scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
@@ -2134,7 +2134,7 @@ filtered_dataset <- combined_dataset %>%
 
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
-  filter(Generation <= 500) %>% 
+  filter(Generation <= 2000) %>% 
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
   geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
   scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
@@ -2195,7 +2195,7 @@ filtered_dataset <- combined_dataset %>%
 
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
-  filter(Generation <= 500) %>% 
+  filter(Generation <= 2000) %>% 
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
   geom_line(aes(color = ifelse(factor(Position)=="915217", "highlighted", "other")), size = 0.5) +
   scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
@@ -2322,7 +2322,7 @@ filtered_dataset <- combined_dataset %>%
 
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
-  filter(Generation <= 500) %>% 
+  filter(Generation <= 2000) %>% 
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
   geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
   scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
@@ -2665,7 +2665,7 @@ filtered_dataset <- combined_dataset %>%
 
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
-  filter(Generation <= 500) %>% 
+  filter(Generation >= 2000) %>% 
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
   geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
   scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
@@ -2997,7 +2997,7 @@ combined_dataset <- map_df(file_list, function(file) {
 # Set seed for reproducibility and randomly select at most 30 positions
 set.seed(123)
 unique_positions <- unique(combined_dataset$Position)
-selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+selected_positions <- sample(unique_positions, size = min(10, length(unique_positions)))
 
 # Filter dataset to include only selected positions
 filtered_dataset <- combined_dataset %>% 
@@ -3005,7 +3005,7 @@ filtered_dataset <- combined_dataset %>%
 
 # Create the plot with faceting by H, SD, and Gen
 freqplot <- filtered_dataset %>% 
-  filter(Generation <= 500) %>% 
+  filter(Generation <= 2000) %>% 
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
   geom_line(aes(color = ifelse(factor(Position)=="644619", "highlighted", "other")), size = 1) +
   scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +

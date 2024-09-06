@@ -1,15 +1,44 @@
 ---
 title: "Combined_Spectral"
-format: html
+format: pdf
 editor: visual
 ---
+
+```{r, message=FALSE}
+required_packages <- c("parallel", "foreach", "doParallel", "pryr", "dplyr", "tools")
+
+# Specify a CRAN mirror
+cran_mirror <- "https://cloud.r-project.org/"
+
+# Install and load required packages
+for(pkg in required_packages){
+  if(!require(pkg, character.only = TRUE)){
+    install.packages(pkg, repos = cran_mirror)
+    library(pkg, character.only = TRUE)
+  }
+}  
+  # #library(tidyverse)
+  #  library(tidyr)
+  #  library(stringr)
+  #  library(cowplot)
+  #  library(forcats)
+  #  library(dplyr)
+  #  library(tidyselect)
+  #  library(ggplot2)
+  #  library(future)
+  #  #library(future.apply)
+```
+
 
 ### Neutral Selection
 
 ```{r, fig.width = 16, fig.height = 8}
+# install.packages("future")
+# library(future)
+
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir"
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/MySpecFunction.R')
-pattern = "^genome[1-3]_n\\d+_H0\\.(1)(SD(1|4))?(Gen(10|30|20))?\\.csv$"
+pattern = "^genome\\d+_n\\d+_H0\\.(1|8)(SD(1|4))?(Gen(10|30|20))?\\.csv$"
 run_fft_analysis(dirpath, pattern)
 ```
 
@@ -18,7 +47,7 @@ run_fft_analysis(dirpath, pattern)
 ```{r, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir"
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
-pattern = "^genome[1-3]_n\\d+_H0\\.(1|5|8)(SD(1|4))?(Gen(10|30|20))?\\.csv$"
+pattern = "^genome\\d+_n\\d+_H0\\.(1|5|8)(SD(1|4))?(Gen(10|30|20))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```
 
@@ -27,7 +56,7 @@ run2_fft_analysis(dirpath, pattern)
 ```{r, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
-pattern = "^genome[1-3]_n\\d+_H0\\.(1|5|8)(SD(1|4))?(Gen(10|30|20))?\\.csv$"
+pattern = "^genome\\d+_n\\d+_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```
 
@@ -36,7 +65,7 @@ run2_fft_analysis(dirpath, pattern)
 ```{r, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
-pattern = "^genome[1-3]_n\\d+_H0\\.(1|5|8)(SD(1))?(Gen(10|20|30))?\\.csv$"
+pattern = "^genome\\d+_n\\d+_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 run2_fft_analysis(dirpath,pattern)
 ```
 
@@ -45,6 +74,6 @@ run2_fft_analysis(dirpath,pattern)
 ```{r, fig.width = 16, fig.height = 8}
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
-pattern ="^genome[1-3]_n\\d+_H0\\.(1|5|8)(SD(1|4))?(Gen(10|20|30))?\\.csv$"
+pattern ="^genome\\d+_n\\d+_H0\\.(1|5|8)(SD(1|2|3|4))?(Gen(10|20|30))?\\.csv$"
 run2_fft_analysis(dirpath, pattern)
 ```

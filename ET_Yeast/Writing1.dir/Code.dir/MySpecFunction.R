@@ -1,24 +1,34 @@
 # Main function to run FFT analysis
 #theme_set(theme_cowplot())
+# Load required packages
+required_packages <- c("tidyr", "stringr", "cowplot", "forcats", "dplyr", "dplyr", 
+                       "tidyselect", "ggplot2", "future", "future.apply")
+
+# Specify a CRAN mirror
+cran_mirror <- "https://cloud.r-project.org/"
+
+# Install and load required packages
+for(pkg in required_packages){
+  if(!require(pkg, character.only = TRUE)){
+    install.packages(pkg, repos = cran_mirror)
+    library(pkg, character.only = TRUE)
+  }
+}
+
 run_fft_analysis <-
   function(dirpath,
            pattern = "^genome\\d+_n\\d+_H0.(1|8|5)(SD[1-4])?(Gen\\d+)?\\.csv$",
            spectrum_span = 2) {
-  #library(tidyverse)
-    library(tidyr)
-    library(stringr)
-    library(cowplot)
-    library(forcats)
-    library(dplyr)
-    library(tidyselect)
-    library(ggplot2)
-    library(future)
-    library(future.apply)
-
-    # mytheme <- theme(axis.title = element_text(face = "bold"),
-    #                  axis.text = element_text(face = "italic"),
-    #                  plot.title = element_text(hjust = 0.5),
-    #                  legend.position = "none")
+  # #library(tidyverse)
+  #   library(tidyr)
+  #   library(stringr)
+  #   library(cowplot)
+  #   library(forcats)
+  #   library(dplyr)
+  #   library(tidyselect)
+  #   library(ggplot2)
+  #   library(future)
+  #   library(future.apply)
     
     
   # Set up parallel backend
