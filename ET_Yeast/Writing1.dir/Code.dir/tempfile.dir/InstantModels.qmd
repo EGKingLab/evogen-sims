@@ -4,7 +4,7 @@ format: docx
 editor: visual
 ---
 
-```{r, message=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 required_packages <- c("parallel", "foreach", "doParallel", "pryr", "dplyr", "tools", "stringr", "future", "forcats")
 
 # Specify a CRAN mirror
