@@ -89,11 +89,11 @@ run2_fft_analysis <- function(dirpath, pattern, spectrum_span = 2) {
                                ifelse(grepl("_10$", loci), 40, 80)))
     fft1[[loci]] <- all_results %>%
       filter(loci_Gen == loci) %>%
-      mutate(Frequency = 1 / Frequency) %>%
+      mutate(Frequency = 1 / Frequency, spec = round((spec), 5)) %>%
       filter(Frequency < threshold) %>%
       ggplot(aes(Frequency, spec, color = File)) + 
-      geom_line(size = 1.1) +
-      facet_wrap(~SD_H2, scales = "free_y") +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(~SD_H2) + # scales = "free_y"
       xlab("Periodicity") +
       ylab("Spectral Density") +
       mytheme
