@@ -75,7 +75,7 @@ run2_fft_analysis(dirpath,pattern)
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/" 
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
 pattern ="^genome\\d+_n\\d+_H0\\.(1|5|8)(SD(1|2|3|4))?(Gen(10|20|30))?\\.csv$"
-run2_fft_analysis(dirpath, pattern)
+run_fft_analysis(dirpath, pattern)
 ```
 
 ```{r, fig.width = 12, fig.height = 6}
