@@ -8,7 +8,7 @@ editor: visual
 
 The idea here is to make a heatmap of fixed and lost loci for all 30 replicates of each qtl.
 
-Is there any better way to present this? all i want is to see the effect of qt number, size effect, and initial allele frequency. this should al be different across heritability values, standard deviations, and generations.
+Is there any better way to present this? all i want is to see the effect of qtl number, size effect, and initial allele frequency. this should al be different across heritability values, standard deviations, and generations.
 
 ```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/FixationView.R')
@@ -28,6 +28,135 @@ print(plots)
 ```
 
 ### Data Processing to count fixed vs lost
+
+#### Fixed Percentage
+```{r, fig.height=8, fig.width=16}
+
+path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome\\d+_n(1|10|70|300)_H0.(1|5|8)(SD[1|4])?Gen(10|30)?\\.csv$"
+
+# Function to process files in chunks
+process_files_in_chunks <- function(files, chunk_size, num_cores) {
+  combined_data <- list()
+  
+  for (i in seq(1, length(files), by = chunk_size)) {
+    chunk <- files[i:min(i + chunk_size - 1, length(files))]
+    
+    cl <- makeCluster(num_cores)
+    registerDoParallel(cl)
+    
+    data_list <- foreach(file = chunk, .packages = c("dplyr", "stringr", "data.table"), .errorhandling = 'remove') %dopar% {
+      repl <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+      H <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+      loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+      SD <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+      Gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+      
+      data <- fread(file) %>%
+        select(-Origin) %>%
+        mutate(Position = factor(Position), repl = repl,
+               H = H, loci = loci, SD = SD, Gen = Gen)
+      
+      return(data)
+    }
+    
+    stopCluster(cl)
+    closeAllConnections()  # Close all connections
+    
+    combined_data <- c(combined_data, data_list)
+  }
+  
+  combined_data <- bind_rows(combined_data)
+  
+  return(combined_data)
+}
+
+# Main function to list files and process them in chunks
+myheatmaps <- function(path, pattern, chunk_size = 100, num_cores = 86) {
+  files <- list.files(path, pattern, full.names = TRUE)
+  combined_data <- process_files_in_chunks(files, chunk_size, num_cores)
+  return(combined_data)
+}
+
+mydata <- myheatmaps(path, pattern)
+
+mydata2 <- mydata %>%
+  group_by(H, loci, SD, Gen, repl, Position) %>%
+  mutate(
+    Fixation = case_when(
+      Frequency == 1 ~ "Fixed",
+      Frequency < 1 & Generation == max(Generation) & max(Generation) < 2000 ~ "Lost",
+      TRUE ~ NA_character_
+    ),
+    InitFreq = case_when(Generation == 1 ~ Frequency, 
+                         TRUE ~ NA_real_)
+  ) %>%
+  ungroup()
+
+# mydata3 <- mydata2 %>% dplyr::select(Generation, Position, Fixation, Frequency, Effect, InitFreq, repl, loci, Loci_h_gen_sd)
+
+mydata4 <- mydata2 %>% 
+  group_by(loci, H, Gen, SD, repl, Position) %>% 
+  mutate(InitFreq = ifelse(is.na(InitFreq), lag(InitFreq), InitFreq), 
+         TotalLoci = loci * 30) %>% 
+  fill(InitFreq) %>% drop_na() %>% dplyr::select(-Generation, -Frequency) %>% distinct()
+
+newd <- mydata4 %>%
+  dplyr::group_by(Fixation, loci, TotalLoci, H, Gen, SD) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = 'keep') %>%
+  distinct() %>%
+  mutate(Perc_Loci = n * 100 / TotalLoci) %>% distinct() 
+
+```
+
+```{r, fig.width=25, fig.height=20}
+
+plot <- ggplot(data = newd, aes(x = as.factor(loci), y = Perc_Loci, color = as.factor(loci))) +
+  geom_point(size = 10) +
+  geom_line(aes(group = 1), linewidth = 2) +
+  geom_text(aes(label = round(Perc_Loci, 2)), vjust = 2.5, hjust = 0.5, size = 10, fontface = "bold") +
+  facet_grid(
+    Fixation + Gen  ~ H +  SD,
+    labeller = label_both
+  ) +
+  labs(
+    x = "Number of Loci",
+    y = "Percentage of Loci (%)",
+    color = "Loci"
+  ) +
+  theme(
+    legend.position = "bottom", 
+    legend.justification = "center",  
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 40, face = "bold"),
+    axis.text.y = element_text(size = 40, face = "bold"),
+    axis.line = element_line(size = 2),
+    axis.title = element_text(size = 40, face = "bold"),
+    strip.text = element_text(size = 40, face = "bold"),
+    panel.spacing = unit(3, "lines"),
+    panel.grid = element_blank()
+  ) +
+  guides(color = guide_legend(nrow = 1, byrow = TRUE))  # Arrange legend items in a single row
+
+print(plot)
+
+
+```
+
+```{r}
+newdd <- newd %>% ungroup() %>% mutate(Param_Combo = paste0(H_label," ", SD_label ," ", Gen_label)) %>% 
+  dplyr::select(loci, Fixation, Perc_Loci, Param_Combo)
+
+newdd_wide <- newdd %>%
+  pivot_wider(names_from = Param_Combo, values_from = Perc_Loci)
+
+```
+
+
+```{r}
+View(newdd_wide)
+```
+
+#### Dot Plots for all Fixattion status
 
 ```{r}
 ############ Libraries and theme function ########
@@ -54,8 +183,8 @@ mytheme <- function(){
 #################### Data Processing and plotting ###############
 
 # Directory path and pattern
-path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
-pattern <- "^genome\\d+_n(1|10|100|300)_H0.(1|8)(SD[1|4])?(Gen10|30)?\\.csv$"
+path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome\\d+_n(1|10|70|300)_H0.(1|5|8)(SD[1|4])?(Gen10|30)?\\.csv$"
 
 # Function to process files in chunks
 process_files_in_chunks <- function(files, chunk_size, num_cores) {
@@ -126,10 +255,12 @@ mydata3 <- mydata2 %>% dplyr::select(Generation, Position, Fixation, Frequency, 
 ```{r}
 mydata4 <- mydata3 %>% 
   group_by(Loci_h_gen_sd, repl, Position) %>% 
-  mutate(InitFreq = ifelse(is.na(InitFreq), lag(InitFreq), InitFreq)) %>% 
-  fill(InitFreq) %>% drop_na() %>% select(-Generation, -Frequency) %>% distinct()
+  mutate(InitFreq = ifelse(is.na(InitFreq), lag(InitFreq), InitFreq), 
+         TotalLoci = loci * 30) %>% 
+  fill(InitFreq) %>% drop_na() %>% dplyr::select(-Generation, -Frequency) %>% distinct() 
 
 ```
+
 
 ```{r}
 library(dplyr)
