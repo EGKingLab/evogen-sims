@@ -121,12 +121,18 @@ library(purrr)
 library(doParallel)
 theme_set(theme_cowplot())
 
-mytheme <- function(){
-  theme(axis.title = element_text(face = "bold"),
-        axis.text = element_text(face = "italic"),
-        plot.title = element_text(hjust = 0.5),
-        legend.position = "none")
+mytheme <- function(){theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 20, face = "bold"),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        axis.line = element_line(linewidth = 5),
+        axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+        axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+        strip.text = element_text(size = 20, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
 }
+
 
 #################### Data Processing and plotting ###############
 
@@ -143,7 +149,7 @@ process_files <- function(dirpath, pattern, plot_type) {
     gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
     
     data <- read.csv(file, header = TRUE) %>%
-      select(Generation, Position, Frequency, Effect) %>%
+      dplyr::select(Generation, Position, Frequency, Effect) %>%
       group_by(Position) %>%
       mutate(Position = factor(Position),
              replicate = replicate_id,
@@ -174,8 +180,8 @@ process_files <- function(dirpath, pattern, plot_type) {
         filter(loci_gen == loci_geni)
       
       unique_positions <- unique(locus_data$Position)
-      if (length(unique_positions) > 20) {
-        selected_positions <- sample(unique_positions, 20)
+      if (length(unique_positions) > 15) {
+        selected_positions <- sample(unique_positions, 15)
         locus_data <- locus_data %>%
           filter(Position %in% selected_positions)
       }
@@ -183,11 +189,10 @@ process_files <- function(dirpath, pattern, plot_type) {
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init,
                    color = postion_effect_init)) +
-        geom_line(size = 0.2) +
+        geom_line(size = 0.5) +
         facet_wrap(~h2_sd, ncol = 4) +
         ylim(min = 0, max = 1) +
-        theme_bw() +
-        theme(legend.position = "none")
+        mytheme()
       
       plots[[loci_geni]] <- p
     }
@@ -198,8 +203,8 @@ process_files <- function(dirpath, pattern, plot_type) {
         filter(loci == locus)
       
       unique_positions <- unique(locus_data$Position)
-      if (length(unique_positions) > 20) {
-        selected_positions <- sample(unique_positions, 20)
+      if (length(unique_positions) > 15) {
+        selected_positions <- sample(unique_positions, 15)
         locus_data <- locus_data %>%
           filter(Position %in% selected_positions)
       }
@@ -207,11 +212,10 @@ process_files <- function(dirpath, pattern, plot_type) {
       p <- locus_data %>%
         ggplot(aes(Generation, Frequency, group = postion_effect_init,
                    color = postion_effect_init)) +
-        geom_line(size = 0.2) +
+        geom_line(linewidth = 0.5) +
         facet_wrap(~h2_sd, ncol = 4) +
         ylim(min = 0, max = 1) +
-        theme_bw() +
-        theme(legend.position = "none")
+        mytheme()
       
       plots[[locus]] <- p
     }
