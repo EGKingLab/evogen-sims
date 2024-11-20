@@ -1,0 +1,1912 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD4Gen10.csv")
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+```
+
+```{r}
+# Get a list of unique allele IDs
+allele_ids <- unique(data$allele_id)
+```
+
+```{# {r}
+# # Load the 'forecast' package for time series analysis
+# library(forecast)
+# 
+# # Function to perform spectral analysis on one allele
+# analyze_allele <- function(allele_data) {
+#   # Create a time series object
+#   ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+#   
+#   # Compute the spectral density estimate
+#   spec_result <- spectrum(ts_data, plot = TRUE, main = paste("Spectral Analysis for Allele", allele_data$allele_id[1]))
+#   
+#   # Identify significant peaks indicating periodicity
+#   # You can examine 'spec_result$freq' and 'spec_result$spec' for peaks
+# }
+# 
+# # Apply the function to each allele
+# for (allele in allele_ids) {
+#   allele_data <- subset(data, allele_id == allele)
+#   analyze_allele(allele_data)
+# }
+
+```
+
+```{r}
+# Load the 'forecast' package for time series analysis
+library(forecast)
+
+# Function to perform spectral analysis on one allele
+analyze_allele <- function(allele_data) {
+  # Create a time series object
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Compute the spectral density estimate
+  spec_result <- spectrum(ts_data, plot = FALSE)
+  
+  # Identify significant peaks indicating periodicity
+  peaks <- which(diff(sign(diff(spec_result$spec))) == -2) + 1
+  significant_peaks <- data.frame(Frequency = spec_result$freq[peaks], Spectrum = spec_result$spec[peaks])
+  
+  # Print significant peaks
+  print(significant_peaks)
+  
+  # Plot the spectral density with peaks highlighted
+  plot(spec_result$freq, spec_result$spec, type = "l", main = paste("Spectral Analysis for Allele", allele_data$allele_id[1]), xlab = "Frequency", ylab = "Spectral Density")
+  points(spec_result$freq[peaks], spec_result$spec[peaks], col = "red", pch = 19)
+}
+
+# Apply the function to each allele
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  analyze_allele(allele_data)
+}
+
+```
+
+```{r}
+# Load the necessary packages
+library(forecast)
+library(ggplot2)
+
+# Calculate the mean allele frequency for each generation
+mean_allele_data <- aggregate(allele_frequency ~ generation, data = data, FUN = mean)
+
+# Create a time series object from the mean allele frequencies
+ts_data <- ts(mean_allele_data$allele_frequency, start = min(mean_allele_data$generation), frequency = 1)
+
+# Compute the spectral density estimate
+spec_result <- spectrum(ts_data, plot = FALSE)
+
+# Filter frequencies
+valid_indices <- which(spec_result$freq >= 0.02 & spec_result$freq <= 0.2)
+filtered_freq <- spec_result$freq[valid_indices]
+filtered_spec <- spec_result$spec[valid_indices]
+
+# Convert frequency to period
+filtered_period <- 1 / filtered_freq
+
+# Identify significant peaks indicating periodicity
+peaks <- which(diff(sign(diff(filtered_spec))) == -2) + 1
+significant_peaks <- data.frame(Period = filtered_period[peaks], Spectrum = filtered_spec[peaks])
+
+# Create a data frame for ggplot
+plot_data <- data.frame(Period = filtered_period, Spectrum = filtered_spec)
+
+# Plot using ggplot2
+ggplot(plot_data, aes(x = Period, y = Spectrum)) +
+  geom_line() +
+  geom_point(data = significant_peaks, aes(x = Period, y = Spectrum), color = "red") +
+  labs(title = "Spectral Analysis of Mean Allele Frequency", x = "Period (Generations)", y = "Spectral Density") +
+  theme_bw()
+
+```
+
+### Multiple replicates
+
+```{r}
+# Load the necessary packages
+library(forecast)
+library(ggplot2)
+library(dplyr)
+
+# Define the path to the folder containing the replicate files
+folder_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+
+# Get a list of all replicate files
+file_list <- list.files(path = folder_path, pattern = "genome\\d+_n10_H0.8SD4Gen10.csv", full.names = TRUE)
+
+# Initialize an empty data frame to store combined data
+combined_data <- data.frame()
+
+# Read and combine data from all replicate files
+for (file in file_list) {
+  df <- read.csv(file)
+  data <- df %>% mutate(allele_id = as.factor(Position),
+                        generation = as.numeric(Generation),
+                        allele_frequency = Frequency,
+                        sample_size = 10000) %>% 
+    dplyr::select(allele_id, generation, allele_frequency, sample_size)
+  combined_data <- rbind(combined_data, data)
+}
+
+# Calculate the mean allele frequency for each generation across all replicates
+mean_allele_data <- combined_data %>%
+  group_by(generation) %>%
+  summarize(mean_allele_frequency = mean(allele_frequency))
+
+# Create a time series object from the mean allele frequencies
+ts_data <- ts(mean_allele_data$mean_allele_frequency, start = min(mean_allele_data$generation), frequency = 1)
+
+# Compute the spectral density estimate
+spec_result <- spectrum(ts_data, plot = FALSE)
+
+# Filter frequencies
+valid_indices <- which(spec_result$freq >= 0.02 & spec_result$freq <= 0.2)
+filtered_freq <- spec_result$freq[valid_indices]
+filtered_spec <- spec_result$spec[valid_indices]
+
+# Convert frequency to period
+filtered_period <- 1 / filtered_freq
+
+# Identify significant peaks indicating periodicity
+peaks <- which(diff(sign(diff(filtered_spec))) == -2) + 1
+significant_peaks <- data.frame(Period = filtered_period[peaks], Spectrum = filtered_spec[peaks])
+
+# Create a data frame for ggplot
+plot_data <- data.frame(Period = filtered_period, Spectrum = filtered_spec)
+
+# Plot using ggplot2
+ggplot(plot_data, aes(x = Period, y = Spectrum)) +
+  geom_line() +
+  geom_point(data = significant_peaks, aes(x = Period, y = Spectrum), color = "red") +
+  labs(title = "Spectral Analysis of Mean Allele Frequency Across Replicates", x = "Period (Generations)", y = "Spectral Density") +
+  theme_bw()
+
+```
+
+```{r}
+# Load the necessary packages
+library(forecast)
+library(ggplot2)
+library(dplyr)
+
+# Define the path to the folder containing the replicate files
+folder_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+
+# Get a list of all replicate files
+file_list <- list.files(path = folder_path, pattern = "genome\\d+_n100_H0.8SD4.csv", full.names = TRUE)
+
+# Initialize an empty data frame to store combined data
+combined_data <- data.frame()
+
+# Read and combine data from all replicate files
+for (file in file_list) {
+  df <- read.csv(file)
+  data <- df %>% mutate(allele_id = as.factor(Position),
+                        generation = as.numeric(Generation),
+                        allele_frequency = Frequency,
+                        sample_size = 10000,
+                        file = basename(file)) %>% 
+    dplyr::select(allele_id, generation, allele_frequency, sample_size, file)
+  combined_data <- rbind(combined_data, data)
+}
+
+# Calculate the mean allele frequency for each generation across all replicates
+mean_allele_data <- combined_data %>%
+  group_by(generation, file) %>%
+  summarize(mean_allele_frequency = mean(allele_frequency))
+
+# Create a time series object from the mean allele frequencies for each file
+ts_data_list <- mean_allele_data %>%
+  group_by(file) %>%
+  do(ts_data = ts(.$mean_allele_frequency, start = min(.$generation), frequency = 1))
+
+# Compute the spectral density estimate for each file
+spec_results <- lapply(ts_data_list$ts_data, function(ts_data) {
+  spectrum(ts_data, plot = FALSE)
+})
+
+# Filter frequencies and identify significant peaks for each file
+peak_data <- lapply(seq_along(spec_results), function(i) {
+  spec_result <- spec_results[[i]]
+  valid_indices <- which(spec_result$freq >= 0.02 & spec_result$freq <= 0.5)
+  filtered_freq <- spec_result$freq[valid_indices]
+  filtered_spec <- spec_result$spec[valid_indices]
+  filtered_period <- 1 / filtered_freq
+  peaks <- which(diff(sign(diff(filtered_spec))) == -2) + 1
+  significant_peaks <- data.frame(Period = filtered_period[peaks], Spectrum = filtered_spec[peaks], file = ts_data_list$file[i])
+  significant_peaks
+})
+
+# Combine peak data into a single data frame
+peak_data_combined <- do.call(rbind, peak_data)
+
+# Create a data frame for ggplot
+plot_data <- do.call(rbind, lapply(seq_along(spec_results), function(i) {
+  spec_result <- spec_results[[i]]
+  valid_indices <- which(spec_result$freq >= 0.02 & spec_result$freq <= 0.5)
+  filtered_freq <- spec_result$freq[valid_indices]
+  filtered_spec <- spec_result$spec[valid_indices]
+  filtered_period <- 1 / filtered_freq
+  data.frame(Period = filtered_period, Spectrum = filtered_spec, file = ts_data_list$file[i])
+}))
+
+# Plot using ggplot2
+ggplot(plot_data, aes(x = Period, y = Spectrum, color = file)) +
+  geom_line() +
+  #geom_point(data = peak_data_combined, aes(x = Period, y = Spectrum, color = file), size = 2) +
+  labs(title = "Spectral Analysis of Mean Allele Frequency Across Replicates", x = "Period (Generations)", y = "Spectral Density") +
+  theme_classic()+
+  theme(legend.position = "none")
+```
+
+```{r}
+# Load necessary packages
+library(forecast)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(cowplot)
+
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels
+  mytheme <- theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+    axis.text.y = element_text(size = 15, face = "bold"),
+    axis.line = element_line(size = 1),
+    axis.title = element_text(size = 15, face = "bold"),
+    strip.text = element_text(size = 15, face = "bold"),
+    panel.spacing = unit(1, "lines")
+  ) +
+    theme(panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.?\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+\\.?\\d*") %>% str_remove("SD"),
+      param_combination = paste0("Genome_", genome, "_n", n, "_H", H, "_SD", SD)
+    )
+  
+  combined_data <- data.frame()
+  
+  # Read and combine data from all replicate files
+  for (i in seq_along(files_df$file_name)) {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file) %>% filter(Generation<=500)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = as.numeric(params$n),
+        H = as.numeric(params$H),
+        SD = as.numeric(params$SD),
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, param_combination
+      )
+    combined_data <- rbind(combined_data, data)
+  }
+  
+# Calculate the mean allele frequency for each generation and parameter combination
+  
+  mean_allele_data <- combined_data %>%
+    group_by(generation, param_combination, genome, n, H, SD) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create a time series object from the mean allele frequencies for each parameter combination
+  ts_data_list <- mean_allele_data %>%
+    group_by(param_combination) %>%
+    do(ts_data = ts(.$mean_allele_frequency, start = min(.$generation), frequency = 1)) %>%
+    ungroup()
+  
+  # Compute the spectral density estimate for each parameter combination
+  spec_results <- lapply(ts_data_list$ts_data, function(ts_data) {
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  })
+  
+  # Extract parameter combinations
+  param_combinations <- ts_data_list$param_combination
+  
+  # Prepare data for plotting
+  plot_data_list <- lapply(seq_along(spec_results), function(i) {
+    spec_result <- spec_results[[i]]
+    params <- files_df[files_df$param_combination == param_combinations[i], ]
+    # Compute period and filter based on threshold
+    period <- 1 / spec_result$freq
+    # Set threshold based on parameters (adjust as needed)
+    n_value <- as.numeric(params$n)
+    threshold <- ifelse(n_value == 30, 80,
+                        ifelse(n_value == 20, 50,
+                               ifelse(n_value == 10, 40, 80)))
+    valid_indices <- which(period < threshold)
+    data.frame(
+      Period = period[valid_indices],
+      Spectrum = spec_result$spec[valid_indices],
+      param_combination = param_combinations[i],
+      genome = params$genome,
+      n = n_value,
+      H = as.numeric(params$H),
+      SD = as.numeric(params$SD)
+    )
+  })
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      SD_H = paste("SD =", SD, "H =", H),
+      loci_Gen = paste("Genome", genome, "n", n, sep = "_")
+    )
+  
+  # Generate plots for each unique loci_Gen combination
+  unique_loci_Gen <- unique(plot_data$loci_Gen)
+  fft_plots <- list()
+  
+  for (combination in unique_loci_Gen) {
+    plot_df <- plot_data %>%
+      filter(loci_Gen == combination)
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = param_combination)) +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(~ SD_H, scales = "free_y") +
+      labs(
+        title = paste("Spectral Analysis for", combination),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[combination]] <- p
+    
+    # # Save the plot
+    # ggsave(filename = file.path(save_dir, paste0("Spectral_", combination, ".png")), plot = p)
+  }
+  
+  return(fft_plots)
+}
+
+```
+
+```{r}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2, p_value_threshold = 0.05) {
+  # Load necessary libraries
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels and centered plot title
+  mytheme <- theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+    axis.text.y = element_text(size = 15, face = "bold"),
+    axis.line = element_line(linewidth = 1),
+    axis.title = element_text(size = 15, face = "bold"),
+    strip.text = element_text(size = 15, face = "bold"),
+    plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),  # Centered title
+    panel.spacing = unit(1, "lines")
+  ) +
+    theme(panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),  # Adjusted regex
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen"))
+    ) %>%
+    mutate(
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD), paste0("_SD", SD), ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  # Set up parallel backend
+  num_cores <- detectCores()
+  num_cores_to_use <- max(1, num_cores - 16)  # Leave at least 16 cores unused
+  
+  cl <- makeCluster(num_cores_to_use)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = as.numeric(params$n),
+        H = as.numeric(params$H),
+        SD = as.numeric(params$SD),
+        Gen = as.numeric(params$Gen),
+        param_combination = params$param_combination  # Carry the param_combination here
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination  # Include param_combination
+      )
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+  
+  # Step 1: Combine replicates by averaging allele frequencies for each combination of n, Gen, H, SD, and generation
+  combined_data <- combined_data %>%
+    group_by(n, Gen, H, SD, allele_id, generation) %>%
+    summarize(allele_frequency = mean(allele_frequency, na.rm = TRUE), .groups = "drop")
+  
+  # Step 2: Compute dominant periods and p-values
+  
+  allele_periods <- data.frame(allele_id = character(),
+                               dominant_period = numeric(),
+                               p_value = numeric(),
+                               stringsAsFactors = FALSE)
+  
+  # Loop through each allele and compute the dominant period and p-value
+  for (allele in unique(combined_data$allele_id)) {
+    allele_data <- combined_data %>%
+      filter(allele_id == allele)
+    
+    ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+    
+    # Detrend the data (optional but recommended)
+    ts_data_detrended <- residuals(lm(ts_data ~ time(ts_data)))
+    
+    # Perform spectral analysis
+    spec_result <- spectrum(ts_data_detrended, spans = spectrum_span, plot = FALSE)
+    
+    # Compute the period
+    period <- 1 / spec_result$freq
+    
+    # Set threshold based on 'Gen' (not 'n') value
+    Gen_value <- as.numeric(allele_data$Gen[1])  # Use Gen to determine the threshold
+    threshold <- ifelse(Gen_value == 30, 80, ifelse(Gen_value == 20, 50, ifelse(Gen_value == 10, 40, 80)))
+    
+    # Apply threshold
+    valid_indices <- which(period < threshold)
+    
+    if (length(valid_indices) > 0) {
+      max_spec_index <- valid_indices[which.max(spec_result$spec[valid_indices])]
+      dominant_period <- period[max_spec_index]
+      g <- spec_result$spec[max_spec_index] / sum(spec_result$spec)
+      p_value <- exp(-g * length(ts_data_detrended))
+      
+      # Store the allele, dominant period, and p-value
+      allele_periods <- rbind(allele_periods, data.frame(
+        allele_id = allele,
+        dominant_period = dominant_period,
+        p_value = p_value
+      ))
+    }
+  }
+  
+  # Adjust p-values for multiple testing
+  allele_periods$adjusted_p <- p.adjust(allele_periods$p_value, method = "fdr")
+  
+  # Step 3: Create separate plots and CSV files for each unique combination of n and Gen
+  unique_combinations <- combined_data %>%
+    distinct(n, Gen)
+  
+  # Initialize list to store plots
+  plot_list <- list()
+  
+  for (i in 1:nrow(unique_combinations)) {
+    n_value <- unique_combinations$n[i]
+    Gen_value <- unique_combinations$Gen[i]
+    
+    # Filter data for this specific combination of n and Gen
+    data_subset <- combined_data %>%
+      filter(n == n_value, Gen == Gen_value)
+    
+    # Filter significant alleles for this specific combination of n and Gen
+    significant_alleles_subset <- allele_periods %>%
+      filter(allele_id %in% data_subset$allele_id)
+    
+    # Save the CSV file with the root name of the plot
+    csv_filename <- file.path(save_dir, paste0("significant_alleles_n_", n_value, "_Gen_", Gen_value, ".csv"))
+    write.csv(significant_alleles_subset, csv_filename, row.names = FALSE)
+    
+    # Prepare data for plotting
+    plot_data_list <- list()
+    
+    for (allele in significant_alleles_subset$allele_id) {
+      allele_data <- data_subset %>%
+        filter(allele_id == allele)
+      
+      ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+      
+      # Detrend the data
+      ts_data_detrended <- residuals(lm(ts_data ~ time(ts_data)))
+      
+      # Perform spectral analysis
+      spec_result <- spectrum(ts_data_detrended, spans = spectrum_span, plot = FALSE)
+      
+      # Compute period and filter based on threshold
+      period <- 1 / spec_result$freq
+      valid_indices <- which(period < threshold)
+      
+      plot_data_list[[allele]] <- data.frame(
+        Period = period[valid_indices],
+        Spectrum = spec_result$spec[valid_indices],
+        Allele = allele,
+        H = allele_data$H[1],  # Pass H
+        SD = allele_data$SD[1],  # Pass SD
+        n = allele_data$n[1],  # Pass n
+        Gen = allele_data$Gen[1]  # Pass Gen
+      )
+    }
+    
+    plot_data <- bind_rows(plot_data_list)
+    
+    # Prepare data for faceting by H and SD
+    plot_data <- plot_data %>%
+      mutate(
+        H_label = paste0("H = ", H),
+        SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD")
+      )
+    
+    # Faceting based on H and SD
+    facet_formula <- SD_label ~ H_label
+    
+    # Generate the plot
+    p <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = Allele, group = Allele)) +
+      geom_line(linewidth = 1.1) +
+      facet_grid(facet_formula, scales = "free_y") +
+      labs(
+        title = paste("Spectral Analysis for n =", n_value, "and Gen =", Gen_value),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    # Save the plot with the root name matching the CSV
+    plot_filename <- file.path(save_dir, paste0("Spectral_n_", n_value, "_Gen_", Gen_value, ".png"))
+    ggsave(filename = plot_filename, plot = p, width = 10, height = 6)
+    
+    # Add plot to the list of plots
+    plot_list[[paste0("n_", n_value, "_Gen_", Gen_value)]] <- p
+  }
+  
+  message("Spectral plots and CSV files saved to", save_dir)
+  
+  # Stop cluster
+  stopCluster(cl)
+  
+  # Return the list of plots
+  return(list(plots = plot_list))
+}
+
+```
+
+
+```{r}
+folder_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern =  "^genome[1|2|3]+_n10_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run_fft_analysis(folder_path, pattern, spectrum_span = 2)
+```
+
+
+### If it works delete the above and yes it works which means you will have to delete the above.
+
+```{r}
+# Load necessary packages
+library(forecast)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(cowplot)
+
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels
+  mytheme <- theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+    axis.text.y = element_text(size = 15, face = "bold"),
+    axis.line = element_line(size = 1),
+    axis.title = element_text(size = 15, face = "bold"),
+    strip.text = element_text(size = 15, face = "bold"),
+    panel.spacing = unit(1, "lines")
+  ) +
+    theme(panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.?\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+\\.?\\d*") %>% str_remove("SD"),
+      param_combination = paste0("n_", n, "_H", H, "_SD", SD)
+    )
+  
+  combined_data <- data.frame()
+  
+  # Read and combine data from all replicate files
+  for (i in seq_along(files_df$file_name)) {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = as.numeric(params$n),
+        H = as.numeric(params$H),
+        SD = as.numeric(params$SD),
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, param_combination
+      )
+    combined_data <- rbind(combined_data, data)
+  }
+  
+  # Calculate the mean allele frequency for each generation, n, and genome
+  mean_allele_data <- combined_data %>%
+    group_by(generation, n, genome, H, SD, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create a time series object from the mean allele frequencies for each n and genome
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, param_combination) %>%
+    do(ts_data = ts(.$mean_allele_frequency, start = min(.$generation), frequency = 1)) %>%
+    ungroup()
+  
+  # Compute the spectral density estimate for each time series
+  spec_results <- lapply(ts_data_list$ts_data, function(ts_data) {
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  })
+  
+  # Prepare data for plotting
+  plot_data_list <- lapply(seq_along(spec_results), function(i) {
+    spec_result <- spec_results[[i]]
+    params <- ts_data_list[i, ]
+    # Compute period and filter based on threshold
+    period <- 1 / spec_result$freq
+    # Set threshold based on n value (adjust as needed)
+    n_value <- params$n
+    threshold <- ifelse(n_value == 30, 80,
+                        ifelse(n_value == 20, 50,
+                               ifelse(n_value == 10, 40, 80)))
+    valid_indices <- which(period < threshold)
+    data.frame(
+      Period = period[valid_indices],
+      Spectrum = spec_result$spec[valid_indices],
+      n = n_value,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      param_combination = params$param_combination
+    )
+  })
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      SD_H = paste("SD =", SD, "H =", H),
+      n_label = paste0("n_", n)
+    )
+  
+  # Generate plots for each unique n value
+  unique_n_values <- unique(plot_data$n)
+  fft_plots <- list()
+  
+  for (n_value in unique_n_values) {
+    plot_df <- plot_data %>%
+      filter(n == n_value)
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(Gen ~ SD_H, scales = "free_y") +
+      labs(
+        title = paste("Spectral Analysis for n =", n_value),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[paste0("n_", n_value)]] <- p
+    
+    # Save the plot
+    ggsave(filename = file.path(save_dir, paste0("Spectral_n_", n_value, ".png")), plot = p)
+  }
+  
+  return(fft_plots)
+}
+```
+
+```{r}
+# Load necessary packages
+library(forecast)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(cowplot)
+
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels
+  mytheme <- theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+    axis.text.y = element_text(size = 15, face = "bold"),
+    axis.line = element_line(size = 1),
+    axis.title = element_text(size = 15, face = "bold"),
+    strip.text = element_text(size = 15, face = "bold"),
+    panel.spacing = unit(1, "lines")
+  ) +
+    theme(panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),  # Adjusted regex
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen"))
+    ) %>%
+    mutate(
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD), paste0("_SD", SD), ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  combined_data <- data.frame()
+  
+  # Read and combine data from all replicate files
+  for (i in seq_along(files_df$file_name)) {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = as.numeric(params$n),
+        H = as.numeric(params$H),
+        SD = as.numeric(params$SD),
+        Gen = as.numeric(params$Gen),
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination
+      )
+    combined_data <- rbind(combined_data, data)
+  }
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- combined_data %>%
+    group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, param_combination) %>%
+    do(ts_data = ts(.$mean_allele_frequency, start = min(.$generation), frequency = 1)) %>%
+    ungroup()
+  
+  # Compute spectral density estimates
+  spec_results <- lapply(ts_data_list$ts_data, function(ts_data) {
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  })
+  
+  # Prepare data for plotting
+  plot_data_list <- lapply(seq_along(spec_results), function(i) {
+    spec_result <- spec_results[[i]]
+    params <- ts_data_list[i, ]
+    # Compute period and filter based on threshold
+    period <- 1 / spec_result$freq
+    # Set threshold based on n value (adjust as needed)
+    n_value <- params$n
+    threshold <- ifelse(n_value == 30, 80,
+                        ifelse(n_value == 20, 50,
+                               ifelse(n_value == 10, 40, 80)))
+    valid_indices <- which(period < threshold)
+    data.frame(
+      Period = period[valid_indices],
+      Spectrum = spec_result$spec[valid_indices],
+      n = n_value,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      param_combination = params$param_combination
+    )
+  })
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+  
+  # Generate plots for each unique combination of n and Gen
+  plot_data <- plot_data %>%
+    mutate(
+      n_Gen = ifelse(!is.na(Gen), paste0("n_", n, "_Gen_", Gen), paste0("n_", n))
+    )
+  
+  unique_n_Gen_values <- unique(plot_data$n_Gen)
+  
+  fft_plots <- list()
+  
+  for (n_Gen_value in unique_n_Gen_values) {
+    plot_df <- plot_data %>%
+      filter(n_Gen == n_Gen_value)
+    
+    # Determine the faceting variables
+    if (all(plot_df$SD_label == "No SD")) {
+      # If SD is missing, facet only by H_label
+      facet_formula <- ~ H_label
+    } else {
+      # Facet by SD_label and H_label
+      facet_formula <- SD_label ~ H_label
+    }
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+      geom_line(linewidth = 1.1) +
+      facet_grid(facet_formula, scales = "free_y") +
+      labs(
+        title = paste("Spectral Analysis for", n_Gen_value),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[n_Gen_value]] <- p
+    
+    # Save the plot with n and Gen in filename
+    filename <- paste0("Spectral_", n_Gen_value, ".png")
+    ggsave(filename = file.path(save_dir, filename), plot = p)
+  }
+  
+  return(fft_plots)
+}
+
+```
+
+```{r}
+# Define the path to the folder containing the replicate files
+folder_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+
+# Define the pattern to match files with multiple parameters
+ pattern ="^genome[1|2|3]_n100+_H0\\.(1|5|8)(SD(1|2|3|4))?(Gen(10))?\\.csv$" #"genome1+_n10+_H\\d+\\.\\d+SD\\d+\\.csv"
+
+# Run the analysis function
+fft_results <- run_fft_analysis(folder_path, pattern, spectrum_span = 2)
+
+```
+
+```{r, fig.width = 16, fig.height = 8}
+fft_results
+```
+
+### Autocorrelation and Partial Autocorrelation Functions (ACF and PACF)
+
+```{r}
+# Load necessary library
+library(forecast)
+
+# Function to plot ACF and PACF for one allele
+acf_pacf_analysis <- function(allele_data) {
+  ts_data <- ts(allele_data$allele_frequency, frequency = 1)
+  
+  # Plot ACF
+  Acf(ts_data, main = paste("ACF for Allele", allele_data$allele_id[1]))
+  
+  # Plot PACF
+  Pacf(ts_data, main = paste("PACF for Allele", allele_data$allele_id[1]))
+}
+
+# Apply the function to each allele
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  acf_pacf_analysis(allele_data)
+}
+
+```
+
+### Autocorrelation and Partial Autocorrelation Functions (ACF and PACF)
+
+```{r}
+# Load necessary library
+library(forecast)
+
+# Function to plot ACF and PACF for one allele
+acf_pacf_analysis <- function(allele_data) {
+  ts_data <- ts(allele_data$allele_frequency, frequency = 1)
+  
+  # Plot ACF
+  Acf(ts_data, main = paste("ACF for Allele", allele_data$allele_id[1]))
+  
+  # Plot PACF
+  Pacf(ts_data, main = paste("PACF for Allele", allele_data$allele_id[1]))
+}
+
+# Apply the function to each allele
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  acf_pacf_analysis(allele_data)
+}
+
+```
+
+### Wavelet Analysis
+
+```{r}
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD4Gen10.csv")
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+```
+
+
+
+```{r}
+# Install and load necessary package
+install.packages("WaveletComp")
+library(WaveletComp)
+
+# Function to perform wavelet analysis on one allele
+wavelet_analysis <- function(allele_data) {
+  # Prepare the data
+  ts_data <- data.frame(time = allele_data$generation, value = allele_data$allele_frequency)
+  
+  # Perform continuous wavelet transform
+  wt_result <- analyze.wavelet(ts_data, my.series = "value", loess.span = 0)
+  
+  # Plot the wavelet power spectrum
+  wt.image(wt_result, main = paste("Wavelet Power Spectrum for Allele", allele_data$allele_id[1]))
+  
+  # Optional: reconstruct the series using inverse transform
+  # reconstructed <- reconstruct(wt_result)
+}
+
+# Apply the function to each allele
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  wavelet_analysis(allele_data)
+}
+
+```
+### Generalized Additive Models (GAMs)
+
+```{r, warning=FALSE}
+# Load necessary package
+library(mgcv)
+
+# Function to fit a GAM for one allele
+gam_analysis <- function(allele_data) {
+  # Fit a GAM with a smoothing spline on generation
+  model <- gam(allele_frequency ~ s(generation, bs = "cc"), data = allele_data, family = binomial(link = "logit"))
+  
+  # Plot the model
+  plot(model, main = paste("GAM Smoothing for Allele", allele_data$allele_id[1]), shade = TRUE)
+  
+  # Check model summary
+  summary(model)
+  
+  return(model)
+}
+
+# Apply the function to each allele
+gam_models <- list()
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  # Ensure the 'generation' variable is properly scaled for cyclic splines
+  allele_data$generation <- scale(allele_data$generation)
+  
+  gam_models[[allele]] <- gam_analysis(allele_data)
+}
+
+```
+
+### Lomb-Scargle Periodogram
+
+```{r}
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome1_n10_H0.8SD4.csv")
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+
+
+# Install and load necessary package
+#install.packages("lomb")
+library(lomb)
+
+# Function to perform Lomb-Scargle periodogram on one allele
+lomb_scargle_analysis <- function(allele_data) {
+  time <- allele_data$generation
+  values <- allele_data$allele_frequency
+  
+  # Perform Lomb-Scargle periodogram
+  lsp_result <- lsp(values, times = time, type = "period", plot = TRUE, from = 5, to = 20)
+  
+  # The 'from' and 'to' arguments define the range of periods to search
+  return(lsp_result)
+}
+
+# Apply the function to each allele
+lsp_results <- list()
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  lsp_results[[allele]] <- lomb_scargle_analysis(allele_data)
+}
+
+```
+
+### Time series clustering
+
+```{r}
+
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n100_H0.8SD4Gen10.csv")
+
+# Get a list of unique allele IDs
+allele_ids <- unique(data$allele_id)
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+
+# Install and load necessary packages
+#install.packages("dtwclust")
+library(dtwclust)
+
+# Prepare data for clustering
+# Assuming you have multiple allele frequency time series
+
+# Create a list of time series
+ts_list <- lapply(allele_ids, function(allele) {
+  allele_data <- subset(data, allele_id == allele)
+  ts(allele_data$allele_frequency)
+})
+
+names(ts_list) <- allele_ids
+
+# Perform clustering
+ts_cluster <- tsclust(ts_list, type = "hierarchical", distance = "dtw_basic", k = 10)
+
+# Plot dendrogram
+plot(ts_cluster)
+
+```
+### Implementing Generalized Additive Mixed Models (GAMMs)
+
+```{r, warning=FALSE}
+
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome10_n10_H0.8.csv")# %>% filter(Generation<=500)
+
+# Get a list of unique allele IDs
+allele_ids <- unique(data$allele_id)
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+
+# Load necessary package
+library(mgcv)
+
+# Fit a GAMM with random intercepts for allele_id
+gamm_analysis <- function(data) {
+  # Ensure 'generation' is appropriately scaled or centered
+  data$generation <- as.numeric(data$generation)
+  
+  # Fit the GAMM
+  model <- gam(allele_frequency ~ s(generation, bs = "ps") + s(allele_id, bs = "re"), data = data, family = binomial(link = "logit"))
+  
+  # Plot the smooth term
+  plot(model, shade = TRUE, main = "GAMM Smoothing over Generations")
+  
+  # Check model summary
+  summary(model)
+  
+  return(model)
+}
+
+# Apply the model to the entire dataset
+gamm_model <- gamm_analysis(data)
+
+```
+
+```{r}
+summary(gamm_model)
+```
+
+```{r}
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome10_n10_H0.8SD4Gen30.csv")
+
+# Get a list of unique allele IDs
+allele_ids <- unique(data$allele_id)
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+
+# Load necessary packages
+library(mgcv)    # For GAMMs
+
+data$generation <- as.numeric(data$generation)
+
+# If you have allele frequency as a proportion and sample size, calculate counts
+if ("sample_size" %in% names(data)) {
+  data <- data %>%
+    mutate(successes = round(allele_frequency * sample_size),
+           failures = sample_size - successes)
+} else {
+  # If sample size is not available, estimate or set a constant sample size
+  data$sample_size <- 100  # Replace with actual or estimated sample size
+  data <- data %>%
+    mutate(successes = round(allele_frequency * sample_size),
+           failures = sample_size - successes)
+}
+
+# Fit a GAMM with a smooth function of generation and random effects for allele_id
+model_gamm <- gam(
+  cbind(successes, failures) ~ s(generation, bs = "ps") + s(allele_id, bs = "re"),
+  data = data,
+  family = binomial(link = "logit"),
+  method = "REML"
+)
+
+# Check the model summary
+summary(model_gamm)
+
+# Plot the smooth term for generation
+plot(model_gamm, select = 1, shade = TRUE, main = "Smooth Function of Generation")
+```
+
+```{r}
+# Install and load necessary package
+#install.packages("glmmTMB")
+library(glmmTMB)
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD4Gen10.csv")
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+# Create a binary response variable for the binomial model
+data <- data %>%
+  mutate(successes = round(allele_frequency * sample_size),
+         failures = sample_size - successes)
+```
+
+```{r}
+ #Fit a GLMM with random intercepts for allele_id and random slopes for generation
+library(lme4)
+
+model_glmm <- glmer(
+  cbind(successes, failures) ~ 1 + (1 + generation | allele_id),
+  data = data,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa")
+)
+
+# Check the model summary
+summary(model_glmm)
+
+```
+
+
+```{r}
+
+library(glmmTMB)
+str(data)
+
+# Fit a GLMM with an autocorrelation structure
+model_ar1 <- glmmTMB(
+  cbind(successes, failures) ~ 1 + (1 | allele_id),
+  data = data,
+  family = binomial(link = "logit"),
+  control = glmmTMBControl(optCtrl = list(iter.max = 1e5, eval.max = 1e5)),
+  dispformula = ~ 1,
+  ziformula = ~ 0,
+  map = list(theta = factor(c(NA, 1))),  # For AR(1)
+  ar1 = ~ generation | allele_id
+)
+
+# Check the model summary
+summary(model_ar1)
+
+```
+### Using Random Fourier Terms in GLMMs
+
+```{r}
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD1Gen20.csv")
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+# Create a binary response variable for the binomial model
+data <- data %>%
+  mutate(successes = round(allele_frequency * sample_size),
+         failures = sample_size - successes)
+
+# Install and load necessary package
+#install.packages("gamm4")
+library(gamm4)
+
+# Fit a model with random Fourier terms
+model_fourier <- gamm4(
+  cbind(successes, failures) ~ s(generation, bs = "cp"),
+  random = ~(1 | allele_id),
+  family = binomial(link = "logit"),
+  data = data
+)
+
+# Check the model summary
+summary(model_fourier$gam)
+
+# Plot the smooth term
+plot(model_fourier$gam, shade = TRUE, main = "Cyclic Penalized Spline over Generation")
+
+```
+
+```{r}
+# Install and load necessary packages
+#install.packages(c("nlme", "forecast"))
+library(nlme)
+library(forecast)
+
+# Fit a linear mixed-effects model with ARMA errors
+model_lme <- lme(
+  allele_frequency ~ 1,
+  random = ~ 1 | allele_id,
+  correlation = corARMA(form = ~ generation | allele_id, p = 1, q = 1),
+  data = data
+)
+
+# Check the model summary
+summary(model_lme)
+
+```
+
+### Multivariate Adaptive Regression Splines (MARS)
+
+```{r}
+# Install and load necessary package
+install.packages("earth")
+library(earth)
+
+# Fit a MARS model
+model_mars <- earth(
+  allele_frequency ~ generation,
+  data = data
+)
+
+# Check the model summary
+summary(model_mars)
+
+# Plot the model
+plotmo(model_mars)
+
+```
+
+### Changin Point Analysis
+
+```{r}
+# Install and load necessary package
+install.packages("changepoint")
+library(changepoint)
+
+# Function to perform change point analysis on one allele
+change_point_analysis <- function(allele_data) {
+  ts_data <- allele_data$allele_frequency
+  
+  # Apply change point detection
+  cpt_meanvar <- cpt.meanvar(ts_data, method = "PELT")
+  
+  # Plot the change points
+  plot(cpt_meanvar, main = paste("Change Point Analysis for Allele", allele_data$allele_id[1]))
+  
+  return(cpt_meanvar)
+}
+
+# Apply the function to each allele
+change_points <- list()
+allele_ids <- unique(data$allele_id)
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  change_points[[allele]] <- change_point_analysis(allele_data)
+}
+
+```
+
+## Identify changing, find oscillatory, and find period
+
+### Changing Alleles
+
+```{r}
+# Ensure correct data types
+data$generation <- as.numeric(data$generation)
+data$allele_id <- as.factor(data$allele_id)
+
+# If you have sample sizes, calculate counts
+if ("sample_size" %in% names(data)) {
+  data <- data %>%
+    mutate(successes = round(allele_frequency * sample_size),
+           failures = sample_size - successes)
+} else {
+  # Assume a constant sample size if not provided
+  data$sample_size <- 100  # Replace with actual or estimated sample size
+  data <- data %>%
+    mutate(successes = round(allele_frequency * sample_size),
+           failures = sample_size - successes)
+}
+
+```
+
+```{r}
+# Get a list of unique allele IDs
+allele_ids <- unique(data$allele_id)
+
+# Initialize a data frame to store results
+results <- data.frame(allele_id = character(),
+                      p_value = numeric(),
+                      stringsAsFactors = FALSE)
+
+# Loop over each allele
+for (allele in allele_ids) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Fit a GLM (binomial regression) with generation as predictor
+  model <- glm(cbind(successes, failures) ~ generation, 
+               data = allele_data, 
+               family = binomial(link = "logit"))
+  
+  # Extract p-value for the 'generation' coefficient
+  summary_model <- summary(model)
+  p_value <- coef(summary_model)[2, "Pr(>|z|)"]
+  
+  # Store the result
+  results <- rbind(results, data.frame(allele_id = allele, p_value = p_value))
+}
+
+# Adjust p-values for multiple testing (e.g., using False Discovery Rate)
+results$adjusted_p <- p.adjust(results$p_value, method = "fdr")
+
+# Identify alleles with significant changes
+significant_alleles <- results %>%
+  filter(adjusted_p < 0.05) %>%
+  arrange(adjusted_p)
+
+```
+
+
+### Identify Alleles That Are Oscillating
+
+```{r}
+# Create a list to store oscillating alleles
+oscillating_alleles <- list()
+
+# Loop over significant alleles
+for (allele in significant_alleles$allele_id) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Convert allele frequency to time series object
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Plot ACF
+  acf_result <- acf(ts_data, plot = FALSE)
+  
+  # Analyze ACF for significant lags
+  acf_peaks <- which(abs(acf_result$acf) > (2 / sqrt(length(ts_data))))
+  
+  # Perform spectral analysis
+  spec_result <- spec.pgram(ts_data, log = "no", plot = FALSE)
+  
+  # Find dominant frequency
+  dominant_freq_index <- which.max(spec_result$spec)
+  dominant_freq <- spec_result$freq[dominant_freq_index]
+  dominant_period <- 1 / dominant_freq
+  
+  # Criteria for oscillation:
+  # - Significant peaks in ACF
+  # - Dominant frequency in spectral analysis
+  
+  if (length(acf_peaks) > 1 || dominant_freq > 0) {
+    # Store the allele and its dominant period
+    oscillating_alleles[[allele]] <- list(
+      allele_id = allele,
+      acf_peaks = acf_peaks,
+      dominant_period = dominant_period
+    )
+  }
+}
+
+```
+
+### Check the Periodicity of Oscillating Alleles
+
+```{r}
+# Loop over oscillating alleles
+for (allele in names(oscillating_alleles)) {
+  allele_data <- subset(data, allele_id == allele)
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Perform spectral analysis with more resolution
+  spec_result <- spectrum(ts_data, plot = TRUE, main = paste("Spectral Analysis for Allele", allele))
+  
+  # Identify significant peaks
+  spec_df <- data.frame(freq = spec_result$freq, spec = spec_result$spec)
+  significant_peaks <- spec_df %>%
+    filter(spec == max(spec))
+  
+  # Calculate dominant period
+  dominant_freq <- significant_peaks$freq[1]
+  dominant_period <- 1 / dominant_freq
+  
+  # Update the oscillating alleles list
+  oscillating_alleles[[allele]]$dominant_period <- dominant_period
+  
+  # Print the dominant period
+  cat("Allele:", allele, "- Dominant Period:", round(dominant_period, 2), "generations\n")
+}
+
+```
+
+### Exploratory / Plotting ACF for Oscillating Alleles
+
+```{r}
+# Plot ACF for oscillating alleles
+for (allele in names(oscillating_alleles)) {
+  allele_data <- subset(data, allele_id == allele)
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  acf(ts_data, main = paste("ACF for Allele", allele))
+}
+
+```
+
+#### OR
+
+##### Identify Alleles with Significant Changing Frequencies
+
+```{r}
+# Initialize storage for alleles with significant periods
+allele_periods <- data.frame(allele_id = character(),
+                             dominant_period = numeric(),
+                             p_value = numeric(),
+                             stringsAsFactors = FALSE)
+
+# Loop over significant alleles
+for (allele in significant_alleles$allele_id) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Convert allele frequency to time series object
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Detrend the data (optional but recommended)
+  ts_data_detrended <- residuals(lm(ts_data ~ time(ts_data)))
+  
+  # Perform spectral analysis
+  spec_result <- spectrum(ts_data_detrended, plot = FALSE)
+  
+  # Find the frequency with the maximum spectral density (dominant frequency)
+  max_spec_index <- which.max(spec_result$spec)
+  dominant_freq <- spec_result$freq[max_spec_index]
+  dominant_period <- 1 / dominant_freq
+  
+  # Estimate the significance of the peak using Fisher's test
+  n <- length(ts_data_detrended)
+  g <- spec_result$spec[max_spec_index] / sum(spec_result$spec)
+  p_value <- exp(-g * n)
+  
+  # Store the allele, dominant period, and p-value
+  allele_periods <- rbind(allele_periods, data.frame(
+    allele_id = allele,
+    dominant_period = dominant_period,
+    p_value = p_value
+  ))
+}
+
+# Adjust p-values for multiple testing
+allele_periods$adjusted_p <- p.adjust(allele_periods$p_value, method = "fdr")
+
+# Identify alleles with significant dominant periods
+significant_periods <- allele_periods %>%
+  filter(adjusted_p < 0.05) %>%
+  arrange(adjusted_p)
+
+# Print the results
+print(significant_periods)
+
+```
+
+
+##### Detect Oscillations and Determine the Single Dominant Period
+
+```{r}
+# Initialize storage for alleles with significant periods
+allele_periods <- data.frame(allele_id = character(),
+                             dominant_period = numeric(),
+                             p_value = numeric(),
+                             stringsAsFactors = FALSE)
+
+# Loop over significant alleles
+for (allele in significant_alleles$allele_id) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Convert allele frequency to time series object
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Detrend the data (optional but recommended)
+  ts_data_detrended <- residuals(lm(ts_data ~ time(ts_data)))
+  
+  # Perform spectral analysis
+  spec_result <- spectrum(ts_data_detrended, plot = FALSE)
+  
+  # Find the frequency with the maximum spectral density (dominant frequency)
+  max_spec_index <- which.max(spec_result$spec)
+  dominant_freq <- spec_result$freq[max_spec_index]
+  dominant_period <- 1 / dominant_freq
+  
+  # Estimate the significance of the peak using Fisher's test
+  n <- length(ts_data_detrended)
+  g <- spec_result$spec[max_spec_index] / sum(spec_result$spec)
+  p_value <- exp(-g * n)
+  
+  # Store the allele, dominant period, and p-value
+  allele_periods <- rbind(allele_periods, data.frame(
+    allele_id = allele,
+    dominant_period = dominant_period,
+    p_value = p_value
+  ))
+}
+
+# Adjust p-values for multiple testing
+allele_periods$adjusted_p <- p.adjust(allele_periods$p_value, method = "fdr")
+
+# Identify alleles with significant dominant periods
+significant_periods <- allele_periods %>%
+  filter(adjusted_p < 0.05) %>%
+  arrange(adjusted_p)
+
+# Print the results
+print(significant_periods)
+
+```
+```{r}
+df <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome1_n10_H0.8SD1Gen30.csv")
+
+data <- df %>% mutate(allele_id = as.factor(Position),
+                      generation = as.numeric(Generation),
+                      allele_frequency = Frequency,
+                      sample_size = 10000) %>% 
+  dplyr::select(allele_id, generation, allele_frequency, sample_size)
+# Create a binary response variable for the binomial model
+data <- data %>%
+  mutate(successes = round(allele_frequency * sample_size),
+         failures = sample_size - successes)
+
+# Initialize storage for alleles with significant periods
+allele_periods <- data.frame(allele_id = character(),
+                             dominant_period = numeric(),
+                             p_value = numeric(),
+                             stringsAsFactors = FALSE)
+
+# Define the threshold for period filtering (in generations)
+calculate_threshold <- function() {
+  return(80)  # Threshold period of 80 generations
+}
+
+# Loop over significant alleles
+for (allele in significant_alleles$allele_id) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Convert allele frequency to time series object
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Detrend the data
+  ts_data_detrended <- residuals(lm(ts_data ~ time(ts_data)))
+  
+  # Perform spectral analysis
+  spec_result <- spectrum(ts_data_detrended, plot = FALSE)
+  
+  # Calculate period based on frequency
+  period <- 1 / spec_result$freq
+  
+  # Apply the threshold for period filtering
+  threshold <- calculate_threshold()
+  
+  if (min(period) < threshold) {
+    # Find the frequency with the maximum spectral density (dominant frequency)
+    valid_indices <- which(period < threshold)
+    max_spec_index <- valid_indices[which.max(spec_result$spec[valid_indices])]
+    dominant_freq <- spec_result$freq[max_spec_index]
+    dominant_period <- 1 / dominant_freq
+    
+    # Estimate the significance of the peak using Fisher's test
+    n <- length(ts_data_detrended)
+    g <- spec_result$spec[max_spec_index] / sum(spec_result$spec)
+    p_value <- exp(-g * n)
+    
+    # Store the allele, dominant period, and p-value
+    allele_periods <- rbind(allele_periods, data.frame(
+      allele_id = allele,
+      dominant_period = dominant_period,
+      p_value = p_value
+    ))
+  }
+}
+
+# Adjust p-values for multiple testing
+allele_periods$adjusted_p <- p.adjust(allele_periods$p_value, method = "fdr")
+
+# Identify alleles with significant dominant periods
+significant_periods <- allele_periods %>%
+  filter(adjusted_p < 0.05) %>%
+  arrange(adjusted_p)
+
+# Print the results (showing allele_id, dominant_period, p_value, and adjusted_p)
+print(significant_periods)
+
+
+```
+
+```{r}
+# Required libraries
+library(ggplot2)
+library(dplyr)
+
+# Create storage for spectral density data across all significant alleles
+combined_spectral_data <- data.frame(Period = numeric(), Spectrum = numeric(), Allele = character())
+
+# Loop through significant alleles and store their spectral density
+for (allele in significant_periods$allele_id) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Convert allele frequency to time series object
+  ts_data <- ts(allele_data$allele_frequency, start = min(allele_data$generation), frequency = 1)
+  
+  # Detrend the data
+  ts_data_detrended <- residuals(lm(ts_data ~ time(ts_data)))
+  
+  # Perform spectral analysis
+  spec_result <- spectrum(ts_data_detrended, plot = FALSE)
+  
+  # Calculate period based on frequency
+  period <- 1 / spec_result$freq
+  spectrum_density <- spec_result$spec
+  
+  # Apply threshold for periods
+  threshold <- calculate_threshold()
+  valid_indices <- which(period < threshold)
+  
+  # Filter valid periods based on threshold and store data
+  filtered_period <- period[valid_indices]
+  filtered_spectrum <- spectrum_density[valid_indices]
+  
+  combined_spectral_data <- rbind(combined_spectral_data, data.frame(
+    Period = filtered_period,
+    Spectrum = filtered_spectrum,
+    Allele = allele
+  ))
+}
+
+# Aggregate the data by period and compute mean spectrum across alleles
+mean_spectral_data <- combined_spectral_data %>%
+  group_by(Period) %>%
+  summarize(Mean_Spectrum = mean(Spectrum), .groups = 'drop')
+
+# Generate the combined spectral density plot focusing on the threshold of 80
+ggplot(mean_spectral_data, aes(x = Period, y = Mean_Spectrum)) +
+  geom_line(size = 1.2, color = "blue") +
+  theme_minimal() +
+  labs(title = "Average Spectral Density across Significant Alleles (Threshold: Period < 80)",
+       x = "Period (Generations)",
+       y = "Mean Spectral Density") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 16)) +
+  coord_cartesian(xlim = c(0, 80))  # Ensure the plot is limited to periods less than 80
+
+```
+
+#### Lomb-Scargle Periodogram
+
+```{r}
+# Install and load the lomb package
+if (!require("lomb")) install.packages("lomb")
+library(lomb)
+
+# Loop over significant alleles
+for (allele in significant_alleles$allele_id) {
+  allele_data <- subset(data, allele_id == allele)
+  
+  # Prepare time and frequency data
+  time <- allele_data$generation
+  values <- allele_data$allele_frequency
+  
+  # Perform Lomb-Scargle periodogram
+  lsp_result <- lsp(values, times = time, type = "period", plot = TRUE, from = 2, to = max(time)/20, alpha = 0.05)
+  
+  # Extract the dominant period
+  dominant_period <- lsp_result$peak.at[1]
+  
+  # Store the result
+  allele_periods <- rbind(allele_periods, data.frame(
+    allele_id = allele,
+    dominant_period = dominant_period,
+    p_value = lsp_result$p.value[1]
+  ))
+}
+
+# Adjust p-values for multiple testing
+allele_periods$adjusted_p <- p.adjust(allele_periods$p_value, method = "fdr")
+
+# Identify alleles with significant dominant periods
+significant_periods <- allele_periods %>%
+  filter(adjusted_p < 0.05) %>%
+  arrange(adjusted_p)
+
+```
+
