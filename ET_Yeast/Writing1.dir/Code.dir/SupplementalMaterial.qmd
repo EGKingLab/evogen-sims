@@ -1,0 +1,1320 @@
+---
+title: "SupplementalMaterial"
+format: html
+editor: visual
+---
+> For the allele frequencies, I will in some cases use ribbons to show changes across repliicates. Then I will use a single replicate to track each locus.
+
+# Instantaneous
+
+## Allele Frequencies
+
+### Ribbon
+
+```{r}
+# Generate file paths for all replicates
+file_paths <- paste0(
+  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome",
+  1:30,
+  "_n100_H0.8SD4.csv"
+)
+
+# Read and combine data from all replicates
+data_list <- lapply(1:30, function(i) {
+  file_path <- file_paths[i]
+  data <- read.csv(file_path) %>% 
+    dplyr::select(-Effect, -Origin) %>%
+    mutate(Replicate = i)  # Add replicate number
+  return(data)
+})
+
+# Combine all data into one dataframe
+data_all <- bind_rows(data_list)
+```
+
+
+```{r}
+# Compute mean frequency across replicates
+data_mean <- data_all %>%
+  group_by(Generation, Position) %>%
+  summarise(Frequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup()
+```
+
+
+```{r}
+# Compute summary statistics across replicates
+
+data_summary <- data_all %>%
+  group_by(Generation, Position) %>%
+  summarise(
+    MeanFrequency = mean(Frequency, na.rm = TRUE),
+    MedianFrequency = median(Frequency, na.rm = TRUE),
+    SD = sd(Frequency, na.rm = TRUE),
+    LowerQuantile = quantile(Frequency, 0.25, na.rm = TRUE),
+    UpperQuantile = quantile(Frequency, 0.75, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+#  Sample positions for plotting
+set.seed(123)
+positions_sample <- sample(unique(data_summary$Position), 30)
+
+# Plot median frequency with interquartile range
+
+p <- data_summary %>%
+  filter(Position %in% positions_sample) %>%
+  ggplot(aes(x = Generation, y = MedianFrequency, color = factor(Position), group = factor(Position))) +
+  geom_line() +
+  geom_ribbon(aes(ymin = LowerQuantile, ymax = UpperQuantile, fill = Position), alpha = 0.2, color = NA) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+print(p)
+
+```
+
+# Gradual I
+
+## Allele Frequencies
+
+
+
+
+
+
+
+## Phenotypes
+
+
+## Spectral Analysis
+
+
+# Gradual II
+
+## Allele Frequencies
+
+
+## Phenotypes
+
+
+## Spectral Analysis
+
+### Genetic architecture
+
+```{r}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define the theme (no need to remove axis numbers now)
+  mytheme <- theme_cowplot() +
+    theme(legend.position = "none",
+          axis.text.x = element_text(size = 20, face = "bold"),
+          axis.text.y = element_text(size = 20, face = "bold"),
+          axis.line = element_line(linewidth = 5),
+          axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+          axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+          strip.text = element_text(size = 20, face = "bold"),
+          panel.spacing = unit(3, "lines"),
+          panel.grid = element_blank())
+
+  # Get the list of files matching the specified pattern
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+"), # Allow varying genome numbers
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Selection = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "100" ~ "Polygenic",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+
+  # Set up parallel backend
+  num_cores <- detectCores()
+  cl <- makeCluster(max(1, num_cores - 16))
+  registerDoParallel(cl)
+
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Selection = params$Selection,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, genome, n, H, SD, Gen, Selection, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  # Filter the data based on H, SD, and Gen values
+  filtered_data <- combined_data %>%
+    filter((H == 0.1 & SD == 1 & Gen == 10) |
+           (H == 0.5 & SD == 2 & Gen == 20) |
+           (H == 0.8 & SD == 4 & Gen == 30))
+
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, genome, H, SD, Gen, Selection, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, Selection, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Selection = params$Selection,
+      param_combination = params$param_combination
+    )
+  }
+
+  stopCluster(cl)
+
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      Gen == 10 ~ 40,
+      Gen == 20 ~ 50,
+      Gen == 30 ~ 80,
+      TRUE ~ 45
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+
+  # Generate the spectral plots faceted by Selection, H, SD, and Gen
+  fft_plots <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+    geom_line(linewidth = 1.1) +
+    facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free") +
+    labs(x = "Period (Generations)", y = "Spectral Density") +
+    mytheme
+
+  return(fft_plots)
+}
+```
+
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 10, echo=FALSE}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1|5|8)(SD(1|2|4))?Gen(10|20|30)\\.csv$"
+
+spec_plots <- run_fft_analysis(dirpath, pattern)
+
+spec_plots <- spec_plots + 
+  labs(title = "C", x = "Periodicity", y = "Spectral Density") +
+  theme( plot.title = element_text(hjust = 0.01, face = "bold", size = 40, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 20), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 25), color = "red"),
+    panel.spacing = unit(4, "lines"))
+
+spec_plots
+
+```
+
+
+##### Neutral Spec
+
+> Note these codes for neutral or gradual two tend to be universal
+
+```{r}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define the theme
+  mytheme <- theme_cowplot() +
+    theme(legend.position = "none",
+          axis.text.x = element_text(size = 20, face = "bold"),
+          axis.text.y = element_text(size = 20, face = "bold"),
+          axis.line = element_line(linewidth = 5),
+          axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+          axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+          strip.text = element_text(size = 20, face = "bold"),
+          panel.spacing = unit(3, "lines"),
+          panel.grid = element_blank())
+
+  # Get the list of files matching the specified pattern
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+"), # Allow varying genome numbers
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Selection = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "100" ~ "Polygenic",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+
+  # Set up parallel backend
+  num_cores <- detectCores()
+  cl <- makeCluster(max(1, num_cores - 16))
+  registerDoParallel(cl)
+
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Selection = params$Selection,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, genome, n, H, SD, Gen, Selection, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  # Filter the data based on H, SD, and Gen values, handling NA values
+  filtered_data <- combined_data %>%
+    filter(
+      (H == 0.1 & (SD == 1 | is.na(SD)) & (Gen == 10 | is.na(Gen))) |
+      (H == 0.5 & (SD == 2 | is.na(SD)) & (Gen == 20 | is.na(Gen))) |
+      (H == 0.8 & (SD == 4 | is.na(SD)) & (Gen == 30 | is.na(Gen)))
+    )
+
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, genome, H, SD, Gen, Selection, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, Selection, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Selection = params$Selection,
+      param_combination = params$param_combination
+    )
+  }
+
+  stopCluster(cl)
+
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      !is.na(Gen) & Gen == 10 ~ 40,
+      !is.na(Gen) & Gen == 20 ~ 50,
+      !is.na(Gen) & Gen == 30 ~ 80,
+      TRUE ~ 60
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+
+  # Generate the spectral plots faceted by Selection, H, SD, and Gen
+  fft_plots <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+    geom_line(linewidth = 1.1) +
+    facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 1) +
+    labs(x = NULL, y = NULL) +
+    mytheme
+
+  return(fft_plots)
+}
+
+```
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 8, echo=FALSE}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1)(SD(1|4))?(Gen(10|30))?\\.csv$"
+
+neut_spec_plots <- run_fft_analysis(dirpath, pattern)
+neut_spec_plots <- neut_spec_plots + 
+  labs(title = "A") + # x = "Periodicity",
+  theme(plot.title = element_text(hjust = 0.01, face = "bold", size = 40, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 20), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 25), color = "red"),
+    panel.spacing = unit(4, "lines"))
+
+neut_spec_plots
+```
+
+##### Gradual II
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 8, echo=FALSE}
+
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define the theme
+  mytheme <- theme_cowplot() +
+    theme(legend.position = "none",
+          axis.text.x = element_text(size = 20, face = "bold"),
+          axis.text.y = element_text(size = 20, face = "bold"),
+          axis.line = element_line(linewidth = 5),
+          axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+          axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+          strip.text = element_text(size = 20, face = "bold"),
+          panel.spacing = unit(3, "lines"),
+          panel.grid = element_blank())
+
+  # Get the list of files matching the specified pattern
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+"), # Allow varying genome numbers
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Selection = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "100" ~ "Polygenic",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+
+  # Set up parallel backend
+  num_cores <- detectCores()
+  cl <- makeCluster(max(1, num_cores - 16))
+  registerDoParallel(cl)
+
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Selection = params$Selection,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, genome, n, H, SD, Gen, Selection, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  # Filter the data based on H, SD, and Gen values, handling NA values
+  filtered_data <- combined_data %>%
+    filter(
+      (H == 0.1 & (SD == 1 | is.na(SD)) & (Gen == 10 | is.na(Gen))) |
+      (H == 0.5 & (SD == 2 | is.na(SD)) & (Gen == 20 | is.na(Gen))) |
+      (H == 0.8 & (SD == 4 | is.na(SD)) & (Gen == 30 | is.na(Gen)))
+    )
+
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, genome, H, SD, Gen, Selection, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, Selection, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Selection = params$Selection,
+      param_combination = params$param_combination
+    )
+  }
+
+  stopCluster(cl)
+
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      !is.na(Gen) & Gen == 10 ~ 40,
+      !is.na(Gen) & Gen == 20 ~ 50,
+      !is.na(Gen) & Gen == 30 ~ 80,
+      TRUE ~ 60
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+
+  # Generate the spectral plots faceted by Selection, H, SD, and Gen
+  fft_plots <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+    geom_line(linewidth = 1.1) +
+    facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 2) +
+    labs(x = NULL, y = NULL) +
+    mytheme
+
+  return(fft_plots)
+}
+
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1|5)(SD(1|2))?(Gen(10|30))?\\.csv$"
+
+gradII_spec_plots <- run_fft_analysis(dirpath, pattern)
+gradII_spec_plots <- gradII_spec_plots + 
+  labs(title = "B") +
+  theme( plot.title = element_text(hjust = 0.01, face = "bold", size = 40, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 20), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 25), color = "red"),
+    panel.spacing = unit(4, "lines"))
+
+gradII_spec_plots
+```
+##### Neut and Grad II
+```{r, warning=FALSE, fig.width = 20, fig.height = 16, echo=FALSE}
+
+library(cowplot)
+library(ggplot2)
+
+# Remove axis titles from individual plots
+neut_spec_plots <- neut_spec_plots + theme(axis.title = element_blank())
+gradII_spec_plots <- gradII_spec_plots + theme(axis.title = element_blank())
+
+# Adjust the plot margins to make room for axis labels and tick labels
+adjusted_neut_spec_plots <- neut_spec_plots + 
+  theme(plot.margin = margin(t = 5, r = 5, b = 25, l = 25))
+adjusted_gradII_spec_plots <- gradII_spec_plots + 
+  theme(plot.margin = margin(t = 5, r = 5, b = 25, l = 25))
+
+# Combine the plots
+combined_plot <- plot_grid(
+  adjusted_neut_spec_plots, 
+  adjusted_gradII_spec_plots, 
+  ncol = 2, align = "hv"
+)
+
+# Add shared axes labels using ggdraw and draw_label
+final_plot <- ggdraw() +
+  draw_plot(combined_plot, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
+  draw_label("Periodicity (Generations)", x = 0.5, y = 0.015, vjust = 0, size = 40, color = "red", fontface = "bold") +
+  draw_label("Spectral Density", x = 0.015, y = 0.5, angle = 90, hjust = 0, size = 40, color = "red", fontface = "bold")
+
+print(final_plot)
+
+```
+
+
+### Parameters
+
+```{r}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  # Load necessary libraries
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels and centered plot title
+  mytheme <- theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 40, face = "bold"),
+        axis.text.y = element_text(size = 40, face = "bold"),
+        axis.line = element_line(linewidth = 5),
+        axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+        axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+        strip.text = element_text(size = 40, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),  # Adjusted regex
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen"))
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD), paste0("_SD", SD), ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  # Set up parallel backend
+  num_cores <- detectCores()
+  num_cores_to_use <- max(1, num_cores - 16)  # Leave at least 16 cores unused
+  
+  cl <- makeCluster(num_cores_to_use)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination
+      )
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- combined_data %>%
+    group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting in parallel
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    # Compute period
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      param_combination = params$param_combination
+    )
+  }
+  
+  # Stop cluster
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter Period after grouping by param_combination
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(
+      # Set threshold based on Gen value
+      threshold = case_when(
+        Gen == 10 ~ 20,
+        Gen == 20 ~ 30,
+        Gen == 30 ~ 40,
+        TRUE ~ 60
+      )
+    ) %>%
+    filter(Period < threshold) %>%
+    ungroup()
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    ) #%>%
+  #filter((H == 0.1 & SD == 1 & Gen == 10) |
+   #      (H == 0.8 & SD == 4 & Gen == 30))
+  
+  # Generate plots for each unique combination of n and Gen
+  unique_n_Gen_values <- unique(paste0("n_", plot_data$n))
+  
+  fft_plots <- list()
+  
+  for (n_Gen_value in unique_n_Gen_values) {
+    # Split n_Gen_value back into n and Gen
+    n_value <- as.numeric(str_extract(n_Gen_value, "(?<=n_)[^_]+"))
+    Gen_value <- as.numeric(str_extract(n_Gen_value, "(?<=Gen)[^_]+"))
+    
+    plot_df <- plot_data %>%
+      filter(n == n_value)
+    
+    # Determine the faceting variables
+    if (all(plot_df$SD_label == "No SD")) {
+      # If SD is missing, facet only by H_label
+      facet_formula <- ~ H_label
+    } else {
+      # Facet by SD_label and H_label
+      facet_formula <- H_label ~ SD_label + Gen_label
+    }
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(facet_formula, scales = "free", ncol = 4) +  # Set scales to "free"
+      labs(
+        #title = paste("Spectral Analysis for", n_Gen_value),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[n_Gen_value]] <- p
+    
+    # # Save the plot with n and Gen in filename
+    # filename <- paste0("Spectral_", n_Gen_value, ".png")
+    # ggsave(filename = file.path(save_dir, filename), plot = p)
+  }
+  
+  return(fft_plots)
+}
+```
+
+```{r, warning=FALSE, fig.width = 25, fig.height = 8, echo=FALSE}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern = "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+
+spec_plots <- run_fft_analysis(dirpath, pattern)
+spec_plots
+```
+
+#### Gradual II
+
+```{r, warning=FALSE, fig.width = 25, fig.height = 12, echo=FALSE}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  # Load necessary libraries
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels and centered plot title
+  mytheme <- theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 40, face = "bold"),
+        axis.text.y = element_text(size = 40, face = "bold"),
+        axis.line = element_line(linewidth = 5),
+        axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+        axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+        strip.text = element_text(size = 40, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),  # Adjusted regex
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen"))
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD), paste0("_SD", SD), ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  # Set up parallel backend
+  num_cores <- detectCores()
+  num_cores_to_use <- max(1, num_cores - 16)  # Leave at least 16 cores unused
+  
+  cl <- makeCluster(num_cores_to_use)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination
+      )
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- combined_data %>%
+    group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting in parallel
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    # Compute period
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      param_combination = params$param_combination
+    )
+  }
+  
+  # Stop cluster
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter Period after grouping by param_combination
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(
+      # Set threshold based on Gen value
+      threshold = case_when(
+        Gen == 10 ~ 20,
+        Gen == 20 ~ 30,
+        Gen == 30 ~ 40,
+        TRUE ~ 60
+      )
+    ) %>%
+    filter(Period < threshold) %>%
+    ungroup()
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    ) #%>%
+  #filter((H == 0.1 & SD == 1 & Gen == 10) |
+   #      (H == 0.8 & SD == 4 & Gen == 30))
+  
+  # Generate plots for each unique combination of n and Gen
+  unique_n_Gen_values <- unique(paste0("n_", plot_data$n))
+  
+  fft_plots <- list()
+  
+  for (n_Gen_value in unique_n_Gen_values) {
+    # Split n_Gen_value back into n and Gen
+    n_value <- as.numeric(str_extract(n_Gen_value, "(?<=n_)[^_]+"))
+    Gen_value <- as.numeric(str_extract(n_Gen_value, "(?<=Gen)[^_]+"))
+    
+    plot_df <- plot_data %>%
+      filter(n == n_value)
+    
+    # Determine the faceting variables
+    if (all(plot_df$SD_label == "No SD")) {
+      # If SD is missing, facet only by H_label
+      facet_formula <- ~ H_label
+    } else {
+      # Facet by SD_label and H_label
+      facet_formula <- H_label ~ SD_label + Gen_label
+    }
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(facet_formula, scales = "free", ncol = 2) +  # Set scales to "free"
+      labs(
+        #title = paste("Spectral Analysis for", n_Gen_value),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[n_Gen_value]] <- p
+    
+    # # Save the plot with n and Gen in filename
+    # filename <- paste0("Spectral_", n_Gen_value, ".png")
+    # ggsave(filename = file.path(save_dir, filename), plot = p)
+  }
+  
+  return(fft_plots)
+}
+
+dirpathII <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern = "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+
+spec_plotsII <- run_fft_analysis(dirpathII, pattern)
+spec_plotsII
+```
+
+## Phenotypes
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(cowplot)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(purrr)
+library(doParallel)
+
+# Custom theme for plots
+mytheme <- function(){
+  theme(axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"), 
+        plot.title = element_text(hjust = 0.5))
+}
+
+# Function to process phenotype files
+process_files <- function(dirpath, pattern) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    H <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    SD <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    Gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    selection_label <- ifelse(loci == 1, "Monogenic",
+                              ifelse(loci == 10, "Oligogenic", "Polygenic"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(H = H, loci = loci, SD = SD, Gen = Gen,
+             replicate = as.factor(replicate),
+             Selection = selection_label,
+             h2_sd = paste("h2 = ", H," ", "sd = ", SD, sep = ""),
+             loci_gen = paste("loci = ", loci," ", "gen = ", Gen, sep = ""),
+             Fitness = exp(-(1/125) * (Phenotype - Optimum)^2),
+             Optimum = ifelse(Optimum == max(Optimum, na.rm = TRUE), "High", "Low"))
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) %>%
+    filter(Generation == 0 | Generation %% 30 == 0 & Generation <=300)
+  
+  return(combined_data)
+}
+
+# Directory path and pattern for files
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^MeanPhenotypes\\d+_n(1|10|300)_H0\\.(1|5|8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+
+# Process the files and get combined data
+combined_data <- process_files(dirpath, pattern)
+
+# Filter data to include only specific combinations of H, SD, and Gen
+filtered_data <- combined_data 
+
+# Ensure the gen variable is included in the data and facets
+filtered_data <- filtered_data %>%
+  mutate(Gen = factor(Gen, levels = unique(Gen)))
+
+# Plotting phenotypes
+
+phenotype_plots <- filtered_data %>%
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_boxplot(aes(group = Generation), size = 1, alpha = 1) + # , color = Optimum
+  facet_grid(Selection ~ H + SD + Gen, labeller = labeller(
+    Selection = function(x) x,
+    H = label_both,
+    SD = label_both,
+    Gen = label_both)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        #axis.text.x = element_text(angle = 45, hjust = 1, size = 40, face = "bold"),
+        #axis.text.y = element_text(size = 40, face = "bold"),
+        axis.text = element_blank(),
+        axis.line = element_line(linewidth = 5),
+        axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 25)),
+        axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+        strip.text = element_text(size = 40, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+```
+
+```{r, warning=FALSE, fig.width = 25, fig.height = 12, echo=FALSE}
+phenoplott <- phenotype_plots + 
+  labs(title = "B", x = "Generation", y = "Phenotype") +
+  theme(
+    plot.title = element_text(hjust = 0.01, face = "bold", size = 40, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 20), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 25), color = "red"),
+    panel.spacing = unit(4, "lines")
+  )
+phenoplott
+```
+
+
+## Neutral and Constant selection models
+
+### Neutral Selection
+
+#### Allele frequency
+
+##### Monogenic
+
+```{r}
+dir_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome\\d+_n(1)_H0\\.(1)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+myfiles <- list.files(dir_path, pattern, full.names = TRUE)
+
+dataset <- list()
+for(file in myfiles){
+   H <- str_extract(file, "(?<=H)\\d\\.\\d")
+  SD <- str_extract(file, "(?<=SD)\\d")
+  Gen <- str_extract(file, "(?<=Gen)\\d+")
+  Repl <- str_extract(file, "(?<=genome)\\d+")
+  data <- read.csv(file) %>% mutate( H = H, SD = SD, Gen = Gen, Repl = Repl)
+  dataset[[file]] <- data
+}
+
+df_data <- bind_rows(dataset)
+
+```
+
+```{r}
+df_data %>% ggplot(aes(Generation, Frequency, group = factor(Repl), color = factor(Repl)))+
+  geom_line(size = 0.2)+
+  theme_classic()+
+ mytheme
+```
+
+##### Oligoogenic
+
+```{r}
+source("AlleleFrequencyPlotCode.R")
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <-  "^genome10_n\\d+_H0.1_*" # "^genome(1|2|3)_n\\d+_H0.1_*" # "^genome15\\D" #(\\D|$)
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
+```
+### Constant Selection
+
+```{r}
+source("AlleleFrequencyPlotCode.R")
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome10\\D" #(\\D|$)
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
+```
+
+#### Instantaneous
+
+```{r}
+source("AlleleFrequencyPlotCode.R")
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome10\\D" #(\\D|$)
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plots
+```
+
+### Gradual I
+
+```{r}
+source("AlleleFrequencyPlotCode.R")
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome10\\D" #(\\D|$)
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plot
+```
+
+#### Gradual II
+
+```{r}
+source("AlleleFrequencyPlotCode.R")
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome10\\D" #(\\D|$)
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+plot
+```
+
