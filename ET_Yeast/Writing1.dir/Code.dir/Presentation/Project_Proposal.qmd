@@ -1,0 +1,2407 @@
+---
+title: "Project_Proposal"
+author: "ET"
+format: html
+editor: visual
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyr)
+library(ggplot2)
+library(tidyselect)
+library(dplyr)
+library(stringr)
+library(cowplot)
+library(ggridges)
+theme_set(theme_cowplot())
+```
+
+```{r, echo=FALSE, message=FALSE}
+mytheme <- function(){
+  theme_set(theme_cowplot())+
+    theme(axis.title = element_text(face = "bold"),
+          axis.text = element_text(face = "italic", size = 12),
+          axis.line = element_line(size = 1),
+          plot.title = element_text(hjust = 0.5),
+          legend.position = "none")
+}
+```
+
+```{r, echo=FALSE}
+########### Infinitisimal Model #################
+a = 5
+b = 25
+x = seq(1:100)
+y <- function(x){
+  Y = a*exp(-x/b)
+}
+Y <- y(x)
+z = data.frame(Y, x)
+
+z %>% ggplot(aes(x,Y))+
+  geom_line(linewidth = 2)+
+  annotate("text", x = 55, y = max(Y)/1.5, label = "infinitesimal model", fontface = "bold", size = 10) +  #  Add this line
+  labs(x = "Loci", y = "Effect", size = 17)+
+  theme_set(theme_cowplot())+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+```
+
+## Selection Pressure
+
+```{r, echo=FALSE}
+Opti_Gen <- tibble(Generation = seq(1:100),
+                   Optimum1 = rep(c(rep(110, 10), rep(90, 10)), 5),
+                   Optimum2 = rep(c(rep(105, 10), rep(95, 10)), 5))
+
+mu_pheno = mean(Opti_Gen$Optimum1)
+
+Opt_Data <- Opti_Gen %>% 
+  filter(Generation == 0 | Generation %% 25 != 0)
+
+p2 <- ggplot()+
+  geom_line(data = Opt_Data, aes(x = Generation, y = (Optimum1 - 100)/2.5), size = 1)+
+  #geom_line(data = Opt_Data, aes(x = Generation, y = Optimum2), size = 1, color = "blue", linetype = "dotted")+
+  #geom_hline(yintercept = mu_pheno, col = "darkred", size = 1)+
+ # annotate("text", x = 55, y = mu_pheno + 0.5, 
+    #       label = "Mean Phenotype", 
+    #       size = 5, vjust = 0.1, hjust = 0., 
+    #       col = "darkred", angle = 85)+
+  #labs(x = NULL, y = NULL)+
+  labs(x = "Generation", y = "Optimum")+
+  theme_set(theme_cowplot())c
+
+p2
+
+```
+
+```{r, echo=FALSE}
+Generation <- seq(1, 100, length.out = 400) 
+phenotypes <- rnorm(10000, 0, 1)
+Optimum <- 10 *sin( pi* Generation / 25) /2.5
+df <- data.frame(Generation, Optimum) 
+
+p3 <- ggplot(df) + 
+  geom_line(aes(Generation, Optimum), size = 1) + 
+  #geom_hline(yintercept = mean(Optimum), 
+ #            color = "darkred", size = 1)+ 
+ # annotate("text", x = 40, y = 100.5, 
+  #         label = "Mean Phenotype", 
+ #          size = 5, vjust = 0.1, hjust = 0, 
+  #         col = "darkred", angle = 85)+ 
+  #labs(x = NULL, y = NULL) + #  x = "Generation", y = "Phenotype"
+  labs(x = "Generation", y = "Optimum")+
+  theme_set(theme_cowplot())+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+p3
+
+```
+
+```{r, echo=FALSE}
+# Generation sequence from 1 to 2000
+Generation <- c(1:100)
+phenotypes <- rnorm(10000, 0, 1)
+# Signals vector
+signals = c(12, 22, 10, 16) # 5, 10, 20, 30
+
+# Initialize Optimum vector
+Optimum = rep(0, length(Generation))
+
+# Loop over each signal to calculate the Optimum
+for (i in signals) {
+    #Optimum = Optimum + 4 * sin((pi) * Generation / i)
+  Optimum = Optimum + (mean(phenotypes) + sd(phenotypes)*4) * sin((22/7) * Generation / i)
+}
+Optimum = Optimum / 4
+
+# Create data frame for plotting
+df <- data.frame(Generation, Optimum)
+
+# Load necessary libraries
+library(ggplot2)
+library(cowplot)
+library(dplyr)
+
+# Plot the Optimum over the first 501 generations
+p4 <- ggplot(df %>% filter(Generation < 502)) + 
+    geom_line(aes(Generation, Optimum), size = 1) +
+    #geom_hline(yintercept = mean(phenotypes), color = "darkred", size = 5) +
+    #annotate("text", x = 75, y = 0.1, label = "Mean Phenotype", size = 10, vjust = 0.1, hjust = 0, col = "darkred", angle = 70) + 
+    
+    ylim(-4, 4) +  # Set y-axis limits
+    labs(x = "Generation", y = "Optimum")+
+  theme_set(theme_cowplot())+
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+print(p4)
+
+```
+
+```{r, echo=FALSE, fig.width = 8, fig.height = 4}
+mygrid <- plot_grid(p1, p2, p3, p4, labels = "AUTO", label_size = 10,label_colour = NULL, label_x = 0.15, label_y = 1.02, hjust = -0.5, vjust = 1.5, scale = 1,ncol = 2, align = "hv") +
+  theme(plot.margin = margin(t = 10, r = 10, b = 10, l = 10)) +
+  draw_label("Generation", size = 17, x = 0.5, y = -0.0105, hjust = .3, fontface = "bold")+
+  draw_label("Phenotype", size = 17, x = -0.007, y = 0.5, vjust = 0.5, angle = 90, fontface = "bold")
+
+mygrid
+
+```
+
+## Population Size
+
+```{r, warning = FALSE, echo = FALSE}
+library(ggplot2)
+library(cowplot)
+library(gganimate)
+library(gifski)
+
+mytheme <- theme(
+  axis.text = element_text(size = 20, face = "bold"),
+  axis.line = element_line(size = 2),
+  axis.title = element_text(size = 20, face = "bold"),
+  strip.text = element_text(size = 20, face = "bold"),
+  legend.title = element_text(size = 20, face = "bold"),
+  legend.text =  element_text(size = 20, face = "bold")
+)
+
+a <- 10000
+b <- 3000
+x <- seq(1, 100, length.out = 100)
+yi <- 3000 + 7000 / (1 + exp(-0.1 * (x - 50)))
+yii <- rep(c(rep(a, 25), rep(b, 25)), 2)
+yiii <- 3500 * sin(x / 10) + 6500
+data <- data.frame(x = x, yi = yi, yii = yii, yiii = yiii)
+
+p <- ggplot(data) +
+  geom_line(aes(x = x, y = 6500, color = "Pop A"), size = 2) +
+  geom_line(aes(x = x, y = yi, color = "Pop B"), size = 2) +
+  geom_line(aes(x = x, y = yii, color = "Pop C"), size = 2, linetype = "dotdash") +
+  geom_line(aes(x = x, y = yiii, color = "Pop D"), size = 2, linetype = "dashed") +
+  labs(x = "Generation", y = "Population", color = "Functions: ") +
+  scale_color_manual(values = c("Pop A" = "aquamarine4", "Pop B" = "blue", "Pop C" = "lightpink4", "Pop D" = "hotpink")) +
+  theme_cowplot() +
+  theme(legend.position = "bottom") +
+  mytheme +
+  transition_reveal(x)
+
+# Create the animation with gifski_renderer
+anim <- animate(p, nframes = 60, fps = 10, width = 800, height = 400, renderer = gifski_renderer())
+
+# # Save the animation
+# anim_save("~/Desktop/animated_plot.gif", animation = anim)
+anim
+```
+
+## Population size and Selection Pressure
+
+### Different time
+
+```{r, warning = FALSE, echo = FALSE}
+library(ggplot2)
+library(cowplot)
+library(gganimate)
+library(gifski)
+
+
+x1 <- seq(0, 8 * pi, length.out = 400)   # 4 cycles
+x2 <- seq(0, 8 * pi, length.out = 400) 
+y1 <- sin(x1)
+y2 <- sin(x2 + 2)
+data1 <- data.frame(x1, x2 , y1 = y1, y2 = y2, frame = 1:400)
+
+# Plot
+p1 <- ggplot(data1) +
+  geom_line(aes(x = x1, y = y1, color = "Selection"), size = 2) +
+  geom_line(aes(x = x2, y = y2, color = "Population"), size = 2) +
+  labs(x = NULL, y = NULL, color = "Factors: ") +
+  scale_color_manual(values = c("Selection" = "steelblue", "Population" = "darkorchid1")) +
+  theme_cowplot() +
+  theme(
+    legend.position = "bottom",
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank()
+  ) +
+  transition_reveal(frame)
+
+# Create and save the animation
+anim1 <- animate(p1, nframes = 200, fps = 10, width = 800, height = 400, renderer = gifski_renderer())
+
+#anim_save("~/Desktop/animated_Pop_Select1.gif", animation = anim1)
+
+anim1
+```
+
+### Same time
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(gganimate)
+library(gifski)
+
+# Data for two sinusoidal signals with the same wavelength but different phase and amplitude
+x <- seq(0, 8 * pi, length.out = 400)  # 4 cycles
+y1 <- sin(x)                # First signal
+y2 <- 2 * sin(x + pi)       # Second signal, shifted by π (opposite phase)
+
+# Create a data frame
+data1 <- data.frame(x = x, y1 = y1, y2 = y2, frame = 1:400)
+
+# Plot the signals
+p2 <- ggplot(data1) +
+  geom_line(aes(x = x, y = y1, color = "Selection"), size = 2) +
+  geom_line(aes(x = x, y = y2, color = "Population"), size = 2) +
+  labs(x = NULL, y = NULL, color = "Factors: ") +
+  scale_color_manual(values = c("Selection" = "steelblue", "Population" = "darkorchid1")) +
+  theme_cowplot() +
+  theme(
+    legend.position = "bottom",
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank()
+  ) +
+  transition_reveal(frame)
+
+# Create and save the animation
+anim2 <- animate(p2, nframes = 200, fps = 10, width = 800, height = 400, renderer = gifski_renderer())
+
+# anim_save("~/Desktop/animated_Pop_Select2.gif", animation = anim2)
+
+anim2
+```
+
+## Spectral Analysis
+
+```{r, warning = FALSE, echo = FALSE}
+
+  mytheme <- theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+    axis.text.y = element_text(size = 15, face = "bold"),
+    axis.line = element_line(linewidth = 1),
+    axis.title = element_text(size = 15, face = "bold"),
+    strip.text = element_text(size = 15, face = "bold"),
+    plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),  # Centered title
+    panel.spacing = unit(1, "lines")
+  ) +
+    theme(panel.grid = element_blank())
+
+
+set.seed(123)
+
+time <- seq(0, 8 * pi, length.out = 400)  
+signal1 <- sin(time)                
+signal2 <- 2 * sin(time * pi)       
+signal3 <- 3 * sin(time * pi*2)   
+
+combined_signal <- signal1 + signal2 + signal3
+
+
+data <- data.frame(time = time, amplitude = combined_signal)
+
+
+sp1 <- ggplot(data, aes(x = time, y = combined_signal)) +
+  geom_line(color = "darkred") +
+  labs(title = "Combined Signal", x = "Time (s)", y = "Amplitude") +
+  theme_bw()+
+  mytheme
+
+sp2 <-  ggplot(data, aes(x = time, y = signal1)) +
+  geom_line(color = "magenta") +
+  labs(title = "Signals", x = NULL, y = NULL) +
+  theme_bw()+
+  mytheme
+
+sp3 <-  ggplot(data, aes(x = time, y = signal2)) +
+  geom_line(color = "darkmagenta") +
+  labs(x = NULL, y = "Amplitude") +
+  theme_bw()+
+  mytheme
+
+sp4 <- ggplot(data, aes(x = time, y = signal3)) +
+  geom_line(color = "magenta4") +
+  labs(x = "Time", y = NULL) +
+  theme_bw()+
+  mytheme
+
+sp1
+
+
+spec_result <- spectrum(combined_signal, plot = FALSE)
+
+# Extract the frequency and spectral density (amplitude)
+frequency <- spec_result$freq
+amplitude <- spec_result$spec
+
+
+fft_data <- data.frame(frequency = frequency, amplitude = amplitude) 
+
+
+ggplot(fft_data, aes(x = frequency, y = amplitude)) +
+  geom_line(color = "red") +
+  labs(title = "Decomposed Frequency", 
+       x = "Frequency (Hz)", 
+       y = "Amplitude") +
+  theme_bw()+
+  mytheme
+```
+
+```{r, fig.width=6, fig.height = 3}
+
+# Assuming sp2, sp3, and sp4 are your ggplot objects
+library(cowplot)
+
+# Combine plots using plot_grid
+combined_plot <- plot_grid(sp2, sp3, sp4, ncol = 1, align = "v", axis = "lr")
+
+
+combined_plot+ theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
+    axis.text.y = element_text(size = 15, face = "bold"),
+    axis.line = element_line(linewidth = 1),
+    axis.title = element_text(size = 15, face = "bold"),
+    strip.text = element_text(size = 15, face = "bold"),
+    plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),  # Centered title
+    panel.spacing = unit(1, "lines")
+  ) +
+    theme(panel.grid = element_blank())
+```
+
+```{r}
+a <- 7
+b <- 5
+c <- 3
+
+d <- c(c,b,a)
+
+barplot(d,500)
+```
+
+```{r, echo=FALSE}
+# Load necessary library
+library(ggplot2)
+
+mytheme <- function(){
+  theme_set(theme_cowplot())+
+    theme(axis.title = element_text(face = "bold"),
+          axis.text = element_text(face = "italic", size = 12),
+          axis.line = element_line(size = 1),
+          plot.title = element_text(hjust = 0.5),
+          legend.position = "none")
+}
+
+# Sample data
+set.seed(123)
+data <- data.frame(
+  Year = 2000:2020,
+  Population = cumsum(runif(21, min = 0, max = 100))
+)
+
+# Fit a linear model
+model <- lm(Population ~ Year, data = data)
+
+# Predict future values
+future_years <- data.frame(Year = 2021:2030)
+future_predictions <- predict(model, newdata = future_years)
+
+# Combine data
+future_data <- data.frame(Year = 2021:2030, Population = future_predictions)
+combined_data <- rbind(data, future_data)
+
+# Plot
+ggplot(combined_data, aes(x = Year, y = Population)) +
+  geom_line(color = "blue") +
+  geom_point(data = data, aes(x = Year, y = Population), color = "red") +
+  geom_line(data = future_data, aes(x = Year, y = Population), color = "darkmagenta", linetype = "dashed", size = 2) +
+  theme_classic() +
+  labs(x = "Year", y = "Population") +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"))
+
+```
+
+## Simulated GWAS
+
+```{r, echo=FALSE}
+# Load necessary libraries
+if (!requireNamespace("qqman", quietly = TRUE)) install.packages("qqman")
+library(qqman)
+
+set.seed(123)
+
+# Generate a random dataset of SNPs for budding yeast
+n_snps <- 10000  # Total number of SNPs
+chromosomes <- rep(1:16, length.out = n_snps)  #  Yeast's 16 chromosomes
+positions <- cumsum(sample(1000:2000, n_snps, replace = TRUE))  # Random positions on chromosomes
+
+# Simulate mostly random p-values but ensure some are significant and near non-significant SNPs
+p_values <- runif(n_snps, min = 0, max = 1)  # Random p-values
+
+# Force significant p-values in specific regions close to non-significant SNPs
+significant_snps <- sample(1:(n_snps-2), 100)  # Pick 10 SNPs at random to be significant, ensuring no edge cases
+p_values[significant_snps] <- runif(100, min = 0, max = 1e-3)  # Assign low p-values to make them significant
+
+# Adjust the positions of significant SNPs to be close to non-significant SNPs
+for (i in significant_snps) {
+  p_values[i + 1] <- runif(1, min = 0.05, max = 0.5)  # Assign non-significant values right next to significant SNPs
+  p_values[i - 1] <- runif(1, min = 0.05, max = 0.5)  # Assign non-significant values right next to significant SNPs
+}
+
+# SNPs dataframe
+snp_data <- data.frame(SNP = paste0("rs", 1:n_snps),
+                       CHR = chromosomes,
+                       BP = positions,
+                       P = p_values)
+
+# Use a of pvalue = 0.01 which is 2 in negative log
+threshold <- 0.01
+
+# Generate the Manhattan plot with a -log10(p) threshold of 2
+
+manhattan(snp_data, chr = "CHR", bp = "BP", p = "P", snp = "SNP", 
+          genomewideline = -log10(threshold), 
+          suggestiveline = -log10(1e-3), 
+          highlight = snp_data$SNP[snp_data$P < threshold],
+          col = c("magenta4", "orange3"),
+          main = "Simulated Manhattan Plot")
+```
+
+## Spectral analysis for preliminary
+
+```{r}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  # Load necessary libraries
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels and centered plot title
+  mytheme <- theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 12, face = "bold"),
+        axis.text.y = element_text(size = 12, face = "bold"),
+        axis.line = element_line(linewidth = 2),
+        axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 10)),
+        axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+        strip.text = element_text(size = 12, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),  # Adjusted regex
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen"))
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD), paste0("_SD", SD), ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  # Set up parallel backend
+  num_cores <- detectCores()
+  num_cores_to_use <- max(1, num_cores - 16)  # Leave at least 16 cores unused
+  
+  cl <- makeCluster(num_cores_to_use)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination
+      )
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- combined_data %>%
+    group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting in parallel
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    # Compute period
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      param_combination = params$param_combination
+    )
+  }
+  
+  # Stop cluster
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter Period after grouping by param_combination
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(
+      # Set threshold based on Gen value
+      threshold = case_when(
+        Gen == 10 ~ 40,
+        Gen == 20 ~ 50,
+        Gen == 30 ~ 80,
+        TRUE ~ max(Period)  # Default threshold if Gen is not 10, 20, or 30
+      )
+    ) %>%
+    filter(Period < threshold) %>%
+    ungroup()
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    ) %>%
+  filter((H == 0.1 & SD == 1 & Gen == 10) |
+         (H == 0.8 & SD == 4 & Gen == 30))
+  
+  # Generate plots for each unique combination of n and Gen
+  unique_n_Gen_values <- unique(paste0("n_", plot_data$n))
+  
+  fft_plots <- list()
+  
+  for (n_Gen_value in unique_n_Gen_values) {
+    # Split n_Gen_value back into n and Gen
+    n_value <- as.numeric(str_extract(n_Gen_value, "(?<=n_)[^_]+"))
+    Gen_value <- as.numeric(str_extract(n_Gen_value, "(?<=Gen)[^_]+"))
+    
+    plot_df <- plot_data %>%
+      filter(n == n_value)
+    
+    # Determine the faceting variables
+    if (all(plot_df$SD_label == "No SD")) {
+      # If SD is missing, facet only by H_label
+      facet_formula <- ~ H_label
+    } else {
+      # Facet by SD_label and H_label
+      facet_formula <- H_label ~ SD_label + Gen_label
+    }
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(facet_formula, scales = "free", ncol = 4) +  # Set scales to "free"
+      labs(
+        #title = paste("Spectral Analysis for", n_Gen_value),
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[n_Gen_value]] <- p
+    
+    # # Save the plot with n and Gen in filename
+    # filename <- paste0("Spectral_", n_Gen_value, ".png")
+    # ggsave(filename = file.path(save_dir, filename), plot = p)
+  }
+  
+  return(fft_plots)
+}
+```
+
+##### Instant
+
+```{r, fig.height=14, fig.width=26}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+#source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+pattern = "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run_fft_analysis(dirpath, pattern)
+```
+
+##### gradual II
+```{r}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+#source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+pattern = "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run_fft_analysis(dirpath, pattern)
+```
+
+##### Neutral
+
+```{r}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  # Load necessary libraries
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_cowplot())
+  
+  # Define a custom theme function with bold facet labels and centered plot title
+  mytheme <- theme_cowplot() +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90, hjust = 1, size = 12, face = "bold"),
+          axis.text.y = element_text(size = 12, face = "bold"),
+          axis.line = element_line(linewidth = 2),
+          axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 10)),
+          axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+          strip.text = element_text(size = 12, face = "bold"),
+          panel.spacing = unit(3, "lines"),
+          panel.grid = element_blank())
+  
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  save_dir <- file.path("myimages", last_dir)
+  if (!dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+  
+  # Get a list of all replicate files matching the pattern
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  # Check if files are found
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameter information
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      genome = str_extract(base_name, "genome\\d+") %>% str_remove("genome"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?") %>% str_remove("SD"),
+      Gen = str_extract(base_name, "Gen\\d+") %>% str_remove("Gen")
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD), paste0("_SD", SD), ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  # Set up parallel backend
+  num_cores <- detectCores()
+  num_cores_to_use <- max(1, num_cores - 16)  # Leave at least 16 cores unused
+  
+  cl <- makeCluster(num_cores_to_use)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination
+      )
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- combined_data %>%
+    group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, genome, H, SD, Gen, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting in parallel
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    # Compute period
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      param_combination = params$param_combination
+    )
+  }
+  
+  # Stop cluster
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter Period after grouping by param_combination
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(
+      # Set threshold based on Gen value
+      threshold = case_when(
+        !is.na(Gen) & Gen == 10 ~ 40,
+        !is.na(Gen) & Gen == 20 ~ 50,
+        !is.na(Gen) & Gen == 30 ~ 80,
+        TRUE ~ 60  # Default threshold if Gen is missing or not 10, 20, 30
+      )
+    ) %>%
+    filter(Period < threshold) %>%
+    ungroup()
+  
+  # Prepare data for faceting
+  plot_data <- plot_data %>%
+    mutate(
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n),
+      facet_label = paste0(
+        H_label,
+        ifelse(SD_label != "No SD", paste0(", ", SD_label), ""),
+        ifelse(Gen_label != "No Gen", paste0(", ", Gen_label), "")
+      )
+    )
+  
+  # Remove any filters that exclude data when SD or Gen is missing
+  # You can add filters here if needed, but ensure they handle NA values appropriately
+  
+  # Generate plots for each unique n value
+  unique_n_values <- unique(plot_data$n)
+  
+  fft_plots <- list()
+  
+  for (n_value in unique_n_values) {
+    plot_df <- plot_data %>%
+      filter(n == n_value)
+    
+    p <- ggplot(plot_df, aes(x = Period, y = Spectrum, color = genome, group = genome)) +
+      geom_line(linewidth = 1.1) +
+      facet_wrap(~ facet_label, scales = "free", ncol = 4) +  # Set scales to "free"
+      labs(
+        x = "Period (Generations)",
+        y = "Spectral Density"
+      ) +
+      mytheme
+    
+    fft_plots[[paste0("n_", n_value)]] <- p
+    
+    # Uncomment the following lines if you wish to save the plots
+    # filename <- paste0("Spectral_n_", n_value, ".png")
+    # ggsave(filename = file.path(save_dir, filename), plot = p)
+  }
+  
+  return(fft_plots)
+}
+
+
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/"
+#source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+pattern = "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+run_fft_analysis(dirpath, pattern)
+```
+
+
+## Allele frequency and Phenotypes
+
+### Phenotypes
+
+```{r, fig.height=14, fig.width=26}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(cowplot)
+library(stringr)
+library(plotly)
+library(patchwork)
+library(purrr)
+library(doParallel)
+
+# Custom theme for plots
+mytheme <- function(){
+  theme(axis.text = element_text(size = 17, face = "bold"),
+        axis.line = element_line(size = 2),
+        axis.title = element_text(size = 17, face = "bold"),
+        strip.text = element_text(size = 17, face = "bold"), 
+        plot.title = element_text(hjust = 0.5))
+}
+
+# Function to process phenotype files
+process_files <- function(dirpath, pattern) {
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+  
+  dataframes <- list()
+  for(file in files){
+    replicate <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    H <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    SD <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    Gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    selection_label <- ifelse(loci == 1, "Monogenic",
+                              ifelse(loci == 10, "Oligogenic", "Polygenic"))
+    
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(H = H, loci = loci, SD = SD, Gen = Gen,
+             replicate = as.factor(replicate),
+             Selection = selection_label,
+             h2_sd = paste("h2 = ", H," ", "sd = ", SD, sep = ""),
+             loci_gen = paste("loci = ", loci," ", "gen = ", Gen, sep = ""),
+             Fitness = exp(-(1/125) * (Phenotype - Optimum)^2),
+             Optimum = ifelse(Optimum == max(Optimum, na.rm = TRUE), "High", "Low"))
+    
+    dataframes[[file]] <- data
+  }
+  combined_data <- bind_rows(dataframes) %>%
+    filter(Generation == 0 | Generation %% 30 == 0 & Generation <=500)
+  
+  return(combined_data)
+}
+
+# Directory path and pattern for files
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n(1|10|300)_H0\\.(1|5|8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+
+# Process the files and get combined data
+combined_data <- process_files(dirpath, pattern)
+
+# Filter data to include only specific combinations of H, SD, and Gen
+filtered_data <- combined_data %>%
+  filter((H == 0.1 & SD == 1 & Gen == 10) |
+          (H == 0.5 & SD == 2 & Gen == 20)|
+         (H == 0.8 & SD == 4 & Gen == 30))
+
+# Ensure the gen variable is included in the data and facets
+filtered_data <- filtered_data %>%
+  mutate(Gen = factor(Gen, levels = unique(Gen)))
+
+# Plotting phenotypes
+
+phenotype_plots <- filtered_data %>%
+  ggplot(aes(x = Generation, y = Phenotype)) +
+  geom_boxplot(aes(group = Generation, color = Optimum), size = 1, varwidth = TRUE, alpha = 0.5) +
+  facet_grid(Selection ~ H + SD + Gen, labeller = labeller(
+    Selection = function(x) x,
+    H = label_both,
+    SD = label_both,
+    Gen = label_both)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        axis.line = element_line(linewidth = 5),
+        axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
+        axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 5)),
+        strip.text = element_text(size = 20, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+
+phenotype_plots
+```
+
+### Allele Freq
+
+```{r, fig.height=14, fig.width=26}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(cowplot)
+library(stringr)
+
+rm(list = ls())
+
+# Function to read in the files based on the specified parameters and extract Selection, H, SD, and Gen values using regex
+read_files <- function() {
+  file_list <- list.files(path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/", pattern = "genome10_n(10|70)_H0\\.(1|8)(SD(1|4))?Gen(10|30)\\.csv$", full.names = TRUE)
+  
+  datasets <- lapply(file_list, function(file) {
+    data <- read.csv(file)
+    matches <- str_match(file, "genome10_n([0-9]+)_H([0-9\\.]+)SD([0-9]+)Gen([0-9]+)")
+    selection_type <- as.numeric(matches[2])
+    selection_label <- ifelse(selection_type == 1, "Monogenic",
+                              ifelse(selection_type == 10, "Oligogenic", "Polygenic"))
+    
+    data <- data %>% 
+      mutate(Selection = selection_label,
+             H = as.numeric(matches[3]),
+             SD = as.numeric(matches[4]),
+             Gen = as.numeric(matches[5]))
+    return(data)
+  })
+  
+  return(bind_rows(datasets))
+}
+
+# Read in the data
+Genome_dataset <- read_files() %>% 
+  filter(Generation <= 500) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Monogenic",  
+                                 "Oligogenic", 
+                                 "Polygenic"))
+
+# Set seed for reproducibility
+set.seed(8450)
+
+# Group by Selection and select up to 30 unique positions for each group
+selected_positions <- Genome_dataset %>%
+  group_by(Selection) %>%
+  group_map(~ {
+    positions <- unique(.x$Position)
+    if (length(positions) > 10) {
+      sample(positions, 10)
+    } else {
+      positions
+    }
+  }) %>%
+  unlist()
+
+# Filter dataset to include only selected positions
+filtered_dataset <- Genome_dataset %>%
+  filter(Position %in% selected_positions)
+
+# filtered_dataset <- filtered_dataset %>%
+#   filter((H == 0.1 & SD == 1 & Gen == 10) |
+#          (H == 0.5 & SD == 2 & Gen == 20) |
+#           (H == 0.8 & SD == 4 & Gen == 30))
+
+# Assign specific positions to be highlighted
+highlighted_positions <- c("915217", "644619")
+filtered_dataset <- filtered_dataset %>%
+  mutate(Color = case_when(
+    Selection == "Monogenic" ~ "red",
+    Selection == "Oligogenic" & Position == "915217" ~ "red",
+    Selection == "Polygenic" & Position == "1054696" ~ "red",
+    TRUE ~ "black"
+  ),
+  LineSize = case_when(
+    Color == "darkred" ~ 1.5,
+    TRUE ~ 0.5
+  ))
+
+# Create the plot
+freqplot <- filtered_dataset %>%
+  filter(Generation <= 500) %>%
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position), color = Color, linewidth = LineSize)) +
+  geom_line(alpha = 1) +
+  scale_color_identity() +
+  scale_linewidth_identity() +
+  facet_grid(Selection ~ H + SD + Gen, labeller = labeller(
+    Selection = function(x) x,
+    H = label_both,
+    SD = label_both,
+    Gen = label_both
+  )) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        axis.line = element_line(linewidth = 5),
+        axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
+        axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
+        strip.text = element_text(size = 20, face = "bold"),
+        panel.spacing = unit(3, "lines"),
+        panel.grid = element_blank())
+
+# Print the plot
+print(freqplot)
+```
+
+### Three in One
+
+#### Freq
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+# Function to extract H, SD, and Gen values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  
+  return(list(H = h_value, SD = sd_value, Gen = gen_value))
+}
+
+# Function to create the plot
+create_plot <- function(path, pattern) {
+  # List all relevant files using the provided path and pattern
+  file_list <- list.files(path = path, pattern = pattern, full.names = TRUE)
+  
+  # Read and combine datasets with extracted parameters
+  combined_dataset <- map_df(file_list, function(file) {
+    data <- read.csv(file)
+    params <- extract_params(file)
+    data <- data %>%
+      mutate(H = params$H, SD = params$SD, Gen = params$Gen) %>%
+  filter((H == 0.1 & SD == 1 & Gen == 10) |
+         (H == 0.8 & SD == 4 & Gen == 30))
+    
+    return(data)
+  })
+  
+  # Set seed for reproducibility and randomly select at most 30 positions
+  set.seed(123)
+  unique_positions <- unique(combined_dataset$Position)
+  selected_positions <- sample(unique_positions, size = min(30, length(unique_positions)))
+  
+  # Filter dataset to include only selected positions
+  filtered_dataset <- combined_dataset %>% 
+    filter(Position %in% selected_positions)
+  
+  # Create the plot with faceting by H, SD, and Gen
+  freqplot <- filtered_dataset %>% 
+    filter(Generation <= 600) %>% 
+    ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+    geom_line(aes(color = ifelse(factor(Position) == "644619", "highlighted", "other")), size = 0.5) +
+    scale_color_manual(values = c("highlighted" = "red", "other" = "grey")) +
+    facet_wrap(H ~ SD + Gen, labeller = label_both, scales = "free") +
+    theme_cowplot() +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(angle = 90, hjust = 1, size = 12, face = "bold"),
+      axis.text.y = element_text(size = 12, face = "bold"),
+      axis.line = element_line(size = 2),
+      axis.title = element_text(size = 12, face = "bold"),
+      strip.text = element_text(size = 12, face = "bold"),
+      panel.spacing = unit(3, "lines"),
+      panel.grid = element_blank()
+    )
+  
+  return(freqplot)
+}
+
+# Example usage
+path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir"
+pattern <- "genome1_n300_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv"
+freqplot <- create_plot(path, pattern)
+
+print(freqplot)
+
+```
+
+#### Pheno
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(stringr)
+library(purrr)
+
+# Function to extract H, SD, Gen, and Replicate values from filename
+extract_params <- function(filename) {
+  # Extract the values using regular expressions
+  h_value <- str_extract(filename, "(?<=H)\\d\\.\\d")
+  sd_value <- str_extract(filename, "(?<=SD)\\d+")
+  gen_value <- str_extract(filename, "(?<=Gen)\\d+")
+  replicate_value <- str_extract(filename, "(?<=MeanPhenotypes)\\d+")
+
+  # Convert to numeric
+  h_value <- as.numeric(h_value)
+  sd_value <- as.numeric(sd_value)
+  gen_value <- as.numeric(gen_value)
+  replicate_value <- as.numeric(replicate_value)
+
+  return(list(H = h_value, SD = sd_value, Gen = gen_value, Replicate = replicate_value))
+}
+
+# List all relevant files using a pattern that captures any number of replicates
+file_list <- list.files(
+  path = "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir",
+  pattern = "MeanPhenotypes\\d+_n300_H(0\\.1|0\\.8)SD(1|4)Gen(10|30)\\.csv",
+  full.names = TRUE
+)
+
+# Read and combine datasets with extracted parameters
+combined_dataset <- map_df(file_list, function(file) {
+  data <- read.csv(file)
+  params <- extract_params(file)
+  data <- data %>%
+    mutate(
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Replicate = params$Replicate,
+      Optimum = ifelse(Optimum == max(Optimum, na.rm = TRUE), "High", "Low")
+    ) %>%
+  filter((H == 0.1 & SD == 1 & Gen == 10) |
+         (H == 0.8 & SD == 4 & Gen == 30))
+  return(data)
+})
+
+# Filter the data to include Generation 1 and every generation divisible by 30, up to Generation 500
+filtered_data <- combined_dataset %>%
+  filter(
+    (Generation == 1 | (Generation %% 30 == 0)) & Generation <= 600
+  )
+
+# Create the boxplot with faceting by H, SD, and Gen
+phenoplot <- filtered_data %>% 
+  ggplot(aes(x = factor(Generation), y = Phenotype, color = Optimum)) +
+  geom_boxplot() +
+  facet_wrap(H ~ SD + Gen, labeller = label_both, scales = "free", ncol = 4) +
+  theme_cowplot() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 12, face = "bold"),
+    axis.text.y = element_text(size = 12, face = "bold"),
+    axis.line = element_line(size = 2),
+    axis.title = element_text(size = 12, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold"),
+    panel.spacing = unit(3, "lines"),
+    panel.grid = element_blank()
+  ) +
+  xlab("Generation") +
+  ylab("Phenotype")
+
+# Print the plot
+print(phenoplot)
+
+```
+
+#### Spec
+
+```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+#source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
+pattern = "^genome\\d+_n300_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+
+spec_plots <- run_fft_analysis(dirpath, pattern)
+spec_plots[1]
+```
+
+#### All
+
+```{r, warning=FALSE, fig.width = 18, fig.height = 8, echo=FALSE}
+
+freqplot <- freqplot + 
+  labs(title = "A", x = "Generation", y = "Frequency") +
+  theme(
+    plot.title = element_text(hjust = 0.01, face = "bold", size = 15, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 10), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 20), color = "red"),
+    panel.spacing = unit(4, "lines")
+  )
+
+phenoplot <- phenoplot + 
+  labs(title = "B", x = "Generation", y = "Frequency") +
+  theme(
+    plot.title = element_text(hjust = 0.01, face = "bold", size = 15, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 10), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 20), color = "red"),
+    panel.spacing = unit(4, "lines")
+  )
+spec_plot1 <- spec_plots[1] 
+#spec_plot2 <- spec_plots[2]
+
+spec_plot1 <- spec_plot1$n_300 + 
+  labs(title = "C", x = "Periodicity", y = "Spectral Density") +
+  theme(
+    plot.title = element_text(hjust = 0.01, face = "bold", size = 15, color = "red"),
+    axis.title.x = element_text(margin = margin(t = 10), color = "red"),
+    axis.title.y = element_text(margin = margin(r = 20), color = "red"),
+    panel.spacing = unit(4, "lines")
+  )
+
+# spec_plot2 <- spec_plot2$n_300_Gen_30 + 
+#   labs(title = "Spectral Analysis 30 Gen", x = "Periodicity", y = "Spectral Density") +
+#   theme(
+#     plot.title = element_text(hjust = 0.5, face = "bold", size = 30, color = "red"),
+#     axis.title.x = element_text(margin = margin(t = 10), color = "red"),
+#     axis.title.y = element_text(margin = margin(r = 10), color = "red")
+#   )
+#
+#plot_grid(freqplot, phenoplot)
+```
+
+```{r, warning=FALSE, fig.width = 6, fig.height = 6, echo=FALSE}
+plot_grid(freqplot, phenoplot,spec_plot1, ncol = 1)
+```
+
+```{r, warning=FALSE, fig.width = 6, fig.height = 4, echo=FALSE}
+plot_grid(freqplot, phenoplot, ncol = 1)
+```
+
+```{r, warning=FALSE, fig.width = 6, fig.height = 2, echo=FALSE}
+spec_plots
+```
+
+### Proper Orthogonal Decomposition
+
+```{r}
+data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome30_n10_H0.8SD4Gen30.csv") %>% dplyr::select(c(-Effect, -Origin))
+```
+
+```{r}
+data_t <- data %>% pivot_wider(names_from = Position, values_from = Frequency) %>% 
+  dplyr::select(-Generation) 
+
+data_t <- as.data.frame(data_t) %>%
+  mutate_all(~ ifelse(is.na(.), 0, .))
+
+
+mynames <- colnames(data_t)
+
+colnames(data_t) <- NULL
+
+tail(data_t)
+```
+
+```{r}
+svd_reslt <- svd(data_t)
+```
+
+```{r}
+U <- svd_reslt$u
+S <- diag(svd_reslt$d)
+V <- svd_reslt$v
+
+print(dim(S))
+```
+
+```{r}
+# Number of singular values to use
+k <- 2
+
+# Reconstruct the image using the first k singular values
+U_k <- U[, 1:k]
+S_k <- S[1:k, 1:k]
+V_k <- V[, 1:k]
+
+# Reconstructed image matrix
+datarec <- U_k %*% S_k %*% t(V_k)
+
+colnames(datarec) <- mynames
+
+new_datarec <- as.data.frame(datarec) %>% mutate(Generation = rep(1:2000))
+```
+
+```{r}
+new_datarec <- new_datarec %>% pivot_longer(-Generation, names_to = "Position", values_to = "Frequency")
+```
+
+```{r}
+p1 <- new_datarec %>% ggplot(aes(Generation, Frequency, color = Position))+
+  geom_line(linewidth = 0.5)+
+  theme_bw()+
+  theme(legend.position = "none")
+
+p2 <- data%>% ggplot(aes(Generation, Frequency, color = as.factor(Position), group = Position))+
+  geom_line(linewidth = 0.5)+
+  theme_bw()+
+  theme(legend.position = "none")
+
+library(cowplot)
+
+plot_grid(p1,p2, ncol = 1)
+```
+
+
+
+###### 30 sample
+```{r}
+# Read and preprocess your data
+data <- read.csv("~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome30_n100_H0.8SD4Gen30.csv") %>% 
+  dplyr::select(-Effect, -Origin)
+
+data_t <- data %>%
+  pivot_wider(names_from = Position, values_from = Frequency) %>%
+  dplyr::select(-Generation) %>%
+  mutate_all(~ ifelse(is.na(.), 0, .))
+
+mynames <- colnames(data_t)
+colnames(data_t) <- NULL
+
+# Perform SVD
+svd_reslt <- svd(data_t)
+U <- svd_reslt$u
+S <- diag(svd_reslt$d)
+V <- svd_reslt$v
+
+# Reconstruct the data using the first k singular values
+k <- 2
+U_k <- U[, 1:k]
+S_k <- S[1:k, 1:k]
+V_k <- V[, 1:k]
+datarec <- U_k %*% S_k %*% t(V_k)
+colnames(datarec) <- mynames
+
+new_datarec <- as.data.frame(datarec) %>%
+  mutate(Generation = rep(1:2000)) %>%
+  pivot_longer(-Generation, names_to = "Position", values_to = "Frequency")
+
+# Sample 30 positions
+positions_sample <- sample(unique(data$Position), 10)
+
+# Filter datasets for the sampled positions
+data_sample <- data %>% filter(Position %in% positions_sample)
+new_datarec_sample <- new_datarec %>% filter(Position %in% positions_sample)
+
+# Create plots
+p1 <- new_datarec_sample %>%
+  ggplot(aes(Generation, Frequency, color = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+p2 <- data_sample %>%
+  ggplot(aes(Generation, Frequency, color = as.factor(Position), group = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# Display the plots
+library(cowplot)
+plot_grid(p1, p2, ncol = 1)
+
+```
+
+
+#### All replicates
+
+```{r}
+# Generate file paths for all replicates
+file_paths <- paste0(
+  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir//genome",
+  1:30,
+  "_n100_H0.5SD4.csv"
+)
+
+# Read and combine data from all replicates
+data_list <- lapply(1:30, function(i) {
+  file_path <- file_paths[i]
+  data <- read.csv(file_path) %>% 
+    dplyr::select(-Effect, -Origin) %>%
+    mutate(Replicate = i)  # Add replicate number
+  return(data)
+})
+
+# Combine all data into one dataframe
+data_all <- bind_rows(data_list)
+
+```
+
+```{r}
+# Compute mean frequency across replicates
+data_mean <- data_all %>%
+  group_by(Generation, Position) %>%
+  summarise(Frequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup()
+
+```
+
+```{r}
+# Pivot data to wide format
+data_t <- data_mean %>%
+  pivot_wider(names_from = Position, values_from = Frequency) %>%
+  dplyr::select(-Generation) %>%
+  mutate_all(~ ifelse(is.na(.), 0, .))
+
+# Store column names and remove them from data_t
+mynames <- colnames(data_t)
+colnames(data_t) <- NULL
+
+# Perform SVD
+svd_reslt <- svd(data_t)
+U <- svd_reslt$u
+S <- diag(svd_reslt$d)
+V <- svd_reslt$v
+
+# Number of singular values to use
+k <- 3
+
+# Reconstruct the data using the first k singular values
+U_k <- U[, 1:k]
+S_k <- S[1:k, 1:k]
+V_k <- V[, 1:k]
+
+# Reconstructed data matrix
+datarec <- U_k %*% S_k %*% t(V_k)
+colnames(datarec) <- mynames
+
+# Add Generation back to the reconstructed data
+new_datarec <- as.data.frame(datarec) %>%
+  mutate(Generation = unique(data_mean$Generation))
+
+```
+
+```{r}
+# Convert reconstructed data to long format
+new_datarec <- new_datarec %>%
+  pivot_longer(-Generation, names_to = "Position", values_to = "Frequency")
+
+```
+
+```{r}
+# Sample 30 positions
+set.seed(123)  # For reproducibility
+positions_sample <- sample(unique(data_mean$Position), 30)
+
+# Filter datasets for the sampled positions
+data_sample <- data_mean %>% filter(Position %in% positions_sample)
+new_datarec_sample <- new_datarec %>% filter(Position %in% positions_sample)
+
+```
+
+
+```{r}
+# Plot the reconstructed data for the sampled positions
+p1 <- new_datarec_sample %>%
+  ggplot(aes(Generation, Frequency, color = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# Plot the mean data for the sampled positions
+p2 <- data_sample %>%
+  ggplot(aes(Generation, Frequency, color = Position, group = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+
+```{r}
+library(cowplot)
+
+# Combine and display the plots
+plot_grid(p1, p2, ncol = 1)
+
+```
+### Averaging out and applying mixed models
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(cowplot)
+
+# 1. Read and combine data from all replicates
+file_paths <- paste0(
+  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/genome",
+  1,
+  "_n100_H0.1SD3Gen10.csv"
+)
+
+data_list <- lapply(1, function(i) {
+  file_path <- file_paths[i]
+  data <- read.csv(file_path) %>% 
+    dplyr::select(-Effect, -Origin) %>%
+    mutate(Replicate = i)
+  return(data)
+})
+
+data_all <- bind_rows(data_list)
+
+# 2. Compute mean frequency across replicates
+data_mean <- data_all %>%
+  group_by(Generation, Position) %>%
+  summarise(Frequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup()
+
+# 3. Prepare data for SVD without removing column names
+data_wide <- data_mean %>%
+  pivot_wider(names_from = Position, values_from = Frequency) %>%
+  arrange(Generation)  # Ensure consistent ordering
+
+# Store Generation separately
+generations <- data_wide$Generation
+
+# Remove Generation column for SVD
+data_t <- data_wide %>%
+  dplyr::select(-Generation) %>%
+  mutate_all(~ ifelse(is.na(.), 0, .))
+
+# Convert to matrix while retaining column names
+data_t_matrix <- as.matrix(data_t)
+
+# 4. Perform SVD on the matrix with column names intact
+svd_reslt <- svd(data_t_matrix)
+
+U <- svd_reslt$u
+S <- diag(svd_reslt$d)
+V <- svd_reslt$v
+
+# 5. Reconstruct the data using the first k singular values
+k <- 2
+U_k <- U[, 1:k]
+S_k <- S[1:k, 1:k]
+V_k <- V[, 1:k]
+
+# Reconstructed data matrix
+datarec <- U_k %*% S_k %*% t(V_k)
+
+# Assign original column names and row names
+colnames(datarec) <- colnames(data_t_matrix)
+rownames(datarec) <- rownames(data_t_matrix)
+
+# 6. Convert reconstructed data back to a data frame
+new_datarec <- as.data.frame(datarec)
+
+# Add Generation back to the data frame
+new_datarec$Generation <- generations
+
+# 7. Convert data to long format
+new_datarec_long <- new_datarec %>%
+  pivot_longer(-Generation, names_to = "Position", values_to = "Frequency")
+
+# 8. Sample 30 positions for plotting
+set.seed(123)
+positions_sample <- sample(unique(data_mean$Position), 30)
+
+data_sample <- data_mean %>% filter(Position %in% positions_sample)
+new_datarec_sample <- new_datarec_long %>% filter(Position %in% positions_sample)
+
+# 9. Update and create plots
+p1 <- new_datarec_sample %>%
+  ggplot(aes(Generation, Frequency, color = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+p2 <- data_sample %>% mutate(Position = as.factor(Position)) %>% 
+  ggplot(aes(Generation, Frequency, color = Position, group = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# 10. Display the plots
+plot_grid(p1, p2, ncol = 1)
+
+```
+### Ribbon
+
+```{r}
+# 1. Compute summary statistics across replicates
+data_summary <- data_all %>%
+  group_by(Generation, Position) %>%
+  summarise(
+    MeanFrequency = mean(Frequency, na.rm = TRUE),
+    MedianFrequency = median(Frequency, na.rm = TRUE),
+    SD = sd(Frequency, na.rm = TRUE),
+    LowerQuantile = quantile(Frequency, 0.25, na.rm = TRUE),
+    UpperQuantile = quantile(Frequency, 0.75, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# 2. Sample positions for plotting
+set.seed(123)
+positions_sample <- sample(unique(data_summary$Position), 30)
+
+# 3. Plot median frequency with interquartile range
+p <- data_summary %>%
+  filter(Position %in% positions_sample) %>%
+  ggplot(aes(x = Generation, y = MedianFrequency, color = factor(Position), group = factor(Position))) +
+  geom_line() +
+  geom_ribbon(aes(ymin = LowerQuantile, ymax = UpperQuantile, fill = Position), alpha = 0.2, color = NA) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# 4. Display the plot
+print(p)
+
+```
+
+#### Mixed models using residuals
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(lme4)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(cowplot)
+
+# 1. Read and combine data from all replicates
+file_paths <- paste0(
+  "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome",
+  1,
+  "_n100_H0.5SD1.csv"
+)
+
+data_list <- lapply(1, function(i) {
+  file_path <- file_paths[i]
+  data <- read.csv(file_path) %>% 
+    dplyr::select(-Effect, -Origin) %>%
+    mutate(Replicate = i)
+  return(data)
+})
+
+data_all <- bind_rows(data_list)
+
+# Convert Position to a factor if it's not already
+data_all$Position <- as.factor(data_all$Position)
+
+# Center Generation to improve numerical stability
+data_all$Generation_centered <- scale(data_all$Generation, center = TRUE, scale = FALSE)
+
+# Fit the mixed-effects model
+model <- lmer(
+  Frequency ~ Generation_centered +  (1 | Position),
+  data = data_all,
+  REML = FALSE
+)
+
+```
+
+##### Extract residulas
+
+```{r}
+# Add residuals to the data frame
+data_all$Residuals <- resid(model)
+```
+
+##### Residual variance for each Position
+```{r}
+# Calculate residual variance within each position
+residual_variance <- data_all %>%
+  group_by(Position) %>%
+  summarise(
+    ResidualVariance = var(Residuals, na.rm = TRUE),
+    ResidualSD = sd(Residuals, na.rm = TRUE)
+  )
+
+```
+##### Positions with high residual variance
+
+```{r}
+# Rank positions by residual variance
+residual_variance_ranked <- residual_variance %>%
+  arrange(desc(ResidualVariance))
+
+# View top positions with highest residual variance
+top_fluctuating_positions <- residual_variance_ranked %>%
+  head(10)  # Adjust the number as needed
+
+print(top_fluctuating_positions)
+
+```
+
+##### Freq Trajectories
+
+```{r}
+# Get the list of positions to plot
+positions_to_plot <- top_fluctuating_positions$Position
+
+# Filter data for these positions
+data_top_positions <- data_all %>%
+  filter(Position %in% positions_to_plot)
+
+# Compute mean frequency over replicates
+data_plot <- data_top_positions %>%
+  group_by(Generation, Position) %>%
+  summarise(MeanFrequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup()
+
+# Plot frequency trajectories
+ggplot(data_plot, aes(x = Generation, y = MeanFrequency, color = Position)) +
+  geom_line(size = 0.2) +
+  theme_bw() +
+  #theme(legend.position = "none") +
+  labs(title = "Frequency Trajectories of Positions with High Residual Variance",
+       x = "Generation",
+       y = "Mean Frequency")
+
+```
+
+
+##### Residuals over time
+
+```{r}
+# Plot residuals for top positions
+ggplot(data_top_positions, aes(x = Generation, y = Residuals, color = Position)) +
+  geom_line(size = 0.2) +
+  theme_bw() +
+#  theme(legend.position = "none") +
+  labs(title = "Residuals Over Time for Positions with High Residual Variance",
+       x = "Generation",
+       y = "Residuals")
+
+```
+
+
+
+
+### Mixed Models with random effect
+
+```{r}
+# Convert Position to a factor if it's not already
+data_all$Position <- as.factor(data_all$Position)
+
+# Fit the mixed-effects model
+model <- lmer(
+  Frequency ~ Generation + (1 | Position),
+  data = data_all,
+  REML = FALSE
+)
+
+```
+
+```{r}
+# Plot residuals vs fitted values
+plot(model)
+
+# QQ plot of residuals
+qqnorm(residuals(model))
+qqline(residuals(model))
+
+```
+
+```{r}
+# model <- lmer(
+#   Frequency ~ Generation + (1 | Replicate) + (1 | Position),
+#   data = data_all,
+#   REML = FALSE
+# )
+
+```
+
+
+```{r}
+# Extract random effects for positions
+ranef_positions <- ranef(model)$Position
+
+# Convert to a data frame
+ranef_positions_df <- as.data.frame(ranef_positions)
+ranef_positions_df$Position <- rownames(ranef_positions_df)
+colnames(ranef_positions_df) <- c("RandomEffect", "Position")
+
+```
+
+```{r}
+# Calculate the variance of random effects for positions
+variance_positions <- VarCorr(model)$Position[1]
+
+# Print the variance
+print(paste("Variance of random effects for positions:", variance_positions))
+
+
+```
+
+
+```{r}
+# Add absolute value of random effects
+ranef_positions_df <- ranef_positions_df %>%
+  mutate(AbsRandomEffect = abs(RandomEffect))
+
+# Rank positions by absolute random effect
+ranef_positions_ranked <- ranef_positions_df %>%
+  arrange(desc(AbsRandomEffect))
+
+# View the top positions with the largest random effects
+top_fluctuating_positions <- ranef_positions_ranked %>%
+  head(30)  # Adjust the number as needed
+
+print(top_fluctuating_positions)
+
+```
+
+
+```{r}
+# Histogram of random effects
+ggplot(ranef_positions_df, aes(x = abs(RandomEffect))) +
+  geom_histogram(binwidth = 0.01, fill = "blue", color = "black") +
+  theme_bw() +
+  labs(title = "Distribution of Random Effects for Positions",
+       x = "Random Effect (Position Intercept)",
+       y = "Count")
+
+```
+
+
+```{r}
+# Get the list of top fluctuating positions
+tyu <- ranef_positions_df %>% 
+  filter(abs(RandomEffect) <= 0.15)
+
+positions_to_plot <- tyu$Position
+# Filter data for these positions
+data_top_positions <- data_all %>%
+  filter(Position %in% positions_to_plot)
+
+# Compute mean frequency over replicates
+data_plot <- data_top_positions %>%
+  mutate(Position = factor(Position)) %>% 
+  group_by(Generation, Position) %>%
+  summarise(MeanFrequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup()
+
+# Plot frequency trajectories
+ggplot(data_plot, aes(x = Generation, y = MeanFrequency, color = Position)) +
+  geom_line(size = .1) +
+  theme_bw() +
+  theme(legend.position = "none")+
+  labs(title = "Frequency Trajectories of Positions with Largest Random Effects",
+       x = "Generation",
+       y = "Mean Frequency")
+
+```
+```{r}
+# Identify the position with the maximum random effect
+max_random_effect_position <- tyu %>% 
+  filter(RandomEffect == min(RandomEffect)) %>% 
+  pull(Position)
+
+# Plot frequency trajectories with custom colors
+ggplot(data_plot, aes(x = Generation, y = MeanFrequency, color = Position)) +
+  geom_line(size = .2) +
+  scale_color_manual(values = ifelse(levels(data_plot$Position) == max_random_effect_position, "red", "grey")) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(title = "Frequency Trajectories of Positions with Largest Random Effects",
+       x = "Generation",
+       y = "Mean Frequency")
+
+```
+#### Applying SVD and check for Oscillations
+
+```{r}
+#trans_data_plot <- data_plot %>% pivot_longer()
+# Store Generation separately
+generations <- data_plot$Generation
+
+# Remove Generation column for SVD
+data_t <- data_plot %>%
+  pivot_wider(names_from = Position, values_from = MeanFrequency) %>%
+  dplyr::select(-Generation) %>% 
+  mutate_all(~ ifelse(is.na(.), 0, .))
+
+# Convert to matrix while retaining column names
+data_t_matrix <- as.matrix(data_t)
+
+# 4. Perform SVD on the matrix with column names intact
+svd_reslt <- svd(data_t_matrix)
+
+U <- svd_reslt$u
+S <- diag(svd_reslt$d)
+V <- svd_reslt$v
+
+# 5. Reconstruct the data using the first k singular values
+k <- 2
+U_k <- U[, 1:k]
+S_k <- S[1:k, 1:k]
+V_k <- V[, 1:k]
+
+# Reconstructed data matrix
+datarec <- U_k %*% S_k %*% t(V_k)
+
+# Assign original column names and row names
+colnames(datarec) <- colnames(data_t_matrix)
+rownames(datarec) <- rownames(data_t_matrix)
+
+# 6. Convert reconstructed data back to a data frame
+new_datarec <- as.data.frame(datarec)
+
+# Add Generation back to the data frame
+new_datarec$Generation <- seq(1:2000)
+
+# 7. Convert data to long format
+new_datarec_long <- new_datarec %>%
+  pivot_longer(-Generation, names_to = "Position", values_to = "Frequency")
+
+# # 8. Sample 30 positions for plotting
+# #set.seed(123)
+# #positions_sample <- sample(unique(data_mean$Position), 30)
+# 
+# data_sample <- data_mean %>% filter(Position %in% positions_sample)
+# new_datarec_sample <- new_datarec_long %>% filter(Position %in% positions_sample)
+
+# 9. Update and create plots
+p1 <- new_datarec_long %>%
+  filter(Generation <= 1500) %>% 
+  ggplot(aes(Generation, Frequency, color = Position)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# p2 <- data_sample %>% mutate(Position = as.factor(Position)) %>% 
+#   ggplot(aes(Generation, Frequency, color = Position, group = Position)) +
+#   geom_line(linewidth = 0.5) +
+#   theme_bw() +
+#   theme(legend.position = "none")
+# 
+# # 10. Display the plots
+# plot_grid(p1, p2, ncol = 1)
+p1
+```
+
+
+```{r}
+# Calculate variance of random effects for positions
+ranef_positions_df$Variance <- apply(ranef_positions_df[, -ncol(ranef_positions_df)], 1, var)
+
+# Identify positions with high variance
+high_variance_positions <- ranef_positions_df %>%
+  arrange(desc(Variance)) %>%
+  head(10)  # Top 10 positions with highest variance
+
+```
+
+
+```{r}
+# Positions with highest variance
+positions_to_plot <- high_variance_positions$Position
+
+# Filter data for these positions
+data_high_var <- data_all %>%
+  filter(Position %in% positions_to_plot)
+
+# Plot frequencies over time
+ggplot(data_high_var, aes(x = Generation, y = Frequency, color = Replicate)) +
+  geom_line() +
+  facet_wrap(~ Position) +
+  theme_bw()
+
+```
+
+### High FLU
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Assuming 'data_all' is your combined dataset with columns:
+# Generation, Position, Frequency, Replicate
+
+# Compute mean frequency and standard deviation over time for each position
+fluctuation_metrics <- data_all %>%
+  group_by(Position, Generation) %>%
+  summarise(MeanFrequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(Position) %>%
+  summarise(
+    MeanFreq = mean(MeanFrequency, na.rm = TRUE),
+    StdDevFreq = sd(MeanFrequency, na.rm = TRUE)
+  ) %>%
+  mutate(
+    CoefficientOfVariation = StdDevFreq / MeanFreq
+  )
+
+```
+
+#### Calculate Mean Absolute Change (MAC
+
+```{r}
+# Compute Mean Absolute Change for each position
+mac_metrics <- data_all %>%
+  group_by(Position, Generation) %>%
+  summarise(MeanFrequency = mean(Frequency, na.rm = TRUE)) %>%
+  arrange(Position, Generation) %>%
+  group_by(Position) %>%
+  mutate(
+    FrequencyChange = abs(MeanFrequency - lag(MeanFrequency))
+  ) %>%
+  summarise(
+    MeanAbsoluteChange = mean(FrequencyChange, na.rm = TRUE)
+  )
+
+```
+
+
+```{r}
+# Combine fluctuation metrics
+fluctuation_metrics <- fluctuation_metrics %>%
+  left_join(mac_metrics, by = "Position")
+
+```
+
+```{r}
+# Rank positions by Coefficient of Variation
+fluctuation_metrics <- fluctuation_metrics %>%
+  arrange(desc(CoefficientOfVariation))
+
+# View top positions with highest fluctuation
+top_fluctuating_positions <- fluctuation_metrics %>%
+  top_n(10, CoefficientOfVariation)  # Adjust 'n' as needed
+
+print(top_fluctuating_positions)
+
+```
+
+
+```{r}
+# Define a threshold for Coefficient of Variation
+cv_threshold <- 0.1  # Adjust as appropriate
+
+positions_above_threshold <- fluctuation_metrics %>%
+  filter(CoefficientOfVariation > cv_threshold)
+
+print(positions_above_threshold)
+
+```
+
+
+```{r}
+# Get the list of positions to plot
+positions_to_plot <- top_fluctuating_positions$Position
+
+# Filter data for these positions
+data_fluctuating <- data_all %>%
+  filter(Position %in% positions_to_plot)
+
+# Compute mean frequency over replicates
+data_plot <- data_fluctuating %>%
+  group_by(Generation, Position) %>%
+  summarise(MeanFrequency = mean(Frequency, na.rm = TRUE)) %>%
+  ungroup()
+
+```
+
+```{r}
+# Plot frequency trajectories
+ggplot(data_plot, aes(x = Generation, y = MeanFrequency, color = Position)) +
+  geom_line(size = 1) +
+  facet_wrap(~ Position, scales = "free_y") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(title = "Frequency Trajectories of Top Fluctuating Positions",
+       x = "Generation",
+       y = "Mean Frequency")
+
+```
+
+
+### Hierarchical Modeling with brms
+
+```{r}
+# Install brms if not already installed
+install.packages("brms")
+
+library(brms)
+
+```
+
+
+```{r}
+# Define the model formula
+formula <- bf(
+  Frequency ~ Generation * Position + (Generation | Replicate)
+)
+
+```
+
+```{r}
+# Fit the hierarchical model
+bayesian_model <- brm(
+  formula = formula,
+  data = data_all,
+  family = gaussian(),
+  chains = 4,
+  cores = 4,
+  iter = 1000,
+  control = list(adapt_delta = 0.95)
+)
+
+```
+
+
+```{r}
+# View the summary
+summary(bayesian_model)
+
+# Plot posterior distributions
+plot(bayesian_model)
+
+```
+
+```{r}
+# Check trace plots
+plot(bayesian_model, pars = "^b_")
+
+# Posterior predictive checks
+pp_check(bayesian_model)
+
+```
+
+
+### Visualize Model Predictions
+
+```{r}
+# For mixed-effects model
+data_all$Predicted_Frequency <- predict(model)
+
+# For hierarchical model (posterior predictions)
+posterior_preds <- posterior_predict(bayesian_model)
+data_all$Bayesian_Predicted_Frequency <- colMeans(posterior_preds)
+
+```
+
+
+```{r}
+# Sample 30 positions for plotting
+set.seed(123)
+positions_sample <- sample(unique(data_all$Position), 30)
+
+# Filter data for sampled positions
+data_sample <- data_all %>% filter(Position %in% positions_sample)
+
+# Plot mixed-effects model predictions
+ggplot(data_sample, aes(x = Generation, y = Frequency, color = Position)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = Predicted_Frequency), size = 1) +
+  facet_wrap(~ Position) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# Plot Bayesian model predictions
+ggplot(data_sample, aes(x = Generation, y = Frequency, color = Position)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = Bayesian_Predicted_Frequency), size = 1) +
+  facet_wrap(~ Position) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+
+#### Ignore
+```{r}
+# Load necessary library
+library(stats)
+
+# Assuming your data frame is named data_t
+# Convert data frame to matrix
+data_matrix <- as.matrix(data_t)
+
+# Compute the covariance matrix
+cov_matrix <- cov(data_matrix)
+
+# Perform eigen decomposition
+eigen_decomp <- eigen(cov_matrix)
+
+# Extract eigenvalues and eigenvectors
+eigenvalues <- eigen_decomp$values
+eigenvectors <- eigen_decomp$vectors
+
+# Project data onto the principal components
+projected_data <- data_matrix %*% eigenvectors
+
+# Plot the first few principal components to observe periodicity/oscillation
+plot(projected_data[, 1], type = "l", main = "First Principal Component")
+plot(projected_data[, 2], type = "l", main = "Second Principal Component")
+plot(projected_data[, 3], type = "l", main = "Third Principal Component")
+plot(projected_data[, 50], type = "l", main = "4th Principal Component")
+
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(reshape2)
+
+# Assuming you have already projected the data onto the principal components
+# and the result is stored in projected_data
+
+# Select the first 50 principal components
+pc_data <- projected_data[, 1:50]
+
+# Convert to data frame and add an observation index
+pc_df <- data.frame(pc_data)
+pc_df$Observation <- 1:nrow(pc_df)
+
+# Melt the data frame for ggplot
+pc_melted <- melt(pc_df, id.vars = "Observation")
+
+# Plot the first 50 principal components
+ggplot(pc_melted, aes(x = Observation, y = value, color = variable)) +
+  geom_line() +
+  labs(title = "First 50 Principal Components",
+       x = "Observation",
+       y = "Principal Component Value") +
+  theme_minimal()
+
+```
+
+```{r}
+svd_result <- svd(data_matrix)
+U <- svd_result$u
+S <- diag(svd_result$d)
+V <- svd_result$v
+```
+
+```{r}
+# Center the data by subtracting the mean across generations for each genomic position
+data_centered <- scale(data_t, center = TRUE, scale = FALSE)
+
+# Perform Singular Value Decomposition (SVD)
+svd_result <- svd(data_centered, "economy")
+
+# Singular values
+singular_values <- svd_result$d
+
+# Left singular vectors (generations)
+U <- svd_result$u
+
+# Right singular vectors (positions)
+V <- svd_result$v
+
+# Plot the singular values to check which modes are dominant
+plot(singular_values, type = 'b', main = "Singular Values", xlab = "Mode", ylab = "Value")
+
+# Inspect the first few modes
+# For example, plot the first mode across generations to see when selection might occur
+plot(U[,1], type = 'l', main = "First Mode Across Generations", xlab = "Generation", ylab = "Mode Amplitude")
+
+# Reconstruct the data using the first few modes (to capture selection signature)
+reconstructed_data <- U[,1:2] %*% diag(singular_values[1:2]) %*% t(V[,1:2])
+
+# Analyze reconstructed data to identify patterns of allele frequency changes over generations
+
+
+```
+
+```{r}
+# Calculate the difference between original and reconstructed data
+difference <- data_t - reconstructed_data
+
+# Summary of the differences
+summary(difference)
+
+# Plot the difference for a particular genomic position across generations
+plot(1:nrow(difference), difference[,1], type = 'l', main = "Difference for Genomic Position 1", 
+     xlab = "Generation", ylab = "Difference in Allele Frequency")
+
+
+```
+
+```{r}
+# Create the initial plot
+plot(mode_1, type = 'l', main = 'First Temporal Mode', xlab = 'Generation', ylab = 'Mode 1 Value')
+
+# Example: Highlighting significant changes in the first mode
+threshold <- 0.1  # Define a threshold for significant change
+significant_generations <- which(abs(diff(mode_1)) > threshold)
+points(significant_generations, mode_1[significant_generations], col = 'red', pch = 19)
+
+```
