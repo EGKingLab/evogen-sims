@@ -1,17 +1,20 @@
 ---
 title: "Suppl_Version II"
 author: "E.T"
-format: html
+format:
+  docx: default
+  html: default
+  pdf: default
 editor: visual
 ---
 
-> For the allele frequencies, I will in some cases use ribbons to show changes across replicates. Then I will use a single replicate to track each locus.
+> For the allele frequencies, I will in some cases use ribbon/violin to show changes across replicates. Then I will use a single replicate to track each locus.
 
-## 1. Instantaneous polygenic model
+## 1. Instantaneous model
 
 ### 1.1. AF All param & Single replicate
 
-```{r}
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
 rm(list = ls())
 source("../AlleleFrequencyPlotCode.R")
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
@@ -23,70 +26,142 @@ plots <- result$plots
 
 #### 1.1.1. Monogenic
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Monogenic_Allele_Frequency
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[1], plots[2], plots[3]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Monogenic single replicate allele frequency plot for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.1.2. Oligogenic
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Oligogenic_Allele_Frequency
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[4], plots[5], plots[6]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Oligogenic single replicate allele frequency plot for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.1.3. Ploygenic 70 loci
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_70_Allele_Frequency
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[13], plots[14], plots[15]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
-#### 1.1.4. Ploygenic 100 loci
+> Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 70 genomic architecture for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
 
-```{r, fig.height = 30, fig.width = 20}
+#### 1.1.4. Polygenic 100 loci
+
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_100_Allele_Frequency
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[7], plots[8], plots[9]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
-#### 1.1.5. Ploygenic 300 loci
+> Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 100 genomic architecture for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations
 
-```{r, fig.height = 30, fig.width = 20}
+#### 1.1.5. Polygenic 300 loci
+
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_300_Allele_Frequency
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[10], plots[11], plots[12]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 300 genomic architecture for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations
+
 ```{r, fig.height=50, fig.width=30, echo=FALSE}
-library(cowplot)
-labels <- LETTERS[1:15]
-plot_grid(plotlist = plots, ncol = 3, labels = labels, label_size = 60, label_colour = "red")
+# library(cowplot)
+# labels <- LETTERS[1:15]
+# plot_grid(plotlist = plots, ncol = 3, labels = labels, label_size = 60, label_colour = "red")
 ```
 
 ### 1.2. AF all replicates Ribbon
 
 #### 1.2.1. Ribbon
 
-```{r}
-# library(dplyr)
-# library(stringr)
-# library(tidyselect)
+```{r, echo=FALSE}
+# # library(dplyr)
+# # library(stringr)
+# # library(tidyselect)
 # library(future)
 # library(purrr)
 # library(furrr)
+# # 
+# # # Ensure furrr is installed and loaded
+# # if (!requireNamespace("furrr", quietly = TRUE)) {
+# #   install.packages("furrr")
+# # }
+# # library(furrr)
+# # 
+# # # Set up parallel processing
+# # plan(multisession, workers = 96)
+# # 
+# # # Define the data extraction function
+# # extract_info <- function(file) {
+# #   repl <- str_extract(file, "(?<=genome)\\d+")
+# #   H <- str_extract(file, "(?<=H)0\\.\\d+")
+# #   Gen <- str_extract(file, "(?<=Gen)\\d+")
+# #   SD <- str_extract(file, "(?<=SD)\\d+")
+# #   Loci <- str_extract(file, "(?<=n)\\d+")
+# #   name <- basename(file)
+# #   
+# #   read.csv(file) %>%
+# #     mutate(repl = repl, H = H, Gen = Gen, SD = SD, Loci = Loci, Name = name)
+# # }
+# # 
+# # # List all files
+# # pathdir <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+# # pattern <- "^genome[1|2|3|4|5|6|7]_n"
+# # allfiles <- list.files(pathdir, pattern = pattern, full.names = TRUE)
+# # 
+# # # Extract data in parallel
+# # alldatas <- map_dfr(allfiles, extract_info)
+# # 
+# # # Define the summarization function
+# # summarize_data <- function(data) {
+# #   data %>%
+# #     group_by(Generation, Position, H, Gen, SD, Loci) %>%
+# #     summarise(
+# #       Mean_Freq = mean(Frequency, na.rm = TRUE),
+# #       Median_Freq = median(Frequency, na.rm = TRUE),
+# #       SD_Freq = sd(Frequency, na.rm = TRUE),
+# #       LowerQuantile = quantile(Frequency, 0.25, na.rm = TRUE),
+# #       UpperQuantile = quantile(Frequency, 0.75, na.rm = TRUE)
+# #     )
+# # }
+# # 
+# # # Split the data into chunks for parallel processing by Loci
+# # data_chunks <- split(alldatas, alldatas$Loci)
+# # 
+# # # Summarize data in parallel
+# # summary_data <- map_dfr(data_chunks, summarize_data)
+# # 
+# # # Clean up parallel processing plan
+# # plan(sequential)
 # 
-# # Ensure furrr is installed and loaded
-# if (!requireNamespace("furrr", quietly = TRUE)) {
-#   install.packages("furrr")
-# }
-# library(furrr)
+# ###############################################################################
+# library(dplyr)
+# library(tidyselect)
+# library(foreach)
+# library(doParallel)
+# library(stringr)
+# library(readr)  # For read_csv function
 # 
-# # Set up parallel processing
-# plan(multisession, workers = 96)
+# # Set up parallel backend to use many processors, leaving 32 cores free
+# totalCores <- parallel::detectCores()
+# numCores <- max(1, totalCores - 32)  # Ensure at least one core is used
+# cl <- makeCluster(numCores)
+# registerDoParallel(cl)
 # 
 # # Define the data extraction function
 # extract_info <- function(file) {
@@ -96,18 +171,20 @@ plot_grid(plotlist = plots, ncol = 3, labels = labels, label_size = 60, label_co
 #   SD <- str_extract(file, "(?<=SD)\\d+")
 #   Loci <- str_extract(file, "(?<=n)\\d+")
 #   name <- basename(file)
-#   
-#   read.csv(file) %>%
+# 
+#   read_csv(file) %>%
 #     mutate(repl = repl, H = H, Gen = Gen, SD = SD, Loci = Loci, Name = name)
 # }
 # 
 # # List all files
 # pathdir <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-# pattern <- "^genome[1|2|3|4|5|6|7]_n"
+# pattern <- "^genome(1|10)_n(10)"
 # allfiles <- list.files(pathdir, pattern = pattern, full.names = TRUE)
 # 
-# # Extract data in parallel
-# alldatas <- map_dfr(allfiles, extract_info)
+# # Extract data in parallel using foreach
+# alldatas <- foreach(file = allfiles, .combine = bind_rows, .packages = c('dplyr', 'stringr', 'readr')) %dopar% {
+#   extract_info(file)
+# }
 # 
 # # Define the summarization function
 # summarize_data <- function(data) {
@@ -119,118 +196,59 @@ plot_grid(plotlist = plots, ncol = 3, labels = labels, label_size = 60, label_co
 #       SD_Freq = sd(Frequency, na.rm = TRUE),
 #       LowerQuantile = quantile(Frequency, 0.25, na.rm = TRUE),
 #       UpperQuantile = quantile(Frequency, 0.75, na.rm = TRUE)
-#     )
+#     ) %>%
+#     ungroup()
 # }
+# 
 # 
 # # Split the data into chunks for parallel processing by Loci
 # data_chunks <- split(alldatas, alldatas$Loci)
 # 
-# # Summarize data in parallel
-# summary_data <- map_dfr(data_chunks, summarize_data)
+# # Summarize data in parallel using foreach
+# summary_data <- foreach(chunk = data_chunks, .combine = bind_rows, .packages = 'dplyr') %dopar% {
+#   summarize_data(chunk)
+# }
 # 
-# # Clean up parallel processing plan
+# summary_data2 <- summary_data %>% mutate(Loci_Gen = paste0("Loci = ", Loci, " ", "Gen = ", Gen))
+# 
+# Loci_Gen <- unique(summary_data2$Loci_Gen)
+# 
+# myplots <- list()
+# 
+# for(i in Loci_Gen){
+#   plot_data <- summary_data2 %>% filter(Loci_Gen == i)
+# 
+#    unique_positions <- unique(plot_data$Position)
+#       if (length(unique_positions) > 15) {
+#         selected_positions <- sample(unique_positions, 15)
+#         plot_data <- plot_data %>%
+#           filter(Position %in% selected_positions)
+#       }
+#   
+#   plts <- plot_data %>%  
+#   ggplot(aes(x = Generation, y = Mean_Freq, 
+#              group = factor(Position), color = (Position))) +
+#   geom_line(linewidth = 0.2) +
+#   geom_ribbon(aes(ymin = LowerQuantile, ymax = UpperQuantile, fill = factor(Position)), alpha = 0.01) +
+#  geom_errorbar(aes(ymin = Mean_Freq - SD_Freq, ymax = Mean_Freq + SD_Freq), width = 0.2) +
+#   #geom_point(aes(y = Median_Freq), shape = 21, fill = "white", size = 2) +
+#   facet_grid(H ~ SD, labeller = label_both) +  # Use a predefined labeller function
+#   theme_bw() +
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(size = 20, face = "bold"),
+#         axis.text.y = element_text(size = 20, face = "bold"),
+#         axis.line = element_line(linewidth = 5),
+#         axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
+#         axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
+#         strip.text = element_text(size = 20, face = "bold"),
+#         panel.spacing = unit(3, "lines"),
+#         panel.grid = element_blank())
+#   
+#   myplots[[i]] <- plts 
+# }
+# 
 # plan(sequential)
-
-###############################################################################
-library(dplyr)
-library(tidyselect)
-library(foreach)
-library(doParallel)
-library(stringr)
-library(readr)  # For read_csv function
-
-# Set up parallel backend to use many processors, leaving 32 cores free
-totalCores <- parallel::detectCores()
-numCores <- max(1, totalCores - 32)  # Ensure at least one core is used
-cl <- makeCluster(numCores)
-registerDoParallel(cl)
-
-# Define the data extraction function
-extract_info <- function(file) {
-  repl <- str_extract(file, "(?<=genome)\\d+")
-  H <- str_extract(file, "(?<=H)0\\.\\d+")
-  Gen <- str_extract(file, "(?<=Gen)\\d+")
-  SD <- str_extract(file, "(?<=SD)\\d+")
-  Loci <- str_extract(file, "(?<=n)\\d+")
-  name <- basename(file)
-
-  read_csv(file) %>%
-    mutate(repl = repl, H = H, Gen = Gen, SD = SD, Loci = Loci, Name = name)
-}
-
-# List all files
-pathdir <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome(1|10)_n(10)"
-allfiles <- list.files(pathdir, pattern = pattern, full.names = TRUE)
-
-# Extract data in parallel using foreach
-alldatas <- foreach(file = allfiles, .combine = bind_rows, .packages = c('dplyr', 'stringr', 'readr')) %dopar% {
-  extract_info(file)
-}
-
-# Define the summarization function
-summarize_data <- function(data) {
-  data %>%
-    group_by(Generation, Position, H, Gen, SD, Loci) %>%
-    summarise(
-      Mean_Freq = mean(Frequency, na.rm = TRUE),
-      Median_Freq = median(Frequency, na.rm = TRUE),
-      SD_Freq = sd(Frequency, na.rm = TRUE),
-      LowerQuantile = quantile(Frequency, 0.25, na.rm = TRUE),
-      UpperQuantile = quantile(Frequency, 0.75, na.rm = TRUE)
-    ) %>%
-    ungroup()
-}
-
-
-# Split the data into chunks for parallel processing by Loci
-data_chunks <- split(alldatas, alldatas$Loci)
-
-# Summarize data in parallel using foreach
-summary_data <- foreach(chunk = data_chunks, .combine = bind_rows, .packages = 'dplyr') %dopar% {
-  summarize_data(chunk)
-}
-
-summary_data2 <- summary_data %>% mutate(Loci_Gen = paste0("Loci = ", Loci, " ", "Gen = ", Gen))
-
-Loci_Gen <- unique(summary_data2$Loci_Gen)
-
-myplots <- list()
-
-for(i in Loci_Gen){
-  plot_data <- summary_data2 %>% filter(Loci_Gen == i)
-
-   unique_positions <- unique(plot_data$Position)
-      if (length(unique_positions) > 15) {
-        selected_positions <- sample(unique_positions, 15)
-        plot_data <- plot_data %>%
-          filter(Position %in% selected_positions)
-      }
-  
-  plts <- plot_data %>%  
-  ggplot(aes(x = Generation, y = Mean_Freq, 
-             group = factor(Position), color = (Position))) +
-  geom_line(linewidth = 0.2) +
-  geom_ribbon(aes(ymin = LowerQuantile, ymax = UpperQuantile, fill = factor(Position)), alpha = 0.01) +
- geom_errorbar(aes(ymin = Mean_Freq - SD_Freq, ymax = Mean_Freq + SD_Freq), width = 0.2) +
-  #geom_point(aes(y = Median_Freq), shape = 21, fill = "white", size = 2) +
-  facet_grid(H ~ SD, labeller = label_both) +  # Use a predefined labeller function
-  theme_bw() +
-  theme(legend.position = "none",
-        axis.text.x = element_text(size = 20, face = "bold"),
-        axis.text.y = element_text(size = 20, face = "bold"),
-        axis.line = element_line(linewidth = 5),
-        axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
-        axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
-        strip.text = element_text(size = 20, face = "bold"),
-        panel.spacing = unit(3, "lines"),
-        panel.grid = element_blank())
-  
-  myplots[[i]] <- plts 
-}
-
- plan(sequential)
-###############################################################################
+# ###############################################################################
 
 # plan(multisession, workers = 96)
 #
@@ -287,13 +305,13 @@ for(i in Loci_Gen){
 
 ```
 
-```{r, fig.width = 20, fig.height=12}
-myplots[3]
+```{r, fig.width = 20, fig.height=12, echo=FALSE}
+# myplots[3]
 ```
 
 #### 1.2.2. Violin
 
-```{r}
+```{r, echo=FALSE}
 ###############################################################################
 library(dplyr)
 library(tidyselect)
@@ -303,13 +321,13 @@ library(stringr)
 library(readr)
 library(ggplot2)
 
-# Set up parallel backend to use many processors, leaving 32 cores free
+# Set up parallel backend to use many processors, leaving 16 cores free
 totalCores <- parallel::detectCores()
-numCores <- max(1, totalCores - 32)  # Ensure at least one core is used
+numCores <- max(1, totalCores - 16)  # Ensure at least 1 core is used
 cl <- makeCluster(numCores)
 registerDoParallel(cl)
 
-# Define the data extraction function
+#  Parameter Extraction
 extract_info <- function(file) {
   repl <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
   H <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
@@ -332,7 +350,6 @@ alldatas <- foreach(file = allfiles, .combine = bind_rows, .packages = c('dplyr'
   extract_info(file)
 }
 
-# Convert necessary columns to numeric
 alldatas <- alldatas %>%
   mutate(
     Generation = as.numeric(Generation),
@@ -367,10 +384,8 @@ subset_data <- alldatas %>%
 # Get unique parameter combinations
 param_combinations <- unique(subset_data$Param_Combination)
 
-# Initialize list for plots
 my_violin_plots <- list()
 
-# Loop over parameter combinations and create violin plots
 for (param in param_combinations) {
   plot_data <- subset_data %>%
     filter(Param_Combination == param)
@@ -402,14 +417,16 @@ stopCluster(cl)
 
 ```
 
-```{r, fig.width = 8, fig.height=4}
+```{r, fig.width = 8, fig.height=4, echo=FALSE}
+#| label: Violin_100_Allele_Frequency
 my_violin_plots[3]
 ```
 
+> Figure: Each color represents a single locus for all 30 replicates after every 90 generations. The trajectory is for only 3 randomly selected loci from 100.
+
 ### 1.3. Phenotypes all params
 
-```{r}
-#rm(list = ls())
+```{r, echo=FALSE}
 source("../PhenotypePlotCode.R")
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^MeanPhenotypes"
@@ -419,53 +436,68 @@ plots <- result$plots
 
 ```
 
-```{r, fig.width = 25, fig.height = 12}
-plots[[10]]
+```{r, fig.width = 25, fig.height = 12, echo=FALSE}
+# plots[[10]]
 ```
 
 #### 1.3.1. Monogenic
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Monogenic_Phenotypes
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[1], plots[2], plots[3]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Monogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.3.2. Oligogenic
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Oligogenic_Phenotypes
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[4], plots[5], plots[6]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Oligogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.3.3. Polygenic 70
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_70_Phenotypes
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[13], plots[14], plots[15]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.3.4. Polygenic 100
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_100_Phenotypes
 library(cowplot)
 labels <- LETTERS[1:3]
-plot_grid(plotlist = c(plots[7], plots[7], plots[9]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
+plot_grid(plotlist = c(plots[7], plots[8], plots[9]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
+
+> Figure: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
 
 #### 1.3.5. Polygenic 300
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_300_Phenotypes
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(plots[10], plots[11], plots[12]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 ### 1.4. Spec All params
 
-```{r}
+```{r, echo=FALSE}
 run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   library(parallel)
   library(doParallel)
@@ -477,7 +509,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   theme_set(theme_classic())
   
-  # Define the theme (no need to remove axis numbers now)
   mytheme <- theme_classic() +
     theme(legend.position = "none",
           axis.text.x = element_text(size = 20, face = "bold"),
@@ -489,19 +520,20 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
           panel.spacing = unit(3, "lines"),
           panel.grid = element_blank())
   
-  # Get the list of files matching the specified pattern
+  # File list
+  
   file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
   
   if (length(file_list) == 0) {
     stop("No files found with the given pattern.")
   }
   
-  # Create a data frame with filenames and extract parameter information
+  # Create a data frame with filenames and extract parameters
   
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
       base_name = basename(file_name),
-      replct = str_extract(base_name, "genome\\d+"), # Allow varying genome numbers
+      replct = str_extract(base_name, "genome\\d+"),
       n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
       H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
       SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
@@ -528,6 +560,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     )
   
   # Set up parallel backend
+  
   num_cores <- detectCores()
   cl <- makeCluster(max(1, num_cores - 16))
   registerDoParallel(cl)
@@ -555,9 +588,8 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     data
   }
   combined_data <- bind_rows(combined_data_list)
-  
-  # Filter the data based on H, SD, and Gen values
-  filtered_data <- combined_data 
+
+  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
   
   # Calculate the mean allele frequency for each grouping
   mean_allele_data <- filtered_data %>%
@@ -639,63 +671,76 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
 ```
 
-```{r, fig.height = 12, fig.width = 8}
+```{r, fig.height = 12, fig.width = 8, echo=FALSE}
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
 pattern <- "^genome"
 result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
-result[[15]]
+# result[[15]]
 ```
 
 #### 1.4.1. Monogenic
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Monogenic_Spectral_Analysis
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(result[1], result[2], result[3]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Monogenic spectral density plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.4.2. Oligogenic
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Oligogenic_Spectral_Analysis
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(result[4], result[5], result[6]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Oligogenic spectral density plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.4.3. Polygenic 70
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_70_Spectral_Analysis
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(result[10], result[11], result[12]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
+> Figure: Polygenic (70 loci) spectral density plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
+
 #### 1.4.4. Polygenic 100
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_100_Spectral_Analysis
 library(cowplot)
 labels <- LETTERS[1:3]
-plot_grid(plotlist = c(result[7], result[7], result[9]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
+plot_grid(plotlist = c(result[7], result[8], result[9]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
+
+> Figure: Polygenic (100 loci) spectral density plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
 
 #### 1.3.5. Polygenic 300
 
-```{r, fig.height = 30, fig.width = 20}
+```{r, fig.height = 30, fig.width = 20, echo=FALSE}
+#| label: Polygenic_300_Spectral_Analysis
 library(cowplot)
 labels <- LETTERS[1:3]
 plot_grid(plotlist = c(result[13], result[14], result[15]), ncol = 1, labels = labels, label_size = 60, label_colour = "red")
 ```
 
-### 
+> Figure: Polygenic (300 loci) spectral density plot across 30 replicates for instantaneous selection, showing parameter interactions with A representing a selection lasting 10 generations, B 20 generations, and C 30 generations.
 
 ## 2. Gradual polygenic models
 
-```{r}
-dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFS.dir/"
-pattern <- "^genome12"
-result2 <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
+```{r, echo=FALSE}
+# dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFS.dir/"
+# pattern <- "^genome12"
+# result2 <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
 ```
 
-```{r, fig.height = 10, fig.width = 18}
-result2[3]
+```{r, fig.height = 10, fig.width = 18, echo=FALSE}
+# result2[3]
 ```
