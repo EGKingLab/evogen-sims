@@ -14,7 +14,7 @@ library(doParallel)
 
 mytheme <- function(){theme_classic() +
     theme(legend.position = "none",
-          axis.text.x = element_text(size = 20, face = "bold", angle = 25),
+          axis.text.x = element_text(size = 20, face = "bold"),
           axis.text.y = element_text(size = 20, face = "bold"),
           axis.line = element_line(linewidth = 5),
           axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 25)), # 
@@ -70,7 +70,11 @@ process_files <- function(dirpath, pattern, plot_type) {
         ggplot(aes(factor(Generation), Phenotype, group = factor(Generation)))+ 
         geom_boxplot()+
         facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
-        labs(x = "Generation")+
+        labs(x = "Generation")+ 
+        scale_x_discrete(
+          breaks = c("0", "300", "600", "900", "1200", "1500", "1800", "2000"),
+          labels = c("0", "300", "600", "900", "1200", "1500", "1800", "2000")
+        )+
         mytheme()
       plots[[loci_geni]] <- (p) #ggplotly
     }
@@ -83,10 +87,14 @@ process_files <- function(dirpath, pattern, plot_type) {
       locus_data <- combined_data %>% 
         filter(loci == locus)
       p <- locus_data %>% 
-        ggplot(aes(factor(Generation), Phenotype, group = factor(Generation)))+
+        ggplot(aes(factor(Generation), Phenotype, group = factor(replicate)))+
         geom_line(linewidth = 0.1, alpha = 1)+
         facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
-        labs(x = "Generation")+
+        labs(x = "Generation") + 
+        scale_x_discrete(
+          breaks = c("0", "300", "600", "900", "1200", "1500", "1800", "2000"),
+          labels = c("0", "300", "600", "900", "1200", "1500", "1800", "2000")
+        )+
         mytheme()
       plots[[locus]] <- (p) #ggplotly
     }
