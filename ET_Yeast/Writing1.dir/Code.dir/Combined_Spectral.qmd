@@ -66,7 +66,7 @@ run2_fft_analysis(dirpath, pattern)
 dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/SinFS.dir/"
 source('~/YeastProj.dir/evogen-sims/ET_Yeast/Writing1.dir/Code.dir/ComboSpec.R')
 pattern = "^genome\\d+_n\\d+_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
-run2_fft_analysis(dirpath,pattern)
+run_fft_analysis(dirpath,pattern)
 ```
 
 ### Gradual four-season selection
