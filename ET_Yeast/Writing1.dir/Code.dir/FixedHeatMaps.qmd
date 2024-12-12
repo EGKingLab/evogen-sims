@@ -33,7 +33,7 @@ print(plots)
 ```{r, fig.height=8, fig.width=16}
 
 path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome\\d+_n(1|10|70|300)_H0.(1|5|8)(SD[1|4])?Gen(10|30)?\\.csv$"
+pattern <- "^genome\\d+_n\\d+_H0.(1|5|8)(SD[1|4])?Gen(10|30)?\\.csv$"
 
 # Function to process files in chunks
 process_files_in_chunks <- function(files, chunk_size, num_cores) {
@@ -109,45 +109,48 @@ newd <- mydata4 %>%
 
 ```
 
-```{r, fig.width=25, fig.height=20}
+```{r, fig.width=12, fig.height=8}
 
 plot <- ggplot(data = newd, aes(x = as.factor(loci), y = Perc_Loci, color = as.factor(loci))) +
-  geom_point(size = 10) +
-  geom_line(aes(group = 1), linewidth = 2) +
-  geom_text(aes(label = round(Perc_Loci, 2)), vjust = 2.5, hjust = 0.5, size = 10, fontface = "bold") +
+  geom_point(size = 5) +
+  geom_line(aes(group = as.factor(1)), linewidth = 2) +
+  geom_text(aes(label = round(Perc_Loci, 2)), vjust = -1, hjust = 0.5, size = 5, fontface = "bold", show.legend = FALSE) +
   facet_grid(
-    Fixation + Gen  ~ H +  SD,
+    Fixation + Gen  ~ H + SD,
     labeller = label_both
   ) +
   labs(
     x = "Number of Loci",
     y = "Percentage of Loci (%)",
-    color = "Loci"
+    color = "Number of Loci"
   ) +
   theme(
     legend.position = "bottom", 
-    legend.justification = "center",  
-    axis.text.x = element_text(angle = 90, hjust = 1, size = 40, face = "bold"),
-    axis.text.y = element_text(size = 40, face = "bold"),
-    axis.line = element_line(size = 2),
-    axis.title = element_text(size = 40, face = "bold"),
-    strip.text = element_text(size = 40, face = "bold"),
+    legend.justification = "center",
+    legend.text = element_text(size = 20),
+    legend.title = element_text(size = 20),
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 20, face = "bold"),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    axis.line = element_line(size = 5),
+    axis.title = element_text(size = 20, face = "bold"),
+    strip.text = element_text(size = 20, face = "bold"),
     panel.spacing = unit(3, "lines"),
     panel.grid = element_blank()
   ) +
-  guides(color = guide_legend(nrow = 1, byrow = TRUE))  # Arrange legend items in a single row
+  guides(color = guide_legend(override.aes = list(size = 10), byrow = TRUE))  # Arrange legend items in a single row
 
 print(plot)
-
 
 ```
 
 ```{r}
-newdd <- newd %>% ungroup() %>% mutate(Param_Combo = paste0(H_label," ", SD_label ," ", Gen_label)) %>% 
+newdd <- newd %>% ungroup() %>% 
+  mutate(Perc_Loci = round(Perc_Loci, 2),
+         Param_Combo = paste0("H = ", H," ", "SD = ", SD ," ", "Gen = ", Gen)) %>% 
   dplyr::select(loci, Fixation, Perc_Loci, Param_Combo)
 
 newdd_wide <- newdd %>%
-  pivot_wider(names_from = Param_Combo, values_from = Perc_Loci)
+  pivot_wider(names_from = Param_Combo, values_from = Perc_Loci) 
 
 ```
 
