@@ -523,7 +523,7 @@ head(new_dataframe)
 
 ```
 
-### Does Gen affect fixation or loss?
+### Fixation due to Generations
 
 ```{r}
 ############ Libraries and theme function ########

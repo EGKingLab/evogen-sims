@@ -29,7 +29,7 @@ mytheme <- function() {
 file_path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/NS.dir/genome1_n100_H0.5.csv"
 
 genome_file <- read.csv(file_path) %>% 
-  select(Generation, Position, Frequency) %>% 
+  dplyr::select(Generation, Position, Frequency) %>% 
   mutate(Position = factor(Position))
 
 #replicate <- as.numeric(str_extract(file_path, "(?<=genome)[0-9]+"))

@@ -3653,7 +3653,7 @@ filtered_dataset <- filtered_dataset %>%
 
 # Create the plot
 freqplot <- filtered_dataset %>%
-  filter(Generation <= 500) %>%
+  filter(Generation <= 2000) %>%
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position), color = Color, linewidth = LineSize)) +
   geom_line(alpha = 1) +
   scale_color_identity() +
@@ -3683,7 +3683,6 @@ print(freqplot)
 
 ```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
 # Create the plot with faceting by H, SD, and Gen
-# Create the plot with faceting by H, SD, and Gen
 heatmap_plot <- filtered_dataset %>% 
   filter(Generation <= 2000) %>% 
   ggplot(aes(x = Generation, y = factor(Position), fill = Frequency)) +
@@ -3694,27 +3693,33 @@ heatmap_plot <- filtered_dataset %>%
     H = label_both,
     SD = label_both,
     Gen = label_both
-  ), scales = "free_y") +
-  theme_minimal() +
+  ), scales = "free_y")+
+  theme_cowplot() +
   labs(x = "Generation",
        y = "Position",
-       fill = "Frequency") +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
-        axis.text.y = element_text(size = 20, face = "bold"),
-        axis.line = element_line(linewidth = 5),
-        axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
-        axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
-        strip.text = element_text(size = 20, face = "bold"),
-        panel.spacing = unit(3, "lines"),
-        panel.grid = element_blank())
+       fill = "Frequency", size = 20) +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 15, face = "bold"), 
+    legend.title = element_text(size = 15, face = "bold"), 
+    legend.background = element_rect(color = "black", size = 2, linetype = "solid"), 
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    axis.line = element_line(linewidth = 5),
+    axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
+    axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
+    strip.text = element_text(size = 20, face = "bold"),
+    panel.spacing = unit(2, "lines"),
+    panel.grid = element_blank()
+  ) +
+  guides(fill = guide_legend(override.aes = list(size = 10))) # Adjust legend key size
 
 # Add text annotations for Effect labels on the right side
 heatmap_plot <- heatmap_plot +
   geom_text(data = filtered_dataset %>% 
   filter(Generation <= 2000)  %>% filter(!is.na(Effect)), 
             aes(x = max(Generation) + 15, y = factor(Position), label = round(Effect, 1)), 
-            hjust = 0, vjust = 0.15, size = 3, angle = 30)
+            hjust = 0, vjust = 0.15, size = 10, angle = 30, fontface = "bold")
 
 
 # Print the plot
@@ -3723,9 +3728,11 @@ print(heatmap_plot)
 
 
 ```{r, warning=FALSE, fig.width = 26, fig.height = 14, echo=FALSE}
+library(ggplot2)
+
 # Create the plot with faceting by H, SD, and Gen
 heatmap_plot <- filtered_dataset %>% 
-  filter(Selection=="Polygenic") %>% 
+  filter(Selection == "Polygenic") %>% 
   ggplot(aes(x = Generation, y = factor(Position), fill = Frequency)) +
   geom_tile() +
   scale_fill_viridis_c(option = "C") +
@@ -3734,30 +3741,41 @@ heatmap_plot <- filtered_dataset %>%
     H = label_both,
     SD = label_both,
     Gen = label_both)) +
-  theme_minimal() +
+  theme_cowplot() +
   labs(x = "Generation",
        y = "Position",
-       fill = "Frequency") +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
-        axis.text.y = element_text(size = 20, face = "bold"),
-        axis.line = element_line(linewidth = 5),
-        axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
-        axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
-        strip.text = element_text(size = 20, face = "bold"),
-        panel.spacing = unit(2, "lines"),
-        panel.grid = element_blank())
+       fill = "Frequency", size = 20) +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 15, face = "bold"), 
+    legend.title = element_text(size = 15, face = "bold"), 
+    legend.background = element_rect(color = "black", size = 2, linetype = "solid"), 
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    axis.line = element_line(linewidth = 5),
+    axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
+    axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
+    strip.text = element_text(size = 20, face = "bold"),
+    panel.spacing = unit(2, "lines"),
+    panel.grid = element_blank()
+  ) +
+  guides(fill = guide_legend(override.aes = list(size = 10))) # Adjust legend key size
 
 # Add text annotations for Effect labels on the right side
 heatmap_plot <- heatmap_plot +
   geom_text(data = filtered_dataset %>% 
-  filter(Selection=="Polygenic")  %>% filter(!is.na(Effect)), 
+              filter(Selection == "Polygenic") %>% 
+              filter(!is.na(Effect)), 
             aes(x = max(Generation) + 15, y = factor(Position), label = round(Effect, 1)), 
-            hjust = 0, vjust = 0.15, size = 3, angle = 30)
+            hjust = 0, vjust = 0.15, size = 10, angle = 30, fontface = "bold")
 
+# # Save the plot with specified dimensions
+# ggsave("heatmap_plot.png", plot = heatmap_plot, width = 26, height = 14, units = "in")
 
 # Print the plot
 print(heatmap_plot)
+
+
 ```
 
 
@@ -3832,7 +3850,7 @@ filtered_dataset <- filtered_dataset %>%
 
 # Create the plot
 freqplot <- filtered_dataset %>%
-  filter(Generation <= 500) %>%
+  filter(Generation <= 2000) %>%
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position), color = Color, linewidth = LineSize)) +
   geom_line(alpha = 1) +
   scale_color_identity() +
@@ -3843,7 +3861,7 @@ freqplot <- filtered_dataset %>%
     SD = label_both,
     Gen = label_both
   )) +
-  theme_cowplot() +
+  theme_minimal() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
         axis.text.y = element_text(size = 20, face = "bold"),
@@ -3877,23 +3895,29 @@ heatmap_plot <- filtered_dataset %>%
   theme_minimal() +
   labs(x = "Generation",
        y = "Position",
-       fill = "Frequency") +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
-        axis.text.y = element_text(size = 20, face = "bold"),
-        axis.line = element_line(linewidth = 5),
-        axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
-        axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
-        strip.text = element_text(size = 20, face = "bold"),
-        panel.spacing = unit(2, "lines"),
-        panel.grid = element_blank())
+       fill = "Frequency", size = 20) +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 15, face = "bold"), 
+    legend.title = element_text(size = 15, face = "bold"), 
+    legend.background = element_rect(color = "black", size = 2, linetype = "solid"), 
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    axis.line = element_line(linewidth = 5),
+    axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
+    axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
+    strip.text = element_text(size = 20, face = "bold"),
+    panel.spacing = unit(2, "lines"),
+    panel.grid = element_blank()
+  ) +
+  guides(fill = guide_legend(override.aes = list(size = 10))) # Adjust legend key size
 
 # Add text annotations for Effect labels on the right side
 heatmap_plot <- heatmap_plot +
   geom_text(data = filtered_dataset %>% 
   filter(Generation <= 2000)  %>% filter(!is.na(Effect)), 
             aes(x = max(Generation) + 15, y = factor(Position), label = round(Effect, 1)), 
-            hjust = 0, vjust = 0.15, size = 3, angle = 30)
+            hjust = 0, vjust = 0.15, size = 10,  fontface = "bold", angle = 30)
 
 
 # Print the plot
@@ -3915,23 +3939,30 @@ heatmap_plot <- filtered_dataset %>%
   theme_minimal() +
   labs(x = "Generation",
        y = "Position",
-       fill = "Frequency") +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
-        axis.text.y = element_text(size = 20, face = "bold"),
-        axis.line = element_line(linewidth = 5),
-        axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
-        axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
-        strip.text = element_text(size = 20, face = "bold"),
-        panel.spacing = unit(2, "lines"),
-        panel.grid = element_blank())
+       fill = "Frequency", size = 20) +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 15, face = "bold"), 
+    legend.title = element_text(size = 15, face = "bold"), 
+    legend.background = element_rect(color = "black", size = 2, linetype = "solid"), 
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 20, face = "bold"),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    axis.line = element_line(linewidth = 5),
+    axis.title.x = element_text(size = 20, face = "bold", margin = margin(t = 25)),
+    axis.title.y = element_text(size = 20, face = "bold", margin = margin(r = 25)),
+    strip.text = element_text(size = 20, face = "bold"),
+    panel.spacing = unit(2, "lines"),
+    panel.grid = element_blank()
+  ) +
+  guides(fill = guide_legend(override.aes = list(size = 10))) # Adjust legend key size
+
 
 # Add text annotations for Effect labels on the right side
 heatmap_plot <- heatmap_plot +
   geom_text(data = filtered_dataset %>%
   filter(Selection=="Polygenic")  %>% filter(!is.na(Effect)),
             aes(x = max(Generation) + 15, y = factor(Position), label = round(Effect, 1)),
-            hjust = 0, vjust = 0.15, size = 3, angle = 30)
+            hjust = 0, vjust = 0.15, size = 10, fontface = 10, angle = 30)
 
 # Print the plot
 print(heatmap_plot)
