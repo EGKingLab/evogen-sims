@@ -8,8 +8,6 @@ editor: visual
 
 ```{r, echo=FALSE, message=FALSE}
 ############ Libraries and theme function ########
-
-library(tidyverse)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -171,7 +169,6 @@ result$plots
 ############ Libraries and theme function ########
 
 rm(list = ls())
-library(tidyverse)
 library(stringr)
 library(plotly)
 library(patchwork)
@@ -395,7 +392,6 @@ result$plots
 ```{r, echo=FALSE, message=FALSE}
 ############ Libraries and theme function ########
 rm(list = ls())
-library(tidyverse)
 library(stringr)
 library(plotly)
 library(patchwork)
