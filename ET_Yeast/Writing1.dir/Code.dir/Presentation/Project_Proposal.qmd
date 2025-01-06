@@ -39,8 +39,8 @@ Y <- y(x)
 z = data.frame(Y, x)
 
 z %>% ggplot(aes(x,Y))+
-  geom_line(linewidth = 2)+
-  annotate("text", x = 55, y = max(Y)/1.5, label = "infinitesimal model", fontface = "bold", size = 10) +  #  Add this line
+  geom_line(size = 2)+
+  annotate("text", x = 55, y = max(Y)/1.5, label = "Exponential Effects", fontface = "bold", size = 10) +  #  Add this line
   labs(x = "Loci", y = "Effect", size = 17)+
   theme_set(theme_cowplot())+
   theme(legend.position = "none",
@@ -72,7 +72,7 @@ p2 <- ggplot()+
     #       col = "darkred", angle = 85)+
   #labs(x = NULL, y = NULL)+
   labs(x = "Generation", y = "Optimum")+
-  theme_set(theme_cowplot())c
+  theme_set(theme_cowplot())
 
 p2
 
