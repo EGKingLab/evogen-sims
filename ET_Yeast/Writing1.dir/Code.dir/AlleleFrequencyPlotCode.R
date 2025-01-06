@@ -123,12 +123,12 @@ theme_set(theme_cowplot())
 
 mytheme <- function(){theme_cowplot() +
   theme(legend.position = "none",
-        axis.text.x = element_text(size = 20, face = "bold"),
-        axis.text.y = element_text(size = 20, face = "bold"),
+        axis.text.x = element_text(size = 15, face = "bold"),
+        axis.text.y = element_text(size = 15, face = "bold"),
         axis.line = element_line(linewidth = 5),
-        axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
-        axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
-        strip.text = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 30, face = "bold", margin = margin(t = 20)),
+        axis.title.y = element_text(size = 30, face = "bold", margin = margin(r = 25)),
+        strip.text = element_text(size = 15, face = "bold"),
         panel.spacing = unit(3, "lines"),
         panel.grid = element_blank())
 }
