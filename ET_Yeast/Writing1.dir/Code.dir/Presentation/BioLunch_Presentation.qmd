@@ -40,7 +40,7 @@ z = data.frame(Y, x)
 
 z %>% ggplot(aes(x,Y))+
   geom_line(linewidth = 2)+
-  annotate("text", x = 50, y = max(Y)/1.5, label = "infinitesimal model", fontface = "bold", size = 12) +  #  Add this line
+  annotate("text", x = 50, y = max(Y)/1.5, label = "Expontential Effects", fontface = "bold", size = 12) +  #  Add this line
   labs(x = "Loci", y = "Effect", size = 17)+
   theme_set(theme_cowplot())+
   theme(legend.position = "none",
@@ -2404,6 +2404,7 @@ print(heatmap_plot)
 ```
 
 #### Fixed Percentage
+
 ```{r, fig.height=8, fig.width=16}
 
 path <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
