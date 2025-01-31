@@ -5,6 +5,69 @@ format: docx
 editor: visual
 ---
 
+## Fitness under C = 125
+
+```{r, fig.width=8, fig.height=4}
+
+# Setting up phenotypes and possible optimum values
+phenotypes <- seq(-10, 10, by = 1)
+optimum <- seq(-4, 4, by = 1)
+C_values <- seq(25, 200, by = 25)
+
+# Function to plot fitness for a given C value
+plot_fitness <- function(C) {
+  fitfx <- function(p, o){
+    w = exp(-(1/C)*(p-o)^2)
+    return(w)
+  }
+
+  dfw <- crossing(phenotypes, optimum) %>% 
+    mutate(fitness = fitfx(phenotypes, optimum))
+
+  dfw <- dfw %>%
+    group_by(optimum) %>%
+    mutate(y_at_x0 = fitfx(0, optimum),
+           y_at_optimum = fitfx(optimum, optimum))
+
+  p <- ggplot() +
+    geom_line(data = dfw, 
+              aes(x = phenotypes, y = fitness, color = factor(optimum)), size = 2) +  # Increased line size
+    geom_hline(data = dfw, aes(yintercept = y_at_x0, color = factor(optimum)), linetype = "dashed", size = 1.5) +  # Increased line size
+    geom_text(data = dfw %>% filter(phenotypes == 0), 
+              aes(x = 0, y = y_at_x0, label = round(y_at_x0, 3)), 
+              #hjust = -0.1, vjust = 0.5, size = 5) +
+              hjust = -1, vjust = 3, size = 3.5, fontface = "bold") +
+    facet_wrap(~abs(optimum), ncol = 3) +
+    labs(y = "Fitness", x = "Phenotypes")+
+    theme_classic() +
+    theme(
+      legend.position = c(0.85, 0.2),
+      legend.box = "square", 
+      legend.box.background = element_rect(color = "black", size = 2),
+      legend.key.size = unit(1.5, "cm"),
+      legend.title = element_text(face = "bold", size = 16),  
+      legend.text = element_text(face = "bold", size = 14),   
+      plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),  
+      axis.title.x = element_text(size = 16, face = "bold"),  
+      axis.title.y = element_text(size = 16, face = "bold"),  
+      axis.text.x = element_text(size = 14, face = "bold"),  
+      axis.text.y = element_text(size = 14, face = "bold"),   
+      strip.text = element_text(size = 16, face = "bold")) +
+    guides(color = guide_legend(ncol = 3, title = 'Distance to Optimum', size = 20)) #+  # Increased size for legend guide
+    #ggtitle(paste("Fitness Plot for C =", C))
+
+  return(p)
+}
+
+# Generate and save plots for each C value
+plots <- lapply(C_values, plot_fitness)
+
+# Display the plots (optional, only shows the last plot)
+print(plots[[5]])  
+
+```
+
+
 ## Allele Frequency
 
 ```{r, echo=FALSE, message=FALSE}
