@@ -14,13 +14,13 @@ library(doParallel)
 
 mytheme <- function(){theme_classic() +
     theme(legend.position = "none",
-          axis.text.x = element_text(size = 20, face = "bold"),
-          axis.text.y = element_text(size = 20, face = "bold"),
-          axis.line = element_line(linewidth = 5),
-          axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 25)), # 
-          axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 20)), # 
-          strip.text = element_text(size = 40, face = "bold"),
-          panel.spacing = unit(3, "lines"),
+          axis.text.x = element_text(size = 15, face = "bold"),
+          axis.text.y = element_text(size = 15, face = "bold"),
+          axis.line = element_line(linewidth = 3),
+          axis.title.x = element_text(size = 30, face = "bold", margin = margin(t = 25)), # 
+          axis.title.y = element_text(size = 30, face = "bold", margin = margin(r = 20)), # 
+          strip.text = element_text(size = 30, face = "bold"),
+          panel.spacing = unit(2, "lines"),
           panel.grid = element_blank())
 }
 #################### Data Processing and plotting ###############
@@ -62,43 +62,58 @@ process_files <- function(dirpath, pattern, plot_type) {
   plots <- list()
   if (plot_type == "loci_gen") {
     loci_gens <- unique(combined_data$loci_gen)
-    for(loci_geni in loci_gens){
+    
+    # Determine the interval based on Gen
+    interval <- Gen * 3 
+      
+    #   if (Gen == 10) {
+    #   Gen * 3   
+    # # } else if (Gen == 20) {
+    # #   as.integer(Gen * 4.5)  
+    # } else {
+    #   Gen * 3       
+    # }
+    
+    for (loci_geni in loci_gens) {
       locus_data <- combined_data %>% 
         filter(loci_gen == loci_geni,
-               Generation == 1 | Generation %% (Gen * 3) == 0)
+               Generation == 1 | Generation %% (Gen*3) == 0)
+      
       p <- locus_data %>% 
-        ggplot(aes(factor(Generation), Phenotype, group = factor(Generation)))+ 
-        geom_boxplot()+
-        facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
-        labs(x = "Generation")+ 
-        scale_x_discrete(
-          breaks = c("0", "300", "600", "900", "1200", "1500", "1800", "2000"),
-          labels = c("0", "300", "600", "900", "1200", "1500", "1800", "2000")
-        )+
-        mytheme()
-      plots[[loci_geni]] <- (p) #ggplotly
-    }
-    
-    # plots for constant or sinusoidal II selections
-    
-  } else if (plot_type == "loci") {
-    loci <- unique(combined_data$loci)
-    for(locus in loci){
-      locus_data <- combined_data %>% 
-        filter(loci == locus)
-      p <- locus_data %>% 
-        ggplot(aes(factor(Generation), Phenotype, group = factor(replicate)))+
-        geom_line(linewidth = 0.1, alpha = 1)+
-        facet_wrap(~h2_sd, ncol = 4, scales = "free_y")+
+        ggplot(aes(factor(Generation), Phenotype, group = factor(Generation))) + 
+        geom_boxplot() +
+        facet_wrap(~h2_sd, ncol = 4, scales = "free_y") +
         labs(x = "Generation") + 
         scale_x_discrete(
           breaks = c("0", "300", "600", "900", "1200", "1500", "1800", "2000"),
           labels = c("0", "300", "600", "900", "1200", "1500", "1800", "2000")
-        )+
+        ) +
         mytheme()
-      plots[[locus]] <- (p) #ggplotly
+      
+      plots[[loci_geni]] <- p #ggplotly
+    }
+    
+  } else if (plot_type == "loci") {
+    loci <- unique(combined_data$loci)
+    for(locus in loci) {
+      locus_data <- combined_data %>% 
+        filter(loci == locus)
+      
+      p <- locus_data %>% 
+        ggplot(aes(factor(Generation), Phenotype, group = factor(replicate))) +
+        geom_line(linewidth = 0.1, alpha = 1) +
+        facet_wrap(~h2_sd, ncol = 4, scales = "free_y") +
+        labs(x = "Generation") + 
+        scale_x_discrete(
+          breaks = c("0", "300", "600", "900", "1200", "1500", "1800", "2000"),
+          labels = c("0", "300", "600", "900", "1200", "1500", "1800", "2000")
+        ) +
+        mytheme()
+      
+      plots[[locus]] <- p #ggplotly
     }
   }
+  
   
   return(list(combined_data = combined_data, plots = plots))
 }
