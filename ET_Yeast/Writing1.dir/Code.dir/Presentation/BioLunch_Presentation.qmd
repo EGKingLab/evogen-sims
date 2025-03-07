@@ -721,13 +721,13 @@ freqplot <- filtered_dataset %>%
   ggplot(aes(x = Generation, y = Frequency, group = factor(Position), color = Color, linewidth = LineSize)) +
   geom_line(alpha = 0.5) +
   scale_color_identity() +
-  scale_linewidth_identity() +
+  #scale_linewidth_identity() +
   facet_grid(Selection ~ H + SD + Gen, labeller = label_both) +
   theme_cowplot() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1, size = 15, face = "bold"),
         axis.text.y = element_text(size = 15, face = "bold"),
-        axis.line = element_line(linewidth = 3),
+        #axis.line = element_line(linewidth = 3),
         axis.title = element_text(size = 15, face = "bold"),
         strip.text = element_text(size = 15, face = "bold"),
         panel.spacing = unit(3, "lines"),
@@ -796,8 +796,8 @@ freqplot <- Genome_dataset %>%
 Here you might want to select 30 loci for both models!!!!!!!!!
 
 ```{r, warning=FALSE, fig.width = 8, fig.height = 4, echo=FALSE}
-file1 <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/genome10_n70_H0.5.csv"
-file2 <-  "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome70_n10_H0.5SD4.csv"
+file1 <- "../../output.dir/Selection_Models/WF.dir/NS.dir/genome10_n70_H0.5.csv"
+file2 <- "../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/genome70_n10_H0.5SD4.csv"
 
 # Example usage of the function with multiple files and different descriptors
  file_paths <- c(file1, file2)

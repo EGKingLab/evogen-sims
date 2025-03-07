@@ -27,9 +27,196 @@ editor: visual
 # tinytex::tlmgr_search("scrartcl.cls")
 # tinytex::tlmgr_install("koma-script")
 # tinytex::tlmgr_update()
+##############################################################################
+# Required Libraries
+###############################################################################
+library(parallel)
+library(doParallel)
+library(foreach)
+library(dplyr)
+library(ggplot2)
+library(future)
+library(purrr)
+library(furrr)
+library(cowplot)  
+library(stringr)
+###############################################################################
+# Custom Theme
+###############################################################################
+mythemes <- theme_bw() +
+  theme(
+    text            = element_text(family = "sans"), 
+    legend.position = "none",
+    axis.text.x     = element_text(face = "bold", size = 30, angle =25, margin = margin(t = 20), hjust = 1),
+    axis.text.y     = element_text(face = "bold", size = 30, angle = 15, margin = margin(r = 10)),
+    axis.line       = element_line(size = 3),
+    plot.title      = element_text(hjust = 0.01, face = "bold", size = 70, margin = margin(b = 1, unit = "lines")),
+    plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+    axis.title.x    = element_text(size = 30, face = "bold", margin = margin(t = 30)),
+    axis.title.y    = element_text(size = 30, face = "bold", margin = margin(r = 35)),
+    strip.text      = element_text(size = 30, face = "bold"),
+    panel.spacing   = unit(5, "lines"),
+    panel.grid      = element_blank()
+  )
+
+```
+
+## 0. Fitness under C = 125
+
+```{r, echo=FALSE,fig.width=10, fig.height=5, dpi = 1200, warning=FALSE}
+#library(tidyverse)
+
+# Parameters
+C_value <- 125
+optimum <- seq(-4, 4, by = 0.1)
+
+# Compute fitness at phenotype zero for each optimum value
+df <- tibble(
+  optimum = optimum,
+  fitness_at_zero = exp(- (1 / C_value) * (0 - optimum)^2)
+)
+
+# Subset the data to include only points every 0.5 interval
+df_label <- df %>% 
+  filter(round(optimum * 2) == optimum * 2)
+
+# Create the plot
+p <- ggplot(df, aes(x = optimum, y = fitness_at_zero)) +
+  geom_line(size = 5, color = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", size = 2, color = "black")+
+  geom_point(data = df_label, size = 10, color = "darkred") +
+  geom_text(data = df_label, 
+            aes(label = round(fitness_at_zero, 3)), 
+            vjust = -0.8, hjust = -1, size = 8, angle= 270,color = "darkred") +
+  ylim(0.85, 1)+
+  labs(
+   # title = "Fitness at Phenotype Zero as a Function of Optimum",
+    x = "Distance to Optimum",
+    y = "Fitness Value"
+  ) +
+  theme_bw() +
+  mythemes
+
+print(p)
+
 ```
 
 ## 1. Instantaneous model
+
+### 1.0. Single locus all replicates
+
+```{r, warning=FALSE, fig.width = 50, fig.height = 60, dpi = 300, echo=FALSE, message=FALSE}
+#| label: Single_Locus_AllReplicates
+
+#---------------------------------------------------------
+# Load required libraries
+#---------------------------------------------------------
+library(dplyr)
+library(ggplot2)
+library(stringr)
+
+#---------------------------------------------------------
+# Function to process phenotype files
+#---------------------------------------------------------
+process_files <- function(dirpath, pattern) {
+  # List matching files (use full.names = TRUE for convenience)
+  files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+  
+  # Initialize an empty list to store dataframes
+  dataframes <- list()
+  
+  # Loop through each file
+  for (file in files) {
+    # Extract just the filename (without the path) for regex parsing
+    fname <- basename(file)
+    
+    # Extract parameters from filename using regex lookbehind
+    replicate <- as.numeric(str_extract(fname, "(?<=genome)\\d+"))
+    H         <- as.numeric(str_extract(fname, "(?<=H)0\\.\\d+"))
+    loci      <- as.numeric(str_extract(fname, "(?<=_n)\\d+"))
+    SD        <- as.numeric(str_extract(fname, "(?<=SD)\\d+"))
+    Gen       <- as.numeric(str_extract(fname, "(?<=Gen)\\d+"))
+    
+    # Read data
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(
+        H         = H,
+        loci      = loci,
+        SD        = SD,
+        Gen       = Gen,
+        replicate = as.factor(replicate),
+        h2_sd     = paste0("h2 = ", H, " sd = ", SD),
+        loci_gen  = paste0("loci = ", loci, " gen = ", Gen)
+      )
+    
+    # Store the dataframe in the list, keyed by filename
+    dataframes[[fname]] <- data
+  }
+  
+  # Combine all dataframes into one (if there are any)
+  combined_data <- bind_rows(dataframes)
+  
+  return(combined_data)
+}
+
+#---------------------------------------------------------
+# Process the files and get combined data
+#---------------------------------------------------------
+# Directory path and file-name pattern
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome\\d+_n(1)_H0\\.(1|5|8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+
+combined_data <- process_files(dirpath, pattern)
+
+#---------------------------------------------------------
+# Plotting phenotypes
+#---------------------------------------------------------
+TestFreq <- combined_data %>%
+  mutate(
+    H_SD_Gen = paste0("h\u00B2 = ", H, " SD = ", SD, " Gen = ", Gen)
+  ) %>% 
+  ggplot(aes(x = Generation, y = Frequency)) +
+  geom_line(aes(group = replicate),
+            color = "gray50", 
+            alpha = 0.8, 
+            size = 0.5) +
+  # geom_hline(yintercept = 0.5, 
+  #            color = "magenta", 
+  #            alpha = 0.5, 
+  #            size = 3) +
+  stat_summary(fun = mean,
+               aes(group = 1), 
+               geom = "line", 
+               color = "red", 
+               alpha = 1, 
+               size = 3) +
+  facet_wrap(~ H_SD_Gen, scales = "free", ncol = 3) +
+  labs(
+    title = "B",
+    x = "Generation",
+    y = "Frequency"
+  ) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "sans"),
+    legend.position = "none",
+    axis.text.x = element_text(face = "bold", size = 30, angle = 35,
+                               hjust = 1, margin = margin(t = 10)),
+    axis.text.y = element_text(face = "bold", size = 30, angle = 15,
+                               margin = margin(r = 10)),
+    axis.line   = element_line(size = 2),
+    plot.title  = element_text(hjust = 0.01, face = "bold", size = 40),
+    axis.title.x = element_text(size = 40, face = "bold",
+                                margin = margin(t = 10)),
+    axis.title.y = element_text(size = 40, face = "bold",
+                                margin = margin(r = 10)),
+    strip.text = element_text(size = 40, face = "bold"),
+    panel.spacing = unit(5, "lines"),
+    panel.grid = element_blank()
+  )
+
+TestFreq
+```
 
 ### 1.1. AF All param & Single replicate
 
@@ -37,7 +224,7 @@ editor: visual
 rm(list = ls())
 source("../AlleleFrequencyPlotCode.R")
 dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
-pattern <- "^genome10\\D"
+pattern <- "^genome11\\D"
 result <- process_files(dirpath, pattern, "loci_gen")
 combined_data <- result$combined_data
 plots <- result$plots
@@ -189,7 +376,7 @@ print(plot_grid(plotlist = c(plots[10], plots[11], plots[12]), ncol = 1, labels 
 # library(foreach)
 # library(doParallel)
 # library(stringr)
-# library(readr)  # For read_csv function
+# library(readr)  # For read.csv function
 # 
 # # Set up parallel backend to use many processors, leaving 32 cores free
 # totalCores <- parallel::detectCores()
@@ -206,7 +393,7 @@ print(plot_grid(plotlist = c(plots[10], plots[11], plots[12]), ncol = 1, labels 
 #   Loci <- str_extract(file, "(?<=n)\\d+")
 #   name <- basename(file)
 # 
-#   read_csv(file) %>%
+#   read.csv(file) %>%
 #     mutate(repl = repl, H = H, Gen = Gen, SD = SD, Loci = Loci, Name = name)
 # }
 # 
@@ -372,7 +559,7 @@ print(plot_grid(plotlist = c(plots[10], plots[11], plots[12]), ncol = 1, labels 
 #   Loci <- as.numeric(str_extract(file, "(?<=n)\\d+"))
 #   name <- basename(file)
 # 
-#   read_csv(file) %>%
+#   read.csv(file) %>%
 #     mutate(repl = repl, H = H, Gen = Gen, SD = SD, Loci = Loci, Name = name)
 # }
 # 
@@ -560,7 +747,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     theme(legend.position = "none",
           axis.text.x = element_text(size = 20, face = "bold"),
           axis.text.y = element_text(size = 20, face = "bold"),
-          axis.line = element_line(linewidth = 5),
+          axis.line = element_line(size = 5),
           axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 20)),
           axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 25)),
           strip.text = element_text(size = 20, face = "bold"),
@@ -705,7 +892,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
   # Generate the spectral plots faceted by Genome, H, SD, and Gen
   fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = replct, group = replct)) +
-    geom_line(linewidth = 1.1) +
+    geom_line(size = 1.1) +
     facet_wrap( ~ h2_sd, scales = "free") +
     labs(x = "Period (Generations)", y = "Spectral Density") +
     mytheme
