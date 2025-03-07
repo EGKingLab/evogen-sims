@@ -117,7 +117,7 @@ mutationEffect(m2) {
 	
 	generations = seq(1,2001, 1);
 	//nopt = nopt + (mean(phenotypes) + sd(phenotypes)*stdv) * sin((22/7) * generations / gener);
-	nopt = stdv*sd(phenotypes) * sin(2 * (22/7) * generations / gener) +  mean(phenotypes);
+	nopt = stdv*sd(phenotypes) * sin((22/7) * generations / gener) +  mean(phenotypes);
 	defineGlobal("newopt", nopt);
 	
 	// Get the mutation information and order them by frequency
