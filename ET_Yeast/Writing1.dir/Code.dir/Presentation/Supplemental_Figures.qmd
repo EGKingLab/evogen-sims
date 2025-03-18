@@ -1,0 +1,4031 @@
+---
+title: "Supplemental Figures"
+author: "E.T"
+format:
+  docx:
+    toc: true
+    fontsize: 10pt
+    fig-cap-location: bottom
+    fig-numbering: false  
+  pdf:
+    toc: true
+  html:
+    toc: true
+    knitr:
+      opts_chunk:
+        dev: "cairo_png"
+editor: visual
+---
+
+```{r, echo=FALSE, message=FALSE}
+#     geometry: "left=0.5in,right=0.5in,top=0.5in,bottom=0.5in"
+#     geometry: "landscape"
+# execute:
+#   fig-align: "left"
+
+#tinytex::uninstall_tinytex()
+#tinytex::install_tinytex()
+# tinytex::install_tinytex(force = TRUE)
+# tinytex::tlmgr_search("scrartcl.cls")
+# tinytex::tlmgr_install("koma-script")
+# tinytex::tlmgr_update()
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+##############################################################################
+# if(!require("remotes")) install.packages("remotes")
+# library(remotes)
+if(!require("parallel")) install.packages("parallel")
+if(!require("doParallel")) install.packages("doParallel")
+if(!require("foreach")) install.packages("foreach")
+if(!require("dplyr")) install.packages("dplyr")
+if(!require("ggplot2")) install.packages("ggplot2")
+if(!require("future")) install.packages("future")
+# if(!require("purrr")) utils::install.packages("purrr")
+# if(!require("furrr")) remotes::install_github("DavisVaughan/furrr")
+if(!require("cowplot")) install.packages("cowplot")
+if(!require("stringr")) install.packages("stringr")
+###############################################################################
+library(parallel)
+library(doParallel)
+library(foreach)
+library(dplyr)
+library(ggplot2)
+library(future)
+# library(purrr)
+# library(furrr)
+library(cowplot)  
+library(stringr)
+```
+
+
+```{r, echo=FALSE, warning=FALSE}
+###############################################################################
+################################## Custom Theme ###############################
+###############################################################################
+mythemes <- theme_bw() +
+  theme(
+    text            = element_text(family = "sans"), 
+    legend.position = "none",
+    axis.text.x     = element_text(face = "bold", size = 40, angle =25, margin = margin(t = 20), hjust = 1),
+    axis.text.y     = element_text(face = "bold", size = 40, angle = 15, margin = margin(r = 10)),
+    axis.line       = element_line(size = 3),
+    plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, margin = margin(b = 1, unit = "lines")),
+    plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+    axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+    axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+    strip.text      = element_text(size = 40, face = "bold"),
+    panel.spacing   = unit(5, "lines"),
+    panel.grid      = element_blank()
+  )
+
+```
+
+## 0. Fitness under C = 125
+
+```{r, echo=FALSE,fig.width=18, fig.height=12, dpi = 1200, warning=FALSE}
+#library(tidyverse)
+
+# Parameters
+C_value <- 125
+optimum <- seq(-4, 4, by = 0.1)
+
+# Compute fitness at phenotype zero for each optimum value
+df <- tibble(
+  optimum = optimum,
+  fitness_at_zero = exp(- (1 / C_value) * (0 - optimum)^2)
+)
+
+# Subset the data to include only points every 0.5 interval
+df_label <- df %>% 
+  filter(round(optimum * 2) == optimum * 2)
+
+# Create the plot
+p <- ggplot(df, aes(x = optimum, y = fitness_at_zero)) +
+  geom_line(size = 5, color = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", size = 2, color = "black")+
+  geom_point(data = df_label, size = 10, color = "darkred") +
+  geom_text(data = df_label, 
+            aes(label = round(fitness_at_zero, 3)), 
+            vjust = -0.8, hjust = -1, size = 10, angle= 270,color = "darkred") +
+  ylim(0.85, 1)+
+  labs(
+   # title = "Fitness at Phenotype Zero as a Function of Optimum",
+    x = "Distance to Optimum",
+    y = "Fitness Value"
+  ) +
+  theme_bw() +
+  mythemes
+
+print(p)
+
+```
+
+## 1. Instantaneous model
+
+### 1.0. Single locus all replicates
+
+```{r, warning=FALSE, fig.width = 40, fig.height = 55, dpi = 300, echo=FALSE, message=FALSE}
+#| label: Single_Locus_AllReplicates
+#| fig-cap: "S0 Figure 0: Single locus 30 replicates allele frequency plot for instantaneous selection, showing all parameter interactions."
+#| fig-pos: "H"
+
+#---------------------------------------------------------
+# Load required libraries
+#---------------------------------------------------------
+library(dplyr)
+library(ggplot2)
+library(stringr)
+
+#---------------------------------------------------------
+# Function to process phenotype files
+#---------------------------------------------------------
+process_files <- function(dirpath, pattern) {
+  # List matching files (use full.names = TRUE for convenience)
+  files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
+  
+  # Initialize an empty list to store dataframes
+  dataframes <- list()
+  
+  # Loop through each file
+  for (file in files) {
+    # Extract just the filename (without the path) for regex parsing
+    fname <- basename(file)
+    
+    # Extract parameters from filename using regex lookbehind
+    replicate <- as.numeric(str_extract(fname, "(?<=genome)\\d+"))
+    H         <- as.numeric(str_extract(fname, "(?<=H)0\\.\\d+"))
+    loci      <- as.numeric(str_extract(fname, "(?<=_n)\\d+"))
+    SD        <- as.numeric(str_extract(fname, "(?<=SD)\\d+"))
+    Gen       <- as.numeric(str_extract(fname, "(?<=Gen)\\d+"))
+    
+    # Read data
+    data <- read.csv(file, header = TRUE) %>% 
+      mutate(
+        H         = H,
+        loci      = loci,
+        SD        = SD,
+        Gen       = Gen,
+        replicate = as.factor(replicate),
+        h2_sd     = paste0("h2 = ", H, " sd = ", SD),
+        loci_gen  = paste0("loci = ", loci, " gen = ", Gen)
+      )
+    
+    # Store the dataframe in the list, keyed by filename
+    dataframes[[fname]] <- data
+  }
+  
+  # Combine all dataframes into one (if there are any)
+  combined_data <- bind_rows(dataframes)
+  
+  return(combined_data)
+}
+
+#---------------------------------------------------------
+# Process the files and get combined data
+#---------------------------------------------------------
+# Directory path and file-name pattern
+dirpath <- "~/YeastProj.dir/evogen-sims/ET_Yeast/output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome\\d+_n(1)_H0\\.(1|5|8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+
+combined_data <- process_files(dirpath, pattern)
+
+#---------------------------------------------------------
+# Plotting phenotypes
+#---------------------------------------------------------
+TestFreq <- combined_data %>%
+  mutate(
+    H_SD_Gen = paste0("h\u00B2 = ", H, " SD = ", SD, " Gen = ", Gen)
+  ) %>% 
+  ggplot(aes(x = Generation, y = Frequency)) +
+  geom_line(aes(group = replicate),
+            color = "gray50", 
+            alpha = 0.8, 
+            size = 0.5) +
+  # geom_hline(yintercept = 0.5, 
+  #            color = "magenta", 
+  #            alpha = 0.5, 
+  #            size = 3) +
+  stat_summary(fun = mean,
+               aes(group = 1), 
+               geom = "line", 
+               color = "red", 
+               alpha = 1, 
+               size = 3) +
+  facet_wrap(~ H_SD_Gen, scales = "free", ncol = 3) +
+  labs(
+    x = "Generation",
+    y = "Frequency"
+  ) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "sans"),
+    legend.position = "none",
+    axis.text.x = element_text(face = "bold", size = 40, angle = 35,
+                               hjust = 1, margin = margin(t = 10)),
+    axis.text.y = element_text(face = "bold", size = 40, angle = 15,
+                               margin = margin(r = 10)),
+    axis.line   = element_line(size = 2),
+    plot.title  = element_text(hjust = 0.01, face = "bold", size = 40),
+    axis.title.x = element_text(size = 40, face = "bold",
+                                margin = margin(t = 10)),
+    axis.title.y = element_text(size = 40, face = "bold",
+                                margin = margin(r = 10)),
+    strip.text = element_text(size = 40, face = "bold"),
+    panel.spacing = unit(5, "lines"),
+    panel.grid = element_blank()
+  )
+
+TestFreq
+```
+
+### 1.1. AF All param & Single replicate
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+rm(list = ls())
+source("../AlleleFrequencyPlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome1\\D"
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+```
+
+#### 1.1.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci1Gen10
+#| fig-cap: "S1 Figure 1: Monogenic single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+
+gen10 <- plots[[1]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(gen10)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci1Gen20
+#| fig-cap: "S1 Figure 2: Monogenic single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+gen20 <- plots[[2]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(gen20)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci1Gen30
+#| fig-cap: "S1 Figure 3: Monogenic single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+gen30 <- plots[[3]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(gen30)
+```
+
+#### 1.1.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci10Gen10
+#| fig-cap: "S2 Figure 1: Oligogenic single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_AF_Loci10Gen10 <- plots[[4]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci10Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci10Gen20
+#| fig-cap: "S2 Figure 2: Oligogenic single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+Inst_AF_Loci10Gen20 <- plots[[5]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci10Gen20)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci10Gen30
+#| fig-cap: "S2 Figure 3: Oligogenic single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+Inst_AF_Loci10Gen30 <- plots[[6]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci10Gen30)
+```
+
+
+#### 1.1.3. Ploygenic 70 loci
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci70Gen10
+#| fig-cap: "S3 Figure 1: Polygenic 70 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+Inst_AF_Loci70Gen10 <- plots[[13]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci70Gen10)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci70Gen20
+#| fig-cap: "S3 Figure 2: Polygenic 70 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+Inst_AF_Loci70Gen20 <- plots[[14]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci70Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci70Gen30
+#| fig-cap: "S3 Figure 3: Polygenic 70 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+Inst_AF_Loci70Gen30 <- plots[[15]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci70Gen30)
+```
+
+#### 1.1.4. Polygenic 100 loci
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci100Gen10
+#| fig-cap: "S4 Figure 1: Polygenic 100 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+
+Inst_AF_Loci100Gen10 <- plots[[7]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci100Gen10)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci100Gen20
+#| fig-cap: "S4 Figure 2: Polygenic 1000 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+
+Inst_AF_Loci100Gen20 <- plots[[8]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci100Gen20)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci100Gen30
+#| fig-cap: "S4 Figure 3: Polygenic 100 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_AF_Loci100Gen30 <- plots[[9]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci100Gen30)
+```
+
+#### 1.1.5. Polygenic 300 loci
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci300Gen10
+#| fig-cap: "S5 Figure 1: Polygenic 100 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_AF_Loci300Gen10 <- plots[[10]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci300Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci300Gen20
+#| fig-cap: "S5 Figure 2: Polygenic 100 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_AF_Loci300Gen20 <- plots[[11]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci300Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_AF_Loci300Gen30
+#| fig-cap: "S5 Figure 3: Polygenic 100 loci single replicate allele frequency plot for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_AF_Loci300Gen30 <- plots[[12]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_AF_Loci300Gen30)
+```
+
+
+### 1.2. Phenotypes all params
+
+```{r, echo=FALSE}
+source("../PhenotypePlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^MeanPhenotypes"
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+
+```
+
+#### 1.2.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci1Gen10
+#| fig-cap: "S1 Figure 1: Monogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci1Gen10 <- plots[[1]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci1Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci1Gen20
+#| fig-cap: "S1 Figure 2: Monogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci1Gen20 <- plots[[2]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci1Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci1Gen30
+#| fig-cap: "S1 Figure 3: Monogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci1Gen30 <- plots[[3]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci1Gen30)
+```
+
+
+#### 1.2.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci10Gen10
+#| fig-cap: "S2 Figure 1: Oligogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci10Gen10 <- plots[[4]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci10Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci10Gen20
+#| fig-cap: "S2 Figure 2: Oligogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci10Gen20 <- plots[[5]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci10Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci10Gen30
+#| fig-cap: "S2 Figure 3: Oligogenic mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci10Gen30 <- plots[[6]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci10Gen30)
+```
+
+
+
+#### 1.2.3. Polygenic 70
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci70Gen10
+#| fig-cap: "S3 Figure 1: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci70Gen10 <- plots[[13]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci70Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci70Gen20
+#| fig-cap: "S3 Figure 2: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci70Gen20 <- plots[[14]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci70Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci70Gen30
+#| fig-cap: "S3 Figure 3: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci70Gen30 <- plots[[15]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci70Gen30)
+```
+
+#### 1.2.4. Polygenic 100
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci100Gen10
+#| fig-cap: "S4 Figure 1: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci100Gen10 <- plots[[7]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci100Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci100Gen20
+#| fig-cap: "S4 Figure 2: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci100Gen20 <- plots[[8]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci100Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci100Gen30
+#| fig-cap: "S4 Figure 3: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci100Gen30 <- plots[[9]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci100Gen30)
+```
+
+#### 1.2.5. Polygenic 300
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci300Gen10
+#| fig-cap: "S5 Figure 1: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci300Gen10 <- plots[[10]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci300Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci300Gen20
+#| fig-cap: "S5 Figure 2: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci300Gen20 <- plots[[11]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci300Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Pheno_Loci300Gen30
+#| fig-cap: "S5 Figure 3: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Pheno_Loci300Gen30 <- plots[[12]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Pheno_Loci300Gen30)
+```
+
+
+### 1.3. Spec All params
+
+```{r, echo=FALSE}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_classic())
+  
+   mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  # File list
+  
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+  
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameters
+  
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      replct = str_extract(base_name, "genome\\d+"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Genome = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "70" ~ "Polygenic 70",
+        n == "100" ~ "Polygenic 100",
+        n == "300" ~ "Polygenic 300",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+  
+  # Set up parallel backend
+  
+  num_cores <- detectCores()
+  cl <- makeCluster(64)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        replct = params$replct,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Genome = params$Genome,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, replct, n, H, SD, Gen, Genome, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      replct = params$replct,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Genome = params$Genome,
+      param_combination = params$param_combination
+    )
+  }
+  
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      Gen == 10 ~ 40,
+      Gen == 20 ~ 50,
+      Gen == 30 ~ 80,
+      TRUE ~ 80
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
+      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      #H_label = paste0("H = ", H),
+      #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+  
+  fft_plots <- list()
+  
+  uni_genomegen <- unique(plot_data$Genome_Gen)
+  
+  for(genomegen in uni_genomegen){
+    myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
+  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+  fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = replct, group = replct)) +
+    geom_line(size = 1.1) +
+    facet_wrap( ~ h2_sd, scales = "free") +
+    labs(x = "Period (Generations)", y = "Spectral Density") +
+    mythemes
+  }
+  
+  return(fft_plots)
+}
+
+```
+
+```{r, echo=FALSE}
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/LinFS.dir/"
+pattern <- "^genome"
+result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
+# result[[15]]
+```
+
+##### 1.3.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci1Gen10
+#| fig-cap: "S1 Figure 1: Monogenic spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci1Gen10 <- result[[1]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci1Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci1Gen20
+#| fig-cap: "S1 Figure 2: Monogenic spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci1Gen20 <- result[[2]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci1Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci1Gen30
+#| fig-cap: "S1 Figure 3: Monogenic spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci1Gen30 <- result[[3]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci1Gen30)
+```
+
+
+#### 1.3.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci10Gen10
+#| fig-cap: "S2 Figure 1: Oligogenic spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci10Gen10 <- result[[4]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci10Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci10Gen20
+#| fig-cap: "S2 Figure 2: Oligogenic spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci10Gen20 <- result[[5]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci10Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci10Gen30
+#| fig-cap: "S2 Figure 3: Oligogenic spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci10Gen30 <- result[[6]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci10Gen30)
+```
+
+
+
+#### 1.3.3. Polygenic 70
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci70Gen10
+#| fig-cap: "S3 Figure 1: Polygenic (70 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci70Gen10 <- result[[7]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci70Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci70Gen20
+#| fig-cap: "S3 Figure 2: Polygenic (70 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci70Gen20 <- result[[8]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci70Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci70Gen30
+#| fig-cap: "S3 Figure 3: Polygenic (70 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci70Gen30 <- result[[9]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci70Gen30)
+```
+
+#### 1.3.4. Polygenic 100
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci100Gen10
+#| fig-cap: "S4 Figure 1: Polygenic (100 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci100Gen10 <- result[[10]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci100Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci100Gen20
+#| fig-cap: "S4 Figure 2: Polygenic (100 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci100Gen20 <- result[[11]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci100Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci100Gen30
+#| fig-cap: "S4 Figure 3: Polygenic (100 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci100Gen30 <- result[[12]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci100Gen30)
+```
+
+#### 1.3.5. Polygenic 300
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci300Gen10
+#| fig-cap: "S5 Figure 1: Polygenic (300 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci300Gen10 <- result[[13]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci300Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci300Gen20
+#| fig-cap: "S5 Figure 2: Polygenic (300 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci300Gen20 <- result[[14]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci300Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Inst_Spect_Loci300Gen30
+#| fig-cap: "S5 Figure 3: Polygenic (300 loci) spectral density plot across 30 replicates for instantaneous selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+Inst_Spect_Loci300Gen30 <- result[[15]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Inst_Spect_Loci300Gen30)
+```
+
+
+## 2. Gradual I model
+
+### 2.1. AF All param & Single replicate
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+rm(list = ls())
+source("../AlleleFrequencyPlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome1\\D"
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+```
+
+#### 2.1.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci1Gen10
+#| fig-cap: "S1 Figure 1: Monogenic single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+
+gen10 <- plots[[1]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(gen10)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci1Gen20
+#| fig-cap: "S1 Figure 2: Monogenic single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+gen20 <- plots[[2]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(gen20)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci1Gen30
+#| fig-cap: "S1 Figure 3: Monogenic single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+gen30 <- plots[[3]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(gen30)
+```
+
+#### 2.1.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci10Gen10
+#| fig-cap: "S2 Figure 1: Oligogenic single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_AF_Loci10Gen10 <- plots[[4]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci10Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci10Gen20
+#| fig-cap: "S2 Figure 2: Oligogenic single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+GradualI_AF_Loci10Gen20 <- plots[[5]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci10Gen20)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci10Gen30
+#| fig-cap: "S2 Figure 3: Oligogenic single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+GradualI_AF_Loci10Gen30 <- plots[[6]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci10Gen30)
+```
+
+
+#### 2.1.3. Ploygenic 70 loci
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci70Gen10
+#| fig-cap: "S3 Figure 1: Polygenic 70 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+GradualI_AF_Loci70Gen10 <- plots[[13]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci70Gen10)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci70Gen20
+#| fig-cap: "S3 Figure 2: Polygenic 70 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+GradualI_AF_Loci70Gen20 <- plots[[14]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci70Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci70Gen30
+#| fig-cap: "S3 Figure 3: Polygenic 70 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+GradualI_AF_Loci70Gen30 <- plots[[15]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci70Gen30)
+```
+
+#### 2.1.4. Polygenic 100 loci
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci100Gen10
+#| fig-cap: "S4 Figure 1: Polygenic 100 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+
+GradualI_AF_Loci100Gen10 <- plots[[7]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci100Gen10)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci100Gen20
+#| fig-cap: "S4 Figure 2: Polygenic 1000 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+
+GradualI_AF_Loci100Gen20 <- plots[[8]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci100Gen20)
+```
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci100Gen30
+#| fig-cap: "S4 Figure 3: Polygenic 100 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_AF_Loci100Gen30 <- plots[[9]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci100Gen30)
+```
+
+#### 2.1.5. Polygenic 300 loci
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci300Gen10
+#| fig-cap: "S5 Figure 1: Polygenic 100 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_AF_Loci300Gen10 <- plots[[10]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci300Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci300Gen20
+#| fig-cap: "S5 Figure 2: Polygenic 100 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_AF_Loci300Gen20 <- plots[[11]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci300Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_AF_Loci300Gen30
+#| fig-cap: "S5 Figure 3: Polygenic 100 loci single replicate allele frequency plot for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_AF_Loci300Gen30 <- plots[[11]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_AF_Loci300Gen30)
+```
+
+
+### 2.2. Phenotypes all params
+
+```{r, echo=FALSE}
+source("../PhenotypePlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^MeanPhenotypes"
+result <- process_files(dirpath, pattern, "loci_gen")
+combined_data <- result$combined_data
+plots <- result$plots
+
+```
+
+#### 2.2.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci1Gen10
+#| fig-cap: "S1 Figure 1: Monogenic mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci1Gen10 <- plots[[1]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci1Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci1Gen20
+#| fig-cap: "S1 Figure 2: Monogenic mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci1Gen20 <- plots[[2]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci1Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci1Gen30
+#| fig-cap: "S1 Figure 3: Monogenic mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci1Gen30 <- plots[[3]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci1Gen30)
+```
+
+
+#### 2.2.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci10Gen10
+#| fig-cap: "S2 Figure 1: Oligogenic mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci10Gen10 <- plots[[4]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci10Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci10Gen20
+#| fig-cap: "S2 Figure 2: Oligogenic mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci10Gen20 <- plots[[5]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci10Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci10Gen30
+#| fig-cap: "S2 Figure 3: Oligogenic mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci10Gen30 <- plots[[6]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci10Gen30)
+```
+
+
+
+#### 2.2.3. Polygenic 70
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci70Gen10
+#| fig-cap: "S3 Figure 1: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci70Gen10 <- plots[[13]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci70Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci70Gen20
+#| fig-cap: "S3 Figure 2: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci70Gen20 <- plots[[14]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci70Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci70Gen30
+#| fig-cap: "S3 Figure 3: Polygenic (70 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci70Gen30 <- plots[[15]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci70Gen30)
+```
+
+#### 2.2.4. Polygenic 100
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci100Gen10
+#| fig-cap: "S4 Figure 1: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci100Gen10 <- plots[[7]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci100Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci100Gen20
+#| fig-cap: "S4 Figure 2: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci100Gen20 <- plots[[8]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci100Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci100Gen30
+#| fig-cap: "S4 Figure 3: Polygenic (100 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci100Gen30 <- plots[[9]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci100Gen30)
+```
+
+#### 2.2.5. Polygenic 300
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci300Gen10
+#| fig-cap: "S5 Figure 1: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci300Gen10 <- plots[[10]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci300Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci300Gen20
+#| fig-cap: "S5 Figure 2: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci300Gen20 <- plots[[11]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci300Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Pheno_Loci300Gen30
+#| fig-cap: "S5 Figure 3: Polygenic (300 loci) mean population phenotypic plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Pheno_Loci300Gen30 <- plots[[12]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Pheno_Loci300Gen30)
+```
+
+
+### 2.3. Spec All params
+
+```{r, echo=FALSE}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_classic())
+  
+  mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  # File list
+  
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+  
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameters
+  
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      replct = str_extract(base_name, "genome\\d+"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Genome = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "70" ~ "Polygenic 70",
+        n == "100" ~ "Polygenic 100",
+        n == "300" ~ "Polygenic 300",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+  
+  # Set up parallel backend
+  
+  num_cores <- detectCores()
+  cl <- makeCluster(64)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        replct = params$replct,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Genome = params$Genome,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, replct, n, H, SD, Gen, Genome, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      replct = params$replct,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Genome = params$Genome,
+      param_combination = params$param_combination
+    )
+  }
+  
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      Gen == 10 ~ 40,
+      Gen == 20 ~ 50,
+      Gen == 30 ~ 80,
+      TRUE ~ 80
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
+      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      #H_label = paste0("H = ", H),
+      #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+  
+  fft_plots <- list()
+  
+  uni_genomegen <- unique(plot_data$Genome_Gen)
+  
+  for(genomegen in uni_genomegen){
+    myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
+  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+  fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = replct, group = replct)) +
+    geom_line(size = 1.1) +
+    facet_wrap( ~ h2_sd, scales = "free") +
+    labs(x = "Period (Generations)", y = "Spectral Density") +
+    mythemes
+  }
+  
+  return(fft_plots)
+}
+
+```
+
+```{r, fig.height = 12, fig.width = 8, echo=FALSE}
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFS.dir/"
+pattern <- "^genome"
+result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
+# result[[15]]
+```
+
+##### 2.3.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci1Gen10
+#| fig-cap: "S1 Figure 1: Monogenic spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci1Gen10 <- result[[1]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci1Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci1Gen20
+#| fig-cap: "S1 Figure 2: Monogenic spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci1Gen20 <- result[[2]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci1Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci1Gen30
+#| fig-cap: "S1 Figure 3: Monogenic spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci1Gen30 <- result[[3]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci1Gen30)
+```
+
+
+#### 2.3.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci10Gen10
+#| fig-cap: "S2 Figure 1: Oligogenic spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci10Gen10 <- result[[4]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci10Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci10Gen20
+#| fig-cap: "S2 Figure 2: Oligogenic spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci10Gen20 <- result[[5]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci10Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci10Gen30
+#| fig-cap: "S2 Figure 3: Oligogenic spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci10Gen30 <- result[[6]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci10Gen30)
+```
+
+
+
+#### 2.3.3. Polygenic 70
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci70Gen10
+#| fig-cap: "S3 Figure 1: Polygenic (70 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci70Gen10 <- result[[7]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci70Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci70Gen20
+#| fig-cap: "S3 Figure 2: Polygenic (70 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci70Gen20 <- result[[8]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci70Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci70Gen30
+#| fig-cap: "S3 Figure 3: Polygenic (70 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci70Gen30 <- result[[9]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci70Gen30)
+```
+
+#### 2.3.4. Polygenic 100
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci100Gen10
+#| fig-cap: "S4 Figure 1: Polygenic (100 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci100Gen10 <- result[[10]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci100Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci100Gen20
+#| fig-cap: "S4 Figure 2: Polygenic (100 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci100Gen20 <- result[[11]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci100Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci100Gen30
+#| fig-cap: "S4 Figure 3: Polygenic (100 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci100Gen30 <- result[[12]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci100Gen30)
+```
+
+#### 2.3.5. Polygenic 300
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci300Gen10
+#| fig-cap: "S5 Figure 1: Polygenic (300 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 10 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci300Gen10 <- result[[13]] +
+  ggtitle("Season Length (Gen) = 10") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci300Gen10)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci300Gen20
+#| fig-cap: "S5 Figure 2: Polygenic (300 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 20 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci300Gen20 <- result[[14]] +
+  ggtitle("Season Length (Gen) = 20") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci300Gen20)
+```
+
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradualI_Spect_Loci300Gen30
+#| fig-cap: "S5 Figure 3: Polygenic (300 loci) spectral density plot across 30 replicates for gradual two equal seasons selection, showing all parameter interactions with selection length of 30 generations."
+#| fig-pos: "H"
+
+GradualI_Spect_Loci300Gen30 <- result[[15]] +
+  ggtitle("Season Length (Gen) = 30") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradualI_Spect_Loci300Gen30)
+```
+
+
+## 3. Gradual II model
+
+### 3.1. AF All param & Single replicate
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+rm(list = ls())
+source("../AlleleFrequencyPlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome1\\D"
+result <- process_files(dirpath, pattern, "loci")
+combined_data <- result$combined_data
+plots <- result$plots
+```
+
+#### 3.1.1. Monogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Mono_AF
+#| fig-cap: "Figure: Monogenic single replicate allele frequency plot for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Mono_AF <- plots[[1]] +
+  ggtitle("Gradual II Monogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Mono_AF)
+```
+
+
+
+#### 3.1.2. Oligogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Olig_AF
+#| fig-cap: "Figure: Oligogenic single replicate allele frequency plot for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Olig_AF <- plots[[10]] +
+  ggtitle("Gradual II Oligogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Olig_AF)
+```
+
+
+
+#### 3.1.3. Polygenic 70 loci
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_70_AF
+#| fig-cap: "Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 70 genomic architecture for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_70_AF <- plots[[70]] +
+  ggtitle("Gradual II Poligenic (70 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_70_AF)
+```
+
+
+
+#### 3.1.4. Polygenic 100 loci
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_100_AF
+#| fig-cap: "Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 100 genomic architecture for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+
+GradII_Poly_100_AF <- plots[[100]] +
+  ggtitle("Gradual II Poligenic (100 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_100_AF)
+```
+
+
+
+#### 3.1.5. Polygenic 300 loci
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_300_AF
+#| fig-cap: "Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 300 genomic architecture for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_300_AF <- plots[[300]] +
+  ggtitle("Gradual II Poligenic (300 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_300_AF)
+```
+
+
+
+### 3.2. Phenotypes all params
+
+```{r, echo=FALSE}
+source("../PhenotypePlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^MeanPhenotypes"
+result <- process_files(dirpath, pattern, "loci")
+combined_data <- result$combined_data
+phenogradII <- result$plots
+
+```
+
+
+#### 3.2.1. Monogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Mono_Pheno
+#| fig-cap: "Figure: Monogenic mean population phenotypic plot across 30 replicates (each line represents a single replicate) for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Mono_Pheno <- phenogradII[[1]] +
+  ggtitle("Phenotypes: Gradual II Monogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Mono_Pheno)
+```
+
+
+
+#### 3.2.2. Oligogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Oligo_Pheno
+#| fig-cap: "Figure: Oligogenic mean population phenotypic plot across 30 replicates (each line represents a single replicate) for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Oligo_Pheno <- phenogradII[[10]] +
+  ggtitle("Phenotypes: Gradual II Oligogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Oligo_Pheno)
+```
+
+
+
+#### 3.2.3. Polygenic 70
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_70_Pheno
+#| fig-cap: "Figure: Polygenic (70 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_70_Pheno <- phenogradII[[70]] +
+  ggtitle("Phenotypes: Gradual II Polygenic (70 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_70_Pheno)
+```
+
+
+
+#### 3.2.4. Polygenic 100
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_100_Pheno
+#| fig-cap: "Figure: Polygenic (100 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_100_Pheno <- phenogradII[[100]] +
+  ggtitle("Phenotypes: Gradual II Polygenic (100 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_100_Pheno)
+```
+
+
+
+#### 3.2.5. Polygenic 300
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_300_Pheno
+#| fig-cap: "Figure: Polygenic (300 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_300_Pheno <- phenogradII[[300]] +
+  ggtitle("Phenotypes: Gradual II Polygenic (300 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_300_Pheno)
+```
+
+
+
+### 3.3. Spec All params
+
+```{r, echo=FALSE}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_classic())
+  
+  mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  # File list
+  
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+  
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameters
+  
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      replct = str_extract(base_name, "genome\\d+"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Genome = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "70" ~ "Polygenic 70",
+        n == "100" ~ "Polygenic 100",
+        n == "300" ~ "Polygenic 300",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+  
+  # Set up parallel backend
+  
+  num_cores <- detectCores()
+  cl <- makeCluster(64)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        replct = params$replct,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Genome = params$Genome,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, replct, n, H, SD, Gen, Genome, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      replct = params$replct,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Genome = params$Genome,
+      param_combination = params$param_combination
+    )
+  }
+  
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      Gen == 10 ~ 40,
+      Gen == 20 ~ 50,
+      Gen == 30 ~ 80,
+      TRUE ~ 80
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
+      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      #H_label = paste0("H = ", H),
+      #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+  
+  fft_plots <- list()
+  
+  uni_genomegen <- unique(plot_data$Genome_Gen)
+  
+  for(genomegen in uni_genomegen){
+    myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
+  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+  fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = replct, group = replct)) +
+    geom_line(size = 1.1) +
+    facet_wrap( ~ h2_sd, scales = "free") +
+    labs(x = "Period (Generations)", y = "Spectral Density") +
+    mythemes
+  }
+  
+  return(fft_plots)
+}
+
+```
+
+```{r, fig.height = 8, fig.width = 12, echo=FALSE}
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/SinFSGen.dir/"
+pattern <- "^genome"
+result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
+```
+
+#### 3.3.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradII_Mono_SA
+#| fig-cap: "Figure: Monogenic spectral density plot across 30 replicates for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+#| 
+GradII_Mono_SA <- result[[1]] +
+  ggtitle("Spectral Density: Gradual II Monogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Mono_SA)
+```
+
+
+
+#### 3.3.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradII_Oligo_SA
+#| fig-cap: "Figure: Oligogenic spectral density plot across 30 replicates for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+
+GradII_Oligo_SA <- result[[2]] +
+  ggtitle("Spectral Density: Gradual II Oligogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Oligo_SA)
+```
+
+
+
+#### 3.3.3. Polygenic 70
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_70_SA
+#| fig-cap: "Figure: Polygenic (70 loci) spectral density plot across 30 replicates for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_70_SA <- result[[3]] +
+  ggtitle("Spectral Density: Gradual II Polygenic (70 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_70_SA)
+```
+
+
+
+#### 3.3.4. Polygenic 100
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradII_Poly_100_SA
+#| fig-cap: "Figure: Polygenic (100 loci) spectral density plot across 30 replicates for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+
+GradII_Poly_100_SA <- result[[4]] +
+  ggtitle("Spectral Density: Gradual II Polygenic (100 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_Poly_100_SA)
+```
+
+
+
+#### 3.3.5. Polygenic 300
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: GradII_GradII_Poly_300_SA
+#| fig-cap: "Figure: Polygenic (300 loci) spectral density plot across 30 replicates for gradual four unequal seasons selection, showing parameter interactions."
+#| fig-pos: "H"
+GradII_GradII_Poly_300_SA <- result[[5]] +
+  ggtitle("Spectral Density: Gradual II Polygenic (300 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(GradII_GradII_Poly_300_SA)
+```
+
+
+
+## 4. Constant model
+
+### 4.1. AF All param & Single replicate
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+rm(list = ls())
+source("../AlleleFrequencyPlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome1\\D"
+result <- process_files(dirpath, pattern, "loci")
+combined_data <- result$combined_data
+plots <- result$plots
+```
+
+#### 4.1.1. Monogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Mono_AF
+#| fig-cap: "Figure: Monogenic single replicate allele frequency plot for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Mono_AF <- plots[[1]] +
+  ggtitle("AF: Constantant Monogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Mono_AF)
+```
+
+
+
+#### 4.1.2. Oligogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Olig_AF
+#| fig-cap: "Figure: Oligogenic single replicate allele frequency plot for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Olig_AF <- plots[[10]] +
+  ggtitle("AF: Constantant Oligogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Olig_AF)
+```
+
+
+
+#### 4.1.3. Polygenic 70 loci
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_70_AF
+#| fig-cap: "Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 70 genomic architecture for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_70_AF <- plots[[70]] +
+  ggtitle("AF: Constantant Polygenic (70 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_70_AF)
+```
+
+
+
+#### 4.1.4. Polygenic 100 loci
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_100_AF
+#| fig-cap: "Figure:Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 100 genomic architecture for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_100_AF <- plots[[100]] +
+  ggtitle("AF: Constantant Polygenic (100 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_100_AF)
+```
+
+
+#### 4.1.5. Polygenic 300 loci
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_300_AF
+#| fig-cap: "Figure: Polygenic single replicate allele frequency plot with 15 loci sampled from 300 genomic architecture for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_300_AF <- plots[[300]] +
+  ggtitle("AF: Constantant Polygenic (300 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_300_AF)
+```
+
+
+
+### 4.2. Phenotypes all params
+
+```{r, echo=FALSE}
+source("../PhenotypePlotCode.R")
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^MeanPhenotypes"
+result <- process_files(dirpath, pattern, "loci")
+combined_data <- result$combined_data
+plots <- result$plots
+
+```
+
+
+#### 4.2.1. Monogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Mono_Pheno
+#| fig-cap: "Figure: Monogenic mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Mono_Pheno <- plots[[1]] +
+  ggtitle("Phenotypes: Constantant Monogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Mono_Pheno)
+```
+
+
+
+#### 4.2.2. Oligogenic
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Oligo_Pheno
+#| fig-cap: "Figure: Oligogenic mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Oligo_Pheno <- plots[[10]] +
+  ggtitle("Phenotypes: Constantant Oligogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Oligo_Pheno)
+```
+
+
+
+#### 4.2.3. Polygenic 70
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_70_Pheno
+#| fig-cap: "Figure: Polygenic (70 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_70_Pheno <- plots[[70]] +
+  ggtitle("Phenotypes: Constantant Polygenic (70 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_70_Pheno)
+```
+
+
+
+#### 4.2.4. Polygenic 100
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_100_Pheno
+#| fig-cap: "Figure: Polygenic (100 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+
+Constant_Poly_100_Pheno <- plots[[100]] +
+  ggtitle("Phenotypes: Constantant Polygenic (100 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_100_Pheno)
+```
+
+
+
+#### 4.2.5. Polygenic 300
+
+```{r, fig.height = 30, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_300_Pheno
+#| fig-cap: "Figure: Polygenic (300 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_300_Pheno <- plots[[300]] +
+  ggtitle("Phenotypes: Constantant Polygenic (300 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_300_Pheno)
+```
+
+
+### 4.3. Spec All params
+
+```{r, echo=FALSE}
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  theme_set(theme_classic())
+  
+  mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  # File list
+  
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+  
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame with filenames and extract parameters
+  
+  files_df <- data.frame(file_name = file_list) %>%
+    mutate(
+      base_name = basename(file_name),
+      replct = str_extract(base_name, "genome\\d+"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
+      SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
+      Gen = str_extract(base_name, "Gen\\d+"),
+      Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
+      Genome = case_when(
+        n == "1" ~ "Monogenic",
+        n == "10" ~ "Oligogenic",
+        n == "70" ~ "Polygenic 70",
+        n == "100" ~ "Polygenic 100",
+        n == "300" ~ "Polygenic 300",
+        TRUE ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      SD = as.numeric(SD),
+      Gen = as.numeric(Gen),
+      param_combination = paste0("n_", n, "_H", H, 
+                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
+                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
+    )
+  
+  # Set up parallel backend
+  
+  num_cores <- detectCores()
+  cl <- makeCluster(64)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        replct = params$replct,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
+        Genome = params$Genome,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, replct, n, H, SD, Gen, Genome, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+
+  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects
+  ts_data_list <- mean_allele_data %>%
+    group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      replct = params$replct,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      Genome = params$Genome,
+      param_combination = params$param_combination
+    )
+  }
+  
+  stopCluster(cl)
+  
+  # Combine all plot data
+  plot_data <- bind_rows(plot_data_list)
+  
+  # Filter based on Period thresholds for each Gen value
+  plot_data <- plot_data %>%
+    group_by(param_combination) %>%
+    mutate(threshold = case_when(
+      Gen == 10 ~ 40,
+      Gen == 20 ~ 50,
+      Gen == 30 ~ 80,
+      TRUE ~ 80
+    )) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(
+      Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
+      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      #H_label = paste0("H = ", H),
+      #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      n_label = paste0("n_", n)
+    )
+  
+  fft_plots <- list()
+  
+  uni_genomegen <- unique(plot_data$Genome_Gen)
+  
+  
+  
+  for(genomegen in uni_genomegen){
+    myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
+  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+  fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = replct, group = replct)) +
+    geom_line(size = 1.1) +
+    facet_wrap( ~ h2_sd, scales = "free") +
+    labs(x = "Period (Generations)", y = "Spectral Density") +
+    mythemes
+  }
+  
+  return(fft_plots)
+}
+
+```
+
+```{r, fig.height = 12, fig.width = 8, echo=FALSE}
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/CS.dir/"
+pattern <- "^genome"
+result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
+# result[[15]]
+```
+
+#### 4.3.1. Monogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Constant_Mono_SA
+#| fig-cap: "Figure: Monogenic spectral density plot across 30 replicates for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Mono_SA <- result[[1]] +
+  ggtitle("Spectral Density: Constantant Monogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Mono_SA)
+```
+
+
+
+#### 4.3.2. Oligogenic
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Constant_Oligo_SA
+#| fig-cap: "Figure: Oligogenic spectral density plot across 30 replicates for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Oligo_SA <- result[[2]] +
+  ggtitle("Spectral Density: Constantant Oligogenic") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Oligo_SA)
+```
+
+
+#### 4.3.3. Polygenic 70
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_70_SA
+#| fig-cap: "Figure: Polygenic (70 loci) spectral density plot across 30 replicates for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_70_SA <- result[[3]] +
+  ggtitle("Spectral Density: Constantant Polygenic (70 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_70_SA)
+```
+
+
+#### 4.3.4. Polygenic 100
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_100_SA
+#| fig-cap: "Figure: Polygenic (100 loci) spectral density plot across 30 replicates for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_100_SA <- result[[4]] +
+  ggtitle("Spectral Density: Constantant Polygenic (100 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_100_SA)
+```
+
+
+#### 4.3.5. Polygenic 300
+
+```{r, fig.height = 25, fig.width = 40, echo=FALSE}
+#| label: Constant_Poly_300_SA
+#| fig-cap: "Figure: Polygenic (300 loci) spectral density plot across 30 replicates for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+
+Constant_Poly_300_SA <- result[[5]] +
+  ggtitle("Spectral Density: Constantant Polygenic (300 loci)") +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,         
+      size = 70, 
+      color = "red",
+      margin = margin(b = 40) 
+    )
+  )
+
+print(Constant_Poly_300_SA)
+```
+
+
+## 5. Neutral model
+
+### 5.1. AF All param & Single replicate
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE, fig.height =20, fig.width =10}
+#rm(list = ls())
+#source("../AlleleFrequencyPlotCode.R")
+############ Libraries and theme function ########
+
+process_files <- function(dirpath, pattern, facet_var = "h2_loci_facet") {
+  
+  mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+ 
+  data_list <- list()
+
+  for(file in files) {
+    # Extract parameters from the file name
+    replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
+    herit        <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci         <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    sd           <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
+    gen          <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    
+    # Read and process the data
+    data <- read.csv(file, header = TRUE) %>%
+      dplyr::select(Generation, Position, Frequency, Effect) %>%
+      group_by(Position) %>%
+      mutate(
+        Position = factor(Position),
+        replicate = replicate_id,
+        initFreq = Frequency[Generation == 1],
+        position_effect_init = paste("position = ", Position, " ",
+                                     "Effect = ", round(Effect, 2), " ",
+                                     "Initial Freq = ", round(initFreq, 2), " ",
+                                     "repl = ", replicate, sep = "")
+      ) %>%
+      ungroup() %>%
+      mutate(
+        herit = herit,
+        loci  = loci,
+        sd    = sd,
+        gen   = gen,
+        h2_sd = paste("h\u00B2 = ", herit, " ", "sd = ", sd, sep = ""),
+        loci_facet = paste0("Loci = ", loci)
+      ) %>%
+      # Convert loci_facet to a factor with fixed levels
+      mutate(loci_facet = factor(loci_facet, 
+                                 levels = c("Loci = 1", "Loci = 10", "Loci = 70",
+                                            "Loci = 100", "Loci = 300")))
+    
+    set.seed(24356)
+    
+    unique_positions <- unique(data$Position)
+    if (length(unique_positions) > 30) {
+      selected_positions <- sample(unique_positions, 30)
+      data <- data %>%
+        filter(Position %in% selected_positions)
+    }
+    
+    data_list[[file]] <- data
+  }
+  
+  combined_data <- bind_rows(data_list)
+  
+  # Check if the chosen facet variable exists
+  if (!facet_var %in% names(combined_data)) {
+    stop(paste("Facet variable", facet_var, "does not exist in the data. Available columns are:",
+               paste(names(combined_data), collapse = ", ")))
+  }
+  
+  # Create the plot using the chosen facet variable.
+  p <- combined_data %>%
+    ggplot(aes(Generation, Frequency, group = position_effect_init,
+               color = position_effect_init)) +
+    geom_line(size = 1) +
+    facet_wrap(as.formula(paste("~", facet_var)), ncol = 1, dir = "v") +
+    ylim(0, 1) +
+    mythemes
+  
+  return(list(combined_data = combined_data, plot = p))
+}
+
+
+```
+
+#### 5.1.1. NS AF All_architectures
+
+```{r, fig.height = 30, fig.width =20, echo=FALSE, message = FALSE}
+#| label: Ns_AF_All_architectures
+#| fig-cap: "Figure: Monogenic single replicate allele frequency plot for constant selection, showing parameter interactions."
+#| fig-pos: "H"
+#| 
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome1_n\\d+_H0.1\\D"
+result <- process_files(dirpath, pattern, facet_var = "loci_facet")
+
+result$plot
+```
+
+
+
+
+
+
+### 5.2. Phenotypes all params
+
+```{r, echo=FALSE}
+pheno_processing <- function(dirpath, pattern) {
+  
+  mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  files <- list.files(dirpath, pattern, full.names = TRUE)
+ 
+  data_list <- list()
+
+  for(file in files) {
+    # Extract parameters from the file name
+    replicate_id <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
+    herit        <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
+    loci         <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
+    
+   data <- read.csv(file, header = TRUE) %>%
+  mutate(
+    replicate  = as.factor(replicate_id),
+    herit      = herit,  # ensure herit is numeric
+    loci       = loci,   # ensure loci is numeric
+    loci_facet = paste0("Loci = ", loci, ": h\u00B2 = ", herit)
+  )
+
+# Manually define the desired order for the factor levels:
+desired_order <- c(
+  "Loci = 1: h\u00B2 = 0.1",
+  "Loci = 1: h\u00B2 = 0.5",
+  "Loci = 1: h\u00B2 = 0.8",
+  "Loci = 10: h\u00B2 = 0.1",
+  "Loci = 10: h\u00B2 = 0.5",
+  "Loci = 10: h\u00B2 = 0.8",
+  "Loci = 70: h\u00B2 = 0.1",
+  "Loci = 70: h\u00B2 = 0.5",
+  "Loci = 70: h\u00B2 = 0.8",
+  "Loci = 100: h\u00B2 = 0.1",
+  "Loci = 100: h\u00B2 = 0.5",
+  "Loci = 100: h\u00B2 = 0.8",
+  "Loci = 300: h\u00B2 = 0.1",
+  "Loci = 300: h\u00B2 = 0.5",
+  "Loci = 300: h\u00B2 = 0.8"
+)
+
+data <- data %>%
+  mutate(loci_facet = factor(loci_facet, levels = desired_order))
+
+
+    
+    data_list[[file]] <- data
+  }
+  
+  combined_data <- bind_rows(data_list)
+  
+  #print(unique(combined_data$loci_facet))
+
+  
+  # Create the plot using the chosen facet variable.
+  p <- combined_data %>%
+    ggplot(aes(Generation, Phenotype, color = replicate)) +
+    geom_line(size = 1) +
+    facet_wrap(~loci_facet, scales = "free", ncol = 2) +
+    mythemes
+  
+  return(list(combined_data = combined_data, plot = p))
+}
+
+```
+
+
+#### 5.2.1. NS Pheno All_architectures
+
+```{r, fig.height = 35, fig.width = 30, echo=FALSE, message = FALSE}
+#| label: Ns_Pheno_All_architectures
+#| fig-cap: "Figure: Mean population phenotypic plot across 30 replicates (each line represents a single replicate) for neutral selection, showing parameter interactions."
+#| fig-pos: "H"
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^MeanPhenotypes\\d+_n\\d+_H0\\.(1|8)_*"
+result <- pheno_processing(dirpath, pattern)
+
+result$plot
+```
+
+
+### 5.3. Spec All params
+
+```{r, echo=FALSE}
+
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(dplyr)
+  library(ggplot2)
+  library(cowplot)
+  library(stringr)
+  
+  # Set a classic theme globally
+  theme_set(theme_classic())
+  
+  mythemes <- theme_bw() +
+    theme(
+      text            = element_text(family = "sans"), 
+      legend.position = "none",
+      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+                                       margin = margin(t = 20), hjust = 1),
+      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+                                       margin = margin(r = 10)),
+      axis.line       = element_line(size = 3),
+      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+                                       margin = margin(b = 1, unit = "lines")),
+      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text      = element_text(size = 40, face = "bold"),
+      panel.spacing   = unit(5, "lines"),
+      panel.grid      = element_blank()
+    )
+  
+  # List files matching the pattern
+  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
+  if (length(file_list) == 0) {
+    stop("No files found with the given pattern.")
+  }
+  
+  # Create a data frame of file names and extract parameters
+  files_df <- data.frame(file_name = file_list, stringsAsFactors = FALSE) %>%
+    mutate(
+      base_name = basename(file_name),
+      replct = str_extract(base_name, "genome\\d+"),
+      n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
+      H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
+      Genome = case_when(
+        n == "1"   ~ "Monogenic",
+        n == "10"  ~ "Oligogenic",
+        n == "70"  ~ "Polygenic 70",
+        n == "100" ~ "Polygenic 100",
+        n == "300" ~ "Polygenic 300",
+        TRUE       ~ "Unknown"
+      )
+    ) %>%
+    mutate(
+      n = as.numeric(n),
+      H = as.numeric(H),
+      # Use n here so the facet label matches your desired order
+      param_combination = paste0("Loci = ", n, ": h\u00B2 = ", H)
+    )
+  
+  # Set up the parallel backend using detected cores
+  cl <- makeCluster(64)
+  registerDoParallel(cl)
+  
+  # Read and combine data from all replicate files in parallel.
+  combined_data_list <- foreach(i = seq_along(files_df$file_name), 
+                                .packages = c("dplyr", "stringr")) %dopar% {
+    file <- files_df$file_name[i]
+    params <- files_df[i, ]
+    df <- read.csv(file)
+    data <- df %>%
+      mutate(
+        allele_id = as.factor(Position),
+        generation = as.numeric(Generation),
+        allele_frequency = Frequency,
+        file = params$base_name,
+        replct = params$replct,
+        H = params$H,
+        Genome = params$Genome,
+        n = params$n,
+        param_combination = params$param_combination
+      ) %>%
+      dplyr::select(allele_id, generation, allele_frequency, replct, H, Genome, n, param_combination)
+    data
+  }
+  combined_data <- bind_rows(combined_data_list)
+  
+  filtered_data <- combined_data
+  
+  # Calculate the mean allele frequency for each grouping
+  mean_allele_data <- filtered_data %>%
+    group_by(generation, replct, H, Genome, n, param_combination) %>%
+    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
+  
+  # Create time series objects per grouping
+  ts_data_list <- mean_allele_data %>%
+    group_by(Genome, replct, H, n, param_combination) %>%
+    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)),
+              .groups = 'drop')
+  
+  # Compute spectral density estimates in parallel
+  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
+    ts_data <- ts_data_list$ts_data[[i]]
+    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  }
+  
+  # Prepare data for plotting
+  plot_data_list <- foreach(i = seq_along(spec_results_list), 
+                            .packages = c("dplyr", "stringr")) %dopar% {
+    spec_result <- spec_results_list[[i]]
+    params <- ts_data_list[i, ]
+    period <- 1 / spec_result$freq
+    data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      replct = params$replct,
+      H = params$H,
+      Genome = params$Genome,
+      n = params$n,
+      param_combination = params$param_combination
+    )
+  }
+  
+  stopCluster(cl)
+  
+  # Combine plot data and filter based on a threshold
+  plot_data <- bind_rows(plot_data_list) %>%
+    group_by(param_combination) %>%
+    mutate(threshold = 80) %>%
+    filter(Period < threshold) %>%
+    ungroup() %>%
+    mutate(loci_facet = paste0("Loci = ", n, ": h\u00B2 = ", H))
+  
+  # Manually define the desired order
+  desired_order <- c("Loci = 1: h\u00B2 = 0.1",
+                     "Loci = 1: h\u00B2 = 0.5",
+                     "Loci = 1: h\u00B2 = 0.8",
+                     "Loci = 10: h\u00B2 = 0.1",
+                     "Loci = 10: h\u00B2 = 0.5",
+                     "Loci = 10: h\u00B2 = 0.8",
+                     "Loci = 70: h\u00B2 = 0.1",
+                     "Loci = 70: h\u00B2 = 0.5",
+                     "Loci = 70: h\u00B2 = 0.8",
+                     "Loci = 100: h\u00B2 = 0.1",
+                     "Loci = 100: h\u00B2 = 0.5",
+                     "Loci = 100: h\u00B2 = 0.8",
+                     "Loci = 300: h\u00B2 = 0.1",
+                     "Loci = 300: h\u00B2 = 0.5",
+                     "Loci = 300: h\u00B2 = 0.8")
+  
+  # Relevel the loci_facet factor
+  plot_data <- plot_data %>%
+    mutate(loci_facet = factor(loci_facet, levels = desired_order))
+  
+  # Create the FFT plot
+  fft_plots <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = replct, group = replct)) +
+    geom_line(size = 1.1) +
+    facet_wrap(~ loci_facet, scales = "free", ncol = 2) +
+    labs(x = "Period (Generations)", y = "Spectral Density") +
+    mythemes
+  
+  return(fft_plots)
+}
+
+
+```
+
+```{r, fig.height = 35, fig.width = 30, echo=FALSE}
+#| label: Ns_SpectralAnalysis_All_architectures
+#| fig-cap: "Figure: Spectral density plot across 30 replicates (each line represents a single replicate) for neutral selection, showing parameter interactions."
+#| fig-pos: "H"
+#| 
+dirpath <- "../../../output.dir/Selection_Models/WF.dir/NS.dir/"
+pattern <- "^genome\\d+_n\\d+_H0\\.(1|8)_*"
+result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
+result
+```
+
+
