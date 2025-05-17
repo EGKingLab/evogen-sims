@@ -1,0 +1,252 @@
+---
+title: "Scale Estimation"
+format: html
+---
+
+```{r, echo=FALSE}
+set.seed(2361522)
+library(tidyr)
+library(plotly)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+theme_set(theme_cowplot())
+```
+
+## Phenotype simulation and scaling parameters estimation
+
+
+```{r}
+niter <- 100
+nlocis <- c(1, 10, 100,300, 1000)
+ninds <- 10000
+h2s <- seq(0.1,0.9, by=0.2)
+pp <- crossing(h2s, nlocis)
+pp$mean <- NA
+pp$sd <- NA
+pp$VA <- NA
+for(kk in 1:nrow(pp))
+{
+  nloci <- pp$nlocis[kk]
+  h2 <- pp$h2s[kk]
+  pp.temp <- tibble(mean = numeric(length = niter),
+                    sd = numeric(length = niter),
+                    VA = numeric(length = niter))
+  for (ii in 1:niter) {
+    effects <- rexp(nloci)
+    markers <- runif(nloci, 0, 1) #Probability of carrying a given allele 
+    additive <- numeric(length = ninds)
+    
+    for (ind in 1:ninds) {
+      geno <- rbinom(nloci, 1, markers)
+      effs <- geno*effects
+      additive[ind] <- sum(effs)
+    }
+    V_A <- var(additive)
+    V_E <- (V_A/h2)- V_A
+    env <- rnorm(ninds, 0.0, sqrt(V_E))
+    
+    df <- tibble(phenotypes = additive + env)
+    pp.temp$mean[ii] <- mean(df$phenotypes)
+    pp.temp$sd[ii] <- sd(df$phenotypes)
+    pp.temp$VA[ii] <- V_A
+  }
+  pp$mean[kk] <- mean(pp.temp$mean)
+  pp$sd[kk] <- mean(pp.temp$sd)
+  pp$VA[kk] <- mean(pp.temp$VA)
+  cat(kk, "\t")
+}
+```
+
+From the above, the mean phenotype is 1/2 the number of loci. Additive variance is 1/3 the number of loci. Because h2 = VA/VP, VP = VA/h2. 
+So we should alter the scaling to be:
+
+```{r}
+effects <- rexp(nloci)
+markers <- runif(nloci, 0, 1) #Probability of carrying a given allele 
+additive <- numeric(length = ninds)
+for (ind in 1:ninds) {
+  geno <- rbinom(nloci, 1, markers)
+  effs <- geno*effects
+  additive[ind] <- sum(effs)
+}
+V_A <- (1/3)*nloci
+V_E <- (V_A/h2) - V_A
+env <- rnorm(ninds, 0.0, sqrt(V_E))
+df <- tibble(phenotypes = additive + env)
+mup <- 0.5*nloci
+sdp <- sqrt(((1/3)*nloci)/h2)
+  
+df$phenotypes_sc <- (df$phenotypes - mup)/sdp
+  
+```
+
+Now, we can recalculate the heritability after scaling phenotypes
+
+```{r}
+niter <- 100
+nlocis <- c(1, 10, 100,300, 1000)
+ninds <- 10000
+h2s <- seq(0.1,0.9, by=0.2)
+pp <- crossing(h2s, nlocis)
+pp$mean <- NA
+pp$sd <- NA
+pp$h2 <- NA
+for(kk in 1:nrow(pp))
+{
+  nloci <- pp$nlocis[kk]
+  h2 <- pp$h2s[kk]
+  pp.temp <- tibble(mean = numeric(length = niter),
+                    sd = numeric(length = niter),
+                    h2 = numeric(length = niter))
+  for (ii in 1:niter) {
+    effects <- rexp(nloci)
+    markers <- runif(nloci, 0, 1) 
+    additive <- numeric(length = ninds)
+    
+    for (ind in 1:ninds) {
+      geno <- rbinom(nloci, 1, markers)
+      effs <- geno*effects
+      additive[ind] <- sum(effs)
+    }
+    V_A <- (1/3)*nloci
+    V_E <- (V_A/h2)- V_A
+    env <- rnorm(ninds, 0.0, sqrt(V_E))
+    
+    mup <- 0.5*nloci
+    sdp <- sqrt(((1/3)*nloci)/h2)
+    df <- tibble(phenotypes = additive + env)
+    df$phenotypes_sc <- (df$phenotypes - mup)/sdp
+    
+    pp.temp$mean[ii] <- mean(df$phenotypes_sc)
+    pp.temp$sd[ii] <- sd(df$phenotypes_sc)
+    pp.temp$h2[ii] <- var(additive)/var(df$phenotypes)
+  }
+  pp$mean[kk] <- mean(pp.temp$mean)
+  pp$sd[kk] <- mean(pp.temp$sd)
+  pp$h2[kk] <- mean(pp.temp$h2)
+  cat(kk, "\t")
+}
+```
+
+### Investigating nloci = 1
+
+```{r}
+niter <- 1000 
+nloci <- 1
+  h2 <- 0.5
+  pp.temp <- tibble(mean = numeric(length = niter),
+                    sd = numeric(length = niter),
+                    mean_s = numeric(length = niter),
+                    sd_s = numeric(length = niter),
+                    h2 = numeric(length = niter))
+  for (ii in 1:niter) {
+    effects <- 1
+    markers <- runif(nloci, 0, 1) #Probability of carrying a given allele 
+    additive <- numeric(length = ninds)
+    
+    for (ind in 1:ninds) {
+      geno <- rbinom(nloci, 1, markers)
+      effs <- geno*effects
+      additive[ind] <- sum(effs)
+    }
+    V_A <- (1/4)*nloci
+    V_E <- (V_A/h2)- V_A
+    env <- rnorm(ninds, 0.0, sqrt(V_E))
+    
+    mup <- 0.5*nloci
+    sdp <- sqrt(((1/4)*nloci)/h2)
+    df <- tibble(phenotypes = additive + env)
+    df$phenotypes_sc <- (df$phenotypes - mup)/sdp
+    
+    pp.temp$mean_s[ii] <- mean(df$phenotypes_sc)
+    pp.temp$sd_s[ii] <- sd(df$phenotypes_sc)
+    pp.temp$mean[ii] <- mean(df$phenotypes)
+    pp.temp$sd[ii] <- sd(df$phenotypes)
+    pp.temp$h2[ii] <- var(additive)/var(df$phenotypes)
+    
+  }
+```
+
+
+## Phenotypes with scaling
+
+To explore whether the number of loci produces a different distribution of phenotypes, we will make 100 sets of 10,000 phenotypes for each number of loci and look at these distributions. 
+
+```{r, echo=FALSE}
+rm(list = ls())
+niter <- 100
+
+nlocis <- c(1, 10, 100,300)
+ninds <- 10000
+h2s <- c(0.1,0.5,0.8)
+
+pp <- crossing(h2s, nlocis)
+
+pp.out <- vector(mode = "list", length = nrow(pp))
+
+for(kk in 1:nrow(pp))
+{
+  
+  nloci <- pp$nlocis[kk]
+  h2 <- pp$h2s[kk]
+  phen_out <- matrix(NA,nrow=ninds,ncol=niter)
+    
+  for (ii in 1:niter) {
+    effects <- rexp(nloci)
+    markers <- runif(nloci, 0, 1) #Probability of carrying a given allele 
+    additive <- numeric(length = ninds)
+    
+    for (ind in 1:ninds) {
+      geno <- rbinom(nloci, 1, markers)
+      effs <- geno*effects
+      additive[ind] <- sum(effs)
+    }
+    V_A <- (1/3)*nloci
+    V_E <- (V_A - h2 * V_A) / h2
+    env <- rnorm(ninds, 0.0, sqrt(V_E))
+    
+    mup <- 0.5*nloci
+    sdp <- sqrt(((1/3)*nloci)/h2)
+
+    df <- tibble(phenotypes = additive + env)
+    df$phenotypes_sc <- (df$phenotypes - mup)/sdp
+    phen_out[,ii] <- df$phenotypes_sc
+    
+  }
+  pp.out[[kk]] <- phen_out
+  
+}
+
+```
+
+## Plot the results
+
+```{r, echo=FALSE}
+mm.all <- tibble(rep = character(length = 0),
+                 value = numeric(length = 0),
+                 nloci = numeric(length = 0),
+                 h2 <- numeric(length = 0))
+
+for(kk in 1:nrow(pp))
+{
+mm <- as_tibble(pp.out[[kk]])  %>% 
+  pivot_longer(everything(),names_to = "rep")
+mm$nloci <- pp$nlocis[kk]
+mm$h2 <- pp$h2s[kk]
+mm.all <- rbind(mm.all, mm)
+}
+
+
+
+mm.all$rep_code <- paste0(mm.all$nloci,"_", mm.all$rep,"_",mm.all$h2)
+mm.all$nlociF <- factor(mm.all$nloci)
+mm.all$h2F <- factor(mm.all$h2)
+
+mm.all %>% 
+  ggplot(aes(value, color = h2F, group = rep_code)) +
+  geom_density(size = 0.1) + 
+  facet_grid(nlociF~.)
+
+```
