@@ -4,6 +4,7 @@ SNP_table_Yeast.txt
 *.png
 #tracking files
 Archieved*
+Archi*
 error*
 Trash*
 trash*
