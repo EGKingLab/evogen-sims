@@ -14,4 +14,4 @@ Output.dir -----> Contains folders for each model with log and csv files for all
 
 WritingFigures.dir -----> This folder is for the code used to produce figures in publication and their respective supplements.
 
-
+The file "Scale_Estimation.qmd" shows how we estimated the phenotype scaling parameters
