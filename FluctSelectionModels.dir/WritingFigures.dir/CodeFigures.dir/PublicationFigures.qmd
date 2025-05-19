@@ -22,32 +22,50 @@ editor: visual
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 setwd("/mnt/pixstor/kingeg-lab/etb68/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/CodeFigures.dir")
+# 
+# local_lib <- "~/R/library"
+# if (!dir.exists(local_lib)) {
+#   dir.create(local_lib, recursive = TRUE)
+# }
+# 
+# .libPaths(c(local_lib, .libPaths()))
+# 
+# install.packages(
+#   c("patchwork", "cowplot", "ggplot2", "doParallel", "stringi", "stringr", "tidyr", "forcats", "purrr"),
+#   lib   = local_lib,
+#   repos = "https://cloud.r-project.org"
+# )
+# 
+# library(forcats)
+# library(stringi)
+# library(tidyr)
+# library(dplyr)
+# library(stringr)
+# library(ggplot2)
+# library(patchwork)
+# library(cowplot)
+# library(purrr)
+# library(doParallel)
 
-# 1. Define a personal library path
 local_lib <- "~/R/library"
 if (!dir.exists(local_lib)) {
   dir.create(local_lib, recursive = TRUE)
 }
 
-# 2. Tell R to look here first
 .libPaths(c(local_lib, .libPaths()))
 
-install.packages(
-  c("patchwork", "cowplot", "ggplot2", "doParallel", "stringi", "stringr", "tidyr", "forcats", "purrr"),
-  lib   = local_lib,
-  repos = "https://cloud.r-project.org"
+required_packages <- c(
+  "patchwork", "cowplot", "ggplot2", "doParallel",
+  "stringi", "stringr", "tidyr", "forcats", "purrr", "furrr","parallel", "foreach","dplyr"
 )
 
-library(forcats)
-library(stringi)
-library(tidyr)
-library(dplyr)
-library(stringr)
-library(ggplot2)
-library(patchwork)
-library(cowplot)
-library(purrr)
-library(doParallel)
+missing_packages <- required_packages[!required_packages %in% installed.packages()[,"Package"]]
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages, lib = local_lib, repos = "https://cloud.r-project.org")
+}
+
+# Load all packages
+invisible(lapply(required_packages, library, character.only = TRUE))
 
 
 theme_set(theme_cowplot())
@@ -557,10 +575,10 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 ###...................................#######
   
   num_cores <- detectCores()
-  num_cores_to_use <- max(1, num_cores - 16)  # check the cores before
+  num_cores_to_use <- max(1, num_cores - 32)  # check the cores before
   
   cl <- makeCluster(num_cores_to_use)
-  registerDoParallel(cl)
+  doParallel::registerDoParallel(cl)
   
   combined_data_list <- foreach(i = seq_along(files_df$file_name),
                                 .packages = c("dplyr")) %dopar% {
@@ -668,7 +686,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
       H_SD_Gen = paste0("h\u00B2 = ", H, " SD=", SD, " Gen=", Gen)
     )
   
-  spec_plot_comb1 <- ggplot( plot_data, #plot_data_comb1, 
+  spec_plot_comb1 <- ggplot( plot_data, 
                             aes(x = Period, y = Spectrum, 
                                 color = factor(genome), group = factor(genome))) +
     geom_line(linewidth = 3) +
@@ -952,20 +970,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
-      # base_name = basename(file_name),
-      # replicate = str_extract(base_name, "genome\\d+"), 
-      # loci = str_extract(base_name, "_n\\d+") %>%
-      #   str_remove("_n") %>%
-      #   as.numeric(),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>%
-      #   str_remove("_H") %>%
-      #   as.numeric(),
-      # SD = str_extract(base_name, "SD\\d+(\\.\\d+)?") %>%
-      #   str_remove("SD") %>%
-      #   as.numeric(),
-      # Gen = str_extract(base_name, "Gen\\d+") %>%
-      #   str_remove("Gen") %>%
-      #   as.numeric(),
       base_name = basename(file_name),
       replicate <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", base_name)),
       genome = ifelse(
@@ -1003,7 +1007,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
   num_cores <- detectCores()
   cl <- makeCluster(max(1, num_cores - 16))  
-  registerDoParallel(cl)
+  doParallel::registerDoParallel(cl)
 
   combined_data_list <- foreach(i = seq_along(files_df$file_name), 
                                 .packages = c("dplyr")) %dopar% {
@@ -1206,13 +1210,6 @@ plan(multicore, workers = workers_to_use)
 
 process_file <- function(file) {
   filename <- path_file(file)
-
-  # repl_val <- as.numeric(str_extract(filename, "(?<=genome)\\d+"))
-  # H_val    <- as.numeric(str_extract(filename, "(?<=H)0\\.\\d+"))
-  # loci_val <- as.numeric(str_extract(filename, "(?<=_n)\\d+"))
-  # SD_val   <- as.numeric(str_extract(filename, "(?<=SD)\\d+"))
-  # Gen_val  <- as.numeric(str_extract(filename, "(?<=Gen)\\d+"))
-  
   repl_val <- as.numeric(sub(".*genome(\\d+)_.*", "\\1", basename(filename)))
   H_val <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", basename(filename)))
   loci_val <- as.numeric(sub(".*_n(\\d+)_.*", "\\1", basename(filename)))
@@ -1630,7 +1627,7 @@ AlleleFreq_dataset <- bind_rows(allele_freq_list) %>%
 num_cores <- detectCores()
 num_cores_to_use <- max(1, num_cores - 32)  # Check the cores
 cl <- makeCluster(num_cores_to_use)
-registerDoParallel(cl)
+doParallel::registerDoParallel(cl)
 
 grouped_data <- AlleleFreq_dataset %>%
   group_by(Selection, Gene_Number, Replicate)
@@ -1747,14 +1744,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
-      # base_name = basename(file_name),
-      # genome = str_extract(base_name, "genome\\d+"), 
-      # n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
-      # SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
-      # SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
-      # Gen = str_extract(base_name, "Gen\\d+"),
-      # Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
       base_name = basename(file_name),
       replicate <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", base_name)),
       genome = ifelse(
@@ -1792,7 +1781,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
   num_cores <- detectCores()
   cl <- makeCluster(max(1, num_cores - 16))
-  registerDoParallel(cl)
+  doParallel::registerDoParallel(cl)
 
   combined_data_list <- foreach(i = seq_along(files_df$file_name), 
                                 .packages = c("dplyr")) %dopar% {
@@ -1914,14 +1903,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
-      # base_name = basename(file_name),
-      # genome = str_extract(base_name, "genome\\d+"), 
-      # n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
-      # SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
-      # SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
-      # Gen = str_extract(base_name, "Gen\\d+"),
-      # Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
       base_name = basename(file_name),
       replicate <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", base_name)),
       genome = ifelse(
@@ -1959,7 +1940,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
   num_cores <- detectCores()
   cl <- makeCluster(max(1, num_cores - 16))
-  registerDoParallel(cl)
+  doParallel::registerDoParallel(cl)
 
   combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr")) %dopar% {
     file <- files_df$file_name[i]

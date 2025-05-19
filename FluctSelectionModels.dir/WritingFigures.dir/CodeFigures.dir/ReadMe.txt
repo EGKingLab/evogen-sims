@@ -7,3 +7,4 @@ Make sure to adjust directories as necessary
 •  PublicationFigures.qmd --> Contains codes used for spectral analysis plots, and other figures in the manuscript·     
 •  SupplementalFigures.qmd --> Contains codes used for spectral analysis plots, and other figures in the manuscript
 
+Note: Some of the codes run on parallel; thus, you should adjust the number of cores accordingly.

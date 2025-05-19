@@ -2,12 +2,12 @@
 title: "Supplemental Figures"
 author: "E.T"
 format:
-  docx:
+  pdf:
     toc: true
     fontsize: 10pt
     fig-cap-location: bottom
     fig-numbering: false  
-  pdf:
+  docx:
     toc: true
   html:
     toc: true
@@ -22,35 +22,60 @@ editor: visual
 ---
 
 ```{r, echo=FALSE, message=FALSE}
-rm(list = ls())
-############## This is to help with packages in case they're not there #####
-options(repos = c(CRAN = "https://cloud.r-project.org"))
+# rm(list = ls())
+# ############## This is to help with packages in case they're not there #####
+# options(repos = c(CRAN = "https://cloud.r-project.org"))
+# 
+# install_load <- function(packages, cran = "https://cloud.r-project.org") {
+#   for (pkg in packages) {
+#     if (!require(pkg, character.only = TRUE)) {
+#       install.packages(pkg,
+#                        dependencies = TRUE,
+#                        repos        = cran)
+#       library(pkg, character.only = TRUE)
+#     }
+#   }
+# }
+# 
+# # then:
+# packages <- c("dplyr","patchwork","cowplot","doParallel","ggplot2","foreach","future","parallel")
+# install_load(packages)
+# 
+# # # Install and load the packages
+# # #install_load(packages)
+# # library(dplyr)
+# # library(cowplot)
+# # library(doParallel)
+# # library(ggplot2)
+# # library(foreach)
+# # library(future)
+# # library(parallel)
+# # library(patchwork)
 
-install_load <- function(packages, cran = "https://cloud.r-project.org") {
-  for (pkg in packages) {
-    if (!require(pkg, character.only = TRUE)) {
-      install.packages(pkg,
-                       dependencies = TRUE,
-                       repos        = cran)
-      library(pkg, character.only = TRUE)
-    }
-  }
+
+local_lib <- "~/R/library"
+if (!dir.exists(local_lib)) {
+  dir.create(local_lib, recursive = TRUE)
 }
 
-# then:
-packages <- c("dplyr","patchwork","cowplot","doParallel","ggplot2","foreach","future","parallel")
-install_load(packages)
+.libPaths(c(local_lib, .libPaths()))
 
-# # Install and load the packages
-# #install_load(packages)
-# library(dplyr)
-# library(cowplot)
-# library(doParallel)
-# library(ggplot2)
-# library(foreach)
-# library(future)
-# library(parallel)
-# library(patchwork)
+install.packages(
+  c("patchwork", "cowplot", "ggplot2", "doParallel", "stringi", "stringr", "tidyr", "forcats", "purrr", "furrr"),
+  lib   = local_lib,
+  repos = "https://cloud.r-project.org"
+)
+
+library(forcats)
+library(stringi)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
 
 ```
 
@@ -86,7 +111,7 @@ source("AlleleFrequencyPlotCode.R")
 dirpath <- "../../Output.dir/LinFS.dir/"
 pattern <- "^genome1_n(10|70|300)(?:\\D|$)"
 result <- process_files(dirpath, pattern, "loci_gen")
-##combined_data <- result$combined_data
+#
 instantplots_AF <- result$plots
 ```
 
@@ -108,10 +133,10 @@ process_files <- function(dirpath, pattern) {
   
   files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
   
-  # My list for dataframes
+
   dataframes <- list()
   
-  # Get parameters from the file and keep dataset based on file name
+  # Extracting parameters
   
   for (file in files) {
     fname <- basename(file) 
@@ -458,8 +483,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
                                  ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
     )
   
-  # Set up parallel backend
-  
   num_cores <- detectCores()
   cl <- makeCluster(64)
   registerDoParallel(cl)
@@ -488,25 +511,25 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   }
   combined_data <- bind_rows(combined_data_list)
 
-  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  filtered_data <- combined_data 
   
-  # Calculate the mean allele frequency for each grouping
+  # Calculating the mean allele frequency for each grouping
   mean_allele_data <- filtered_data %>%
     group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
   
-  # Create time series objects
+  # Creating time series objects
   ts_data_list <- mean_allele_data %>%
     group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
   
-  # Compute spectral density estimates in parallel
+  # Computing spectral density 
   spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
     ts_data <- ts_data_list$ts_data[[i]]
     spectrum(ts_data, spans = spectrum_span, plot = FALSE)
   }
   
-  # Prepare data for plotting
+  # Preparing data for plotting
   plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr")) %dopar% {
     spec_result <- spec_results_list[[i]]
     params <- ts_data_list[i, ]
@@ -526,10 +549,10 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   stopCluster(cl)
   
-  # Combine all plot data
+
   plot_data <- bind_rows(plot_data_list)
   
-  # Filter based on Period thresholds for each Gen value
+
   plot_data <- plot_data %>%
     group_by(param_combination) %>%
     mutate(threshold = case_when(
@@ -555,7 +578,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   for(genomegen in uni_genomegen){
     myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
-  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+    
   fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = factor(replct), group = factor(replct))) +
     geom_line(size = 1.1) +
     facet_wrap( ~ h2_sd, scales = "free") +
@@ -572,7 +595,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 dirpath <- "../../Output.dir/LinFS.dir/"
 pattern <- "^genome"
 instantplots_SPA <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
-# result[[15]]
+
 ```
 
 #### 1.2.1. Monogenic
@@ -821,7 +844,7 @@ source("AlleleFrequencyPlotCode.R")
 dirpath <- "../../Output.dir/SinFS.dir/"
 pattern <- "^genome1_n(10|70|300)(?:\\D|$)"  #"^genome1\\D"
 result <- process_files(dirpath, pattern, "loci_gen")
-#combined_data <- result$combined_data
+
 gradIplots_AF <- result$plots
 ```
 
@@ -844,10 +867,9 @@ process_files <- function(dirpath, pattern) {
   
   files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
   
-  # My list for dataframes
   dataframes <- list()
   
-  # Get parameters from the file and keep dataset based on file name
+  # Extracting parameters
   
   for (file in files) {
     fname <- basename(file) 
@@ -1150,15 +1172,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
-      # base_name = basename(file_name),
-      # replct = str_extract(base_name, "genome\\d+"),
-      # n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
-      # SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
-      # SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
-      # Gen = str_extract(base_name, "Gen\\d+"),
-      # Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
-      
       base_name = basename(file_name),  
       n = ifelse(
          grepl("_n\\d+", base_name),
@@ -1230,25 +1243,25 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   }
   combined_data <- bind_rows(combined_data_list)
 
-  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  filtered_data <- combined_data 
   
-  # Calculate the mean allele frequency for each grouping
+  # Calculating the mean allele frequency for each grouping
   mean_allele_data <- filtered_data %>%
     group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
   
-  # Create time series objects
+  # Creating time series objects
   ts_data_list <- mean_allele_data %>%
     group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
   
-  # Compute spectral density estimates in parallel
+  # Computing spectral density estimates in parallel
   spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
     ts_data <- ts_data_list$ts_data[[i]]
     spectrum(ts_data, spans = spectrum_span, plot = FALSE)
   }
   
-  # Prepare data for plotting
+  # Preparing data for plotting
   plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr")) %dopar% {
     spec_result <- spec_results_list[[i]]
     params <- ts_data_list[i, ]
@@ -1268,10 +1281,10 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   stopCluster(cl)
   
-  # Combine all plot data
+
   plot_data <- bind_rows(plot_data_list)
   
-  # Filter based on Period thresholds for each Gen value
+
   plot_data <- plot_data %>%
     group_by(param_combination) %>%
     mutate(threshold = case_when(
@@ -1297,7 +1310,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   for(genomegen in uni_genomegen){
     myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
-  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+
   fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = factor(replct), group = factor(replct))) +
     geom_line(size = 1.1) +
     facet_wrap( ~ h2_sd, scales = "free") +
@@ -1314,7 +1327,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 dirpath <- "../../Output.dir/SinFS.dir/"
 pattern <- "^genome"
 gradIplots_SPA <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
-# result[[15]]
+
 ```
 
 #### 2.2.1. Monogenic
@@ -1563,7 +1576,7 @@ source("AlleleFrequencyPlotCode.R")
 dirpath <- "../../Output.dir/SinFSGen.dir/"
 pattern <- pattern <- "^genome1_n(10|70|300)(?:\\D|$)"  #"^genome1\\D" 
 result <- process_files(dirpath, pattern, "loci")
-##combined_data <- result$combined_data
+#
 gradIIplots_AF <- result$plots
 ```
 
@@ -1582,18 +1595,12 @@ process_files <- function(dirpath, pattern) {
   
   files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
   
-  # My list for dataframes
+
   dataframes <- list()
   
-  # Get parameters from the file and keep dataset based on file name
+  # Extracting parameters
   
   for (file in files) {
-    # fname <- basename(file) # file name
-    # replicate <- as.numeric(str_extract(fname, "(?<=genome)\\d+")) # repl number 
-    # H         <- as.numeric(str_extract(fname, "(?<=H)0\\.\\d+")) # h2 value
-    # loci      <- as.numeric(str_extract(fname, "(?<=_n)\\d+")) # Number of loci
-    # SD        <- as.numeric(str_extract(fname, "(?<=SD)\\d+")) # Distance to optimum
-    
     fname <- basename(file) 
     H <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", fname))
     loci <- as.numeric( sub(".*_n(\\d+)_.*", "\\1", fname))
@@ -1777,14 +1784,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
-      # base_name = basename(file_name),
-      # replct = str_extract(base_name, "genome\\d+"),
-      # n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
-      # SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
-      # SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
-      # Gen = str_extract(base_name, "Gen\\d+"),
-      # Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
       base_name = basename(file_name),  
       n = ifelse(
          grepl("_n\\d+", base_name),
@@ -1856,25 +1855,25 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   }
   combined_data <- bind_rows(combined_data_list)
 
-  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  filtered_data <- combined_data 
   
-  # Calculate the mean allele frequency for each grouping
+  # Calculating the mean allele frequency for each grouping
   mean_allele_data <- filtered_data %>%
     group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
   
-  # Create time series objects
+  # Creating time series objects
   ts_data_list <- mean_allele_data %>%
     group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
   
-  # Compute spectral density estimates in parallel
+  # Computing spectral density estimates in parallel
   spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
     ts_data <- ts_data_list$ts_data[[i]]
     spectrum(ts_data, spans = spectrum_span, plot = FALSE)
   }
   
-  # Prepare data for plotting
+  # Preparing data for plotting
   plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr")) %dopar% {
     spec_result <- spec_results_list[[i]]
     params <- ts_data_list[i, ]
@@ -1894,10 +1893,10 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   stopCluster(cl)
   
-  # Combine all plot data
+
   plot_data <- bind_rows(plot_data_list)
   
-  # Filter based on Period thresholds for each Gen value
+
   plot_data <- plot_data %>%
     group_by(param_combination) %>%
     mutate(threshold = case_when(
@@ -1923,7 +1922,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   for(genomegen in uni_genomegen){
     myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
-  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+
   fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = factor(replct), group = factor(replct))) +
     geom_line(size = 1.1) +
     facet_wrap( ~ h2_sd, scales = "free") +
@@ -1985,105 +1984,6 @@ print(GradII_GradII_Poly_300_SA)
 
 # 4. Neutral model
 
-```{r, warning=FALSE, echo=FALSE, message=FALSE, fig.height =20, fig.width =10}
-# #rm(list = ls())
-# #source("AlleleFrequencyPlotCode.R")
-# ############ Libraries and theme function ########
-# 
-# process_files <- function(dirpath, pattern, facet_var = "h2_loci_facet") {
-#   
-#   mythemes <- theme_bw() +
-#     theme(
-#       text            = element_text(family = "sans"), 
-#       legend.position = "none",
-#       axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
-#                                        margin = margin(t = 20), hjust = 1),
-#       axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
-#                                        margin = margin(r = 10)),
-#       axis.line       = element_line(size = 3),
-#       plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
-#                                        margin = margin(b = 1, unit = "lines")),
-#       plot.margin     = unit(c(5, 1, 1, 1), "lines"),
-#       axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
-#       axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
-#       strip.text      = element_text(size = 40, face = "bold"),
-#       panel.spacing   = unit(5, "lines"),
-#       panel.grid      = element_blank()
-#     )
-#   
-#   files <- list.files(dirpath, pattern, full.names = TRUE)
-#  
-#   data_list <- list()
-# 
-#   for(file in files) {
-#     # Extract parameters from the file name
-#     replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
-#     herit        <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-#     loci         <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-#     sd           <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
-#     gen          <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
-#     
-#     # Read and process the data
-#     data <- read.csv(file, header = TRUE) %>%
-#       dplyr::select(Generation, Position, Frequency, Effect) %>%
-#       group_by(Position) %>%
-#       mutate(
-#         Position = factor(Position),
-#         replicate = replicate_id,
-#         initFreq = Frequency[Generation == 1],
-#         position_effect_init = paste("position = ", Position, " ",
-#                                      "Effect = ", round(Effect, 2), " ",
-#                                      "Initial Freq = ", round(initFreq, 2), " ",
-#                                      "repl = ", replicate, sep = "")
-#       ) %>%
-#       ungroup() %>%
-#       mutate(
-#         herit = herit,
-#         loci  = loci,
-#         sd    = sd,
-#         gen   = gen,
-#         h2_sd = paste("h\u00B2 = ", herit, " ", "sd = ", sd, sep = ""),
-#         loci_facet = paste0("Loci = ", loci)
-#       ) %>%
-#       # Convert loci_facet to a factor with fixed levels
-#       mutate(loci_facet = factor(loci_facet, 
-#                                  levels = c("Loci = 1", "Loci = 10", "Loci = 70",
-#                                             "Loci = 100", "Loci = 300")))
-#     
-#     set.seed(24356)
-#     
-#     unique_positions <- unique(data$Position)
-#     if (length(unique_positions) > 30) {
-#       selected_positions <- sample(unique_positions, 30)
-#       data <- data %>%
-#         filter(Position %in% selected_positions)
-#     }
-#     
-#     data_list[[file]] <- data
-#   }
-#   
-#   combined_data <- bind_rows(data_list)
-#   
-#   # Check if the chosen facet variable exists
-#   if (!facet_var %in% names(combined_data)) {
-#     stop(paste("Facet variable", facet_var, "does not exist in the data. Available columns are:",
-#                paste(names(combined_data), collapse = ", ")))
-#   }
-#   
-#   # Create the plot using the chosen facet variable.
-#   p <- combined_data %>%
-#     ggplot(aes(Generation, Frequency, group = position_effect_init,
-#                color = position_effect_init)) +
-#     geom_line(size = 1) +
-#     facet_wrap(as.formula(paste("~", facet_var)), ncol = 1, dir = "v") +
-#     ylim(0, 1) +
-#     mythemes
-#   
-#   return(list(combined_data = combined_data, plot = p))
-# }
-
-```
-
 ```{r, warning=FALSE, fig.width = 20, fig.height = 5, echo=FALSE, message=FALSE}
 ## | label: NS_All_Locus_AllReplicates
 ## | fig-cap: "SI 2.1.1. Single locus 30 replicates allele frequency dynamics for gradual two equal seasons selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
@@ -2105,13 +2005,6 @@ process_files <- function(dirpath, pattern) {
   
   # Get parameters from the file name and read dataset
   for (file in files) {
-    # fname <- basename(file)  # file name
-    # replicate <- as.numeric(str_extract(fname, "(?<=genome)\\d+"))  # replicate number 
-    # H         <- as.numeric(str_extract(fname, "(?<=H)0\\.\\d+"))      # h2 value
-    # loci      <- as.numeric(str_extract(fname, "(?<=_n)\\d+"))         # Number of loci
-    # SD        <- as.numeric(str_extract(fname, "(?<=SD)\\d+"))          # Distance to optimum
-    # Gen       <- as.numeric(str_extract(fname, "(?<=Gen)\\d+"))         # Selection length
-    
     fname <- basename(file) 
     H <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", fname))
     loci <- as.numeric( sub(".*_n(\\d+)_.*", "\\1", fname))
@@ -2219,15 +2112,6 @@ sampledreplc_AF <- sampled_data %>%
 #| label: NS_All_Locus_AllReplicates
 #| fig-cap: "SI 4.1. Allele frequency dynamics for monogenic, oligogec (10 loci), and polygenic (300 loci) traits models. Each line represent a single locus sampled from all loci within a single replicate of each model."
 #| 
-# #| label: Ns_AF_All_architectures
-# #| fig-cap: "SI 4.1. Allele frequency dynamics for a single replicate from all genetic architectures where each line in represents the frequency trajectory each locus."
-# #| fig-pos: "H"
-# #| 
-# dirpath <- "../../Output.dir/NS.dir/"
-# pattern <- "^genome1_n\\d+_H0.1\\D"
-# result <- process_files(dirpath, pattern, facet_var = "loci_facet")
-# 
-# result$plot
 sampledreplc_AF
 ```
 
@@ -2259,11 +2143,6 @@ pheno_processing <- function(dirpath, pattern) {
   data_list <- list()
 
   for(file in files) {
-    # # Extract parameters from the file name
-    # replicate_id <- as.numeric(str_extract(file, "(?<=MeanPhenotypes)\\d+"))
-    # herit        <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-    # loci         <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-    
     fname <- basename(file) 
     herit <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", fname))
     loci <- as.numeric( sub(".*_n(\\d+)_.*", "\\1", fname))
@@ -2281,31 +2160,6 @@ pheno_processing <- function(dirpath, pattern) {
       mutate(loci_facet = factor(loci_facet, 
                                  levels = c("Loci = 1", "Loci = 10", "Loci = 70",
                                             "Loci = 100", "Loci = 300")))
-
-# # Manually define the desired order for the factor levels:
-# desired_order <- c(
-#   "Loci = 1: h\u00B2 = 0.1",
-#   "Loci = 1: h\u00B2 = 0.5",
-#   "Loci = 1: h\u00B2 = 0.8",
-#   "Loci = 10: h\u00B2 = 0.1",
-#   "Loci = 10: h\u00B2 = 0.5",
-#   "Loci = 10: h\u00B2 = 0.8",
-#   "Loci = 70: h\u00B2 = 0.1",
-#   "Loci = 70: h\u00B2 = 0.5",
-#   "Loci = 70: h\u00B2 = 0.8",
-#   "Loci = 100: h\u00B2 = 0.1",
-#   "Loci = 100: h\u00B2 = 0.5",
-#   "Loci = 100: h\u00B2 = 0.8",
-#   "Loci = 300: h\u00B2 = 0.1",
-#   "Loci = 300: h\u00B2 = 0.5",
-#   "Loci = 300: h\u00B2 = 0.8"
-# )
-# 
-# data <- data %>%
-#   mutate(loci_facet = factor(loci_facet, levels = desired_order))
-
-
-    
     data_list[[file]] <- data
   }
   
@@ -2379,11 +2233,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   # Create a data frame of file names and extract parameters
   files_df <- data.frame(file_name = file_list, stringsAsFactors = FALSE) %>%
     mutate(
-      # base_name = basename(file_name),
-      # replct = str_extract(base_name, "genome\\d+"),
-      # n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
-      
       base_name = basename(file_name),  
       n = ifelse(
          grepl("_n\\d+", base_name),
@@ -2441,24 +2290,24 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   filtered_data <- combined_data
   
-  # Calculate the mean allele frequency for each grouping
+  # Calculating the mean allele frequency for each grouping
   mean_allele_data <- filtered_data %>%
     group_by(generation, replct, H, Genome, n, param_combination) %>%
     summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
   
-  # Create time series objects per grouping
+  # Creating time series objects per grouping
   ts_data_list <- mean_allele_data %>%
     group_by(Genome, replct, H, n, param_combination) %>%
     summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)),
               .groups = 'drop')
   
-  # Compute spectral density estimates in parallel
+  # Computing spectral density estimates in parallel
   spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
     ts_data <- ts_data_list$ts_data[[i]]
     spectrum(ts_data, spans = spectrum_span, plot = FALSE)
   }
   
-  # Prepare data for plotting
+  # Preparing data for plotting
   plot_data_list <- foreach(i = seq_along(spec_results_list), 
                             .packages = c("dplyr")) %dopar% {
     spec_result <- spec_results_list[[i]]
@@ -2489,28 +2338,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
                                levels = c("Loci = 1", "Loci = 10", "Loci = 70", 
                                           "Loci = 100", "Loci = 300")))
   
-  # # Manually define the desired order
-  # desired_order <- c("Loci = 1: h\u00B2 = 0.1",
-  #                    "Loci = 1: h\u00B2 = 0.5",
-  #                    "Loci = 1: h\u00B2 = 0.8",
-  #                    "Loci = 10: h\u00B2 = 0.1",
-  #                    "Loci = 10: h\u00B2 = 0.5",
-  #                    "Loci = 10: h\u00B2 = 0.8",
-  #                    "Loci = 70: h\u00B2 = 0.1",
-  #                    "Loci = 70: h\u00B2 = 0.5",
-  #                    "Loci = 70: h\u00B2 = 0.8",
-  #                    "Loci = 100: h\u00B2 = 0.1",
-  #                    "Loci = 100: h\u00B2 = 0.5",
-  #                    "Loci = 100: h\u00B2 = 0.8",
-  #                    "Loci = 300: h\u00B2 = 0.1",
-  #                    "Loci = 300: h\u00B2 = 0.5",
-  #                    "Loci = 300: h\u00B2 = 0.8")
-  # 
-  # # Relevel the loci_facet factor
-  # plot_data <- plot_data %>%
-  #   mutate(loci_facet = factor(loci_facet, levels = desired_order))
-  
-  # Create the FFT plot
+
   fft_plots <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = factor(replct), group = factor(replct))) +
     geom_line(size = 1.1) +
     facet_wrap(~ loci_facet, scales = "free", ncol = 3) +
@@ -2543,30 +2371,11 @@ source("AlleleFrequencyPlotCode.R")
 dirpath <- "../../Output.dir/CS.dir/"
 pattern <- pattern <- "^genome1_n(10|70|300)(?:\\D|$)" 
 result <- process_files(dirpath, pattern, "loci")
-#combined_data <- result$combined_data
+
 plots <- result$plots
 ```
 
 ### 5.1.1. Monogenic
-
-```{r, fig.height = 40, fig.width = 50, echo=FALSE}
-# #| label: Constant_Mono_AF
-# #| fig-cap: "SI 5.1.1. Monogenic single replicate allele frequency plot for constant selection, showing parameter interactions."
-# #| fig-pos: "H"
-# 
-# Constant_Mono_AF <- plots[[1]] +
-#   ggtitle("AF: Constantant Monogenic") +
-#   theme(
-#     plot.title = element_text(
-#       hjust = 0.5,         
-#       size = 70, 
-#       color = "firebrick4",
-#       margin = margin(b = 40) 
-#     )
-#   )
-# 
-# print(Constant_Mono_AF)
-```
 
 ```{r, fig.height = 20, fig.width = 30, echo=FALSE}
 #| label: CS_Single_Locus_AllReplicates
@@ -2581,18 +2390,12 @@ process_files <- function(dirpath, pattern) {
   
   files <- list.files(dirpath, pattern = pattern, full.names = TRUE)
   
-  # My list for dataframes
+
   dataframes <- list()
   
-  # Get parameters from the file and keep dataset based on file name
+  # Extracting parameters
   
   for (file in files) {
-    # fname <- basename(file) # file name
-    # replicate <- as.numeric(str_extract(fname, "(?<=genome)\\d+")) # repl number 
-    # H         <- as.numeric(str_extract(fname, "(?<=H)0\\.\\d+")) # h2 value
-    # loci      <- as.numeric(str_extract(fname, "(?<=_n)\\d+")) # Number of loci
-    # SD        <- as.numeric(str_extract(fname, "(?<=SD)\\d+")) # Distance to optimum
-    
     fname <- basename(file) 
     H <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", fname))
     loci <- as.numeric( sub(".*_n(\\d+)_.*", "\\1", fname))
@@ -2737,7 +2540,7 @@ source("PhenotypePlotCode.R")
 dirpath <- "../../Output.dir/CS.dir/"
 pattern <- "^MeanPhenotypes"
 result <- process_files(dirpath, pattern, "loci")
-#combined_data <- result$combined_data
+
 plots <- result$plots
 
 ```
@@ -2851,14 +2654,6 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   files_df <- data.frame(file_name = file_list) %>%
     mutate(
-      # base_name = basename(file_name),
-      # replct = str_extract(base_name, "genome\\d+"),
-      # n = str_extract(base_name, "_n\\d+") %>% str_remove("_n"),
-      # H = str_extract(base_name, "_H\\d+\\.\\d*") %>% str_remove("_H"),
-      # SD = str_extract(base_name, "SD\\d+(\\.\\d+)?"),
-      # SD = ifelse(is.na(SD), NA, str_remove(SD, "SD")),
-      # Gen = str_extract(base_name, "Gen\\d+"),
-      # Gen = ifelse(is.na(Gen), NA, str_remove(Gen, "Gen")),
       base_name = basename(file_name),  
       n = ifelse(
          grepl("_n\\d+", base_name),
@@ -2930,25 +2725,25 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   }
   combined_data <- bind_rows(combined_data_list)
 
-  filtered_data <- combined_data # I wanted to filter based on some paranoia but it is not necessary here.
+  filtered_data <- combined_data 
   
-  # Calculate the mean allele frequency for each grouping
+  # Calculating the mean allele frequency for each grouping
   mean_allele_data <- filtered_data %>%
     group_by(generation, n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
   
-  # Create time series objects
+  # Creating time series objects
   ts_data_list <- mean_allele_data %>%
     group_by(n, replct, H, SD, Gen, Genome, param_combination) %>%
     summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
   
-  # Compute spectral density estimates in parallel
+  # Computing spectral density estimates in parallel
   spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
     ts_data <- ts_data_list$ts_data[[i]]
     spectrum(ts_data, spans = spectrum_span, plot = FALSE)
   }
   
-  # Prepare data for plotting
+  # Preparing data for plotting
   plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr")) %dopar% {
     spec_result <- spec_results_list[[i]]
     params <- ts_data_list[i, ]
@@ -2968,10 +2763,9 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   stopCluster(cl)
   
-  # Combine all plot data
+
   plot_data <- bind_rows(plot_data_list)
   
-  # Filter based on Period thresholds for each Gen value
   plot_data <- plot_data %>%
     group_by(param_combination) %>%
     mutate(threshold = case_when(
@@ -2997,7 +2791,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   for(genomegen in uni_genomegen){
     myplot_data <- plot_data %>% filter(Genome_Gen == genomegen)
-  # Generate the spectral plots faceted by Genome, H, SD, and Gen
+
   fft_plots[[genomegen]] <- ggplot(myplot_data, aes(x = Period, y = Spectrum, color = factor(replct), group = factor(replct))) +
     geom_line(size = 1.1) +
     facet_wrap( ~ h2_sd, scales = "free") +
@@ -3014,7 +2808,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 dirpath <- "../../Output.dir/CS.dir/"
 pattern <- "^genome"
 result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
-# result[[15]]
+
 ```
 
 ### 5.3.1. Monogenic

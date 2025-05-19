@@ -9,7 +9,7 @@ install_load <- function(packages) {
   }
 }
 
-packages <- c("dplyr", "stringr", "plotly", "patchwork", "cowplot", "purrr", "doParallel")
+packages <- c("dplyr", "patchwork", "cowplot", "purrr", "doParallel")
 install_load(packages)
 
 #################################################
@@ -50,11 +50,11 @@ process_files <- function(dirpath, pattern, plot_type) {
   
   dataframes <- list()
   for(file in files){
-    replicate_id <- as.numeric(str_extract(file, "(?<=genome)\\d+"))
-    herit <- as.numeric(str_extract(file, "(?<=H)0\\.\\d+"))
-    loci <- as.numeric(str_extract(file, "(?<=_n)\\d+"))
-    sd <- as.numeric(str_extract(file, "(?<=SD)\\d+"))
-    gen <- as.numeric(str_extract(file, "(?<=Gen)\\d+"))
+    herit <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", basename(file)))
+    loci <- as.numeric( sub(".*_n(\\d+)_.*", "\\1", basename(file)))
+    sd <- as.numeric(sub(".*SD(\\d+).*", "\\1", basename(file)))
+    gen <- as.numeric(sub(".*Gen(\\d+).*", "\\1", basename(file)))
+    replicate_id <- as.numeric(sub(".*genome(\\d+)_.*", "\\1", basename(file)))
     
     data <- read.csv(file, header = TRUE) %>%
       dplyr::select(Generation, Position, Frequency, Effect) %>%
