@@ -3,9 +3,9 @@ Code.dir ----> contains the SLiM codes for all selection models with:
 	NS.dir for neutral selection, 
 	LinFS.dir for instantaneous selection, 
 	SinFS.dir for gradual two equal seasons, 
-	and lastly SinFSGen.dir for Gradual four unequal seasons selectin models. 
+	and lastly SinFSGen.dir for Gradual four unequal seasons selection models. 
 
-To run each model, make sure that you have created the directory for outpt files, and change directories as necessary.
+To run each model, make sure that you have created the directory for output files, and change directories as necessary.
 You will need to run bash files interactive, but if necessary, you can create a slurm file to run the codes as well.
 
 Note that all simulations fall under Wright-Fisher model
