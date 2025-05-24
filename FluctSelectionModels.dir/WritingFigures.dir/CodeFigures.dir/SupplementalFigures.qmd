@@ -22,50 +22,6 @@ editor: visual
 ---
 
 ```{r, echo=FALSE, message=FALSE}
-# rm(list = ls())
-# ############## This is to help with packages in case they're not there #####
-# options(repos = c(CRAN = "https://cloud.r-project.org"))
-# 
-# install_load <- function(packages, cran = "https://cloud.r-project.org") {
-#   for (pkg in packages) {
-#     if (!require(pkg, character.only = TRUE)) {
-#       install.packages(pkg,
-#                        dependencies = TRUE,
-#                        repos        = cran)
-#       library(pkg, character.only = TRUE)
-#     }
-#   }
-# }
-# 
-# # then:
-# packages <- c("dplyr","patchwork","cowplot","doParallel","ggplot2","foreach","future","parallel")
-# install_load(packages)
-# 
-# # # Install and load the packages
-# # #install_load(packages)
-# # library(dplyr)
-# # library(cowplot)
-# # library(doParallel)
-# # library(ggplot2)
-# # library(foreach)
-# # library(future)
-# # library(parallel)
-# # library(patchwork)
-
-
-local_lib <- "~/R/library"
-if (!dir.exists(local_lib)) {
-  dir.create(local_lib, recursive = TRUE)
-}
-
-.libPaths(c(local_lib, .libPaths()))
-
-install.packages(
-  c("patchwork", "cowplot", "ggplot2", "doParallel", "stringi", "stringr", "tidyr", "forcats", "purrr", "furrr"),
-  lib   = local_lib,
-  repos = "https://cloud.r-project.org"
-)
-
 library(forcats)
 library(stringi)
 library(tidyr)
