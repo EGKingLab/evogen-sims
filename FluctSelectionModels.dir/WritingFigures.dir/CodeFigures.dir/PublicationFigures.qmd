@@ -2,18 +2,20 @@
 title: "New Organized Figures"
 author: "E.T"
 format:
-  pdf:
+  docx:
     toc: true
     fontsize: 10pt
     fig-cap-location: bottom
     fig-numbering: false  
   html:
     toc: true
-  docx:
+  pdf:
     toc: true
     knitr:
       opts_chunk:
         dev: "cairo_png"
+        dev.args:
+        bg: "white" 
 editor: visual
 ---
 
@@ -35,7 +37,7 @@ library(purrr)
 library(doParallel)
 
 theme_set(theme_cowplot())
-mytheme <- function(){
+mythemes <- function(){
   theme(axis.title = element_text(face = "bold"),
         axis.text = element_text(face = "italic"),
         plot.title = element_text(hjust = 0.5),
@@ -43,9 +45,11 @@ mytheme <- function(){
 }
 ```
 
-## 0. Fitness under C = 125
+## 0.Fitness landscapes
 
-```{r, echo=FALSE,fig.width=12, fig.height=5, warning=FALSE}
+### 0.1 Fitness under C = 125
+
+```{r, echo=FALSE,fig.width=8, fig.height=4, warning=FALSE}
 #| label: Change in fitness as we shift optimum
 #| fig-cap: "Figure L: Change in fitness as the optimum moves away from the phenotype (vertical dashed line). The numbers are the fitness values at given optimum and each point is at 0.5 interval."
 #| fig-pos: "H"
@@ -64,38 +68,130 @@ df_label <- df %>%
   filter(round(optimum * 2) == optimum * 2)
 
 # Create the plot
-p <- ggplot(df, aes(x = optimum, y = fitness_at_zero)) +
-  geom_line(size = 3, color = "black") +
+pfitness <- ggplot(df, aes(x = optimum, y = fitness_at_zero)) +
+  geom_line(size = 3) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 2, color = "black")+
-  geom_point(data = df_label, size = 5, color = "darkred") +
+  geom_point(data = df_label, size = 7, color = "darkred") +
   geom_text(data = df_label, 
             aes(label = round(fitness_at_zero, 3)), 
-            vjust = -0.8, hjust = -1, size = 5, angle= 270,color = "darkred") +
+            vjust = -0.8, hjust = -1, size = 7, angle= 270,color = "darkred") +
   ylim(0.85, 1)+
   labs(
    # title = "Fitness at Phenotype Zero as a Function of Optimum",
     x = "Distance to Optimum",
     y = "Fitness Value"
   ) +
-  theme_classic() +
-    theme(
-      text = element_text(family = "sans"),  
-      legend.position = c(0.85, 0.2),
-      legend.box = "square", 
-      legend.box.background = element_rect(color = "black", size = 1),
-      legend.key.size = unit(2, "cm"),
-      legend.title = element_text(face = "bold", size = 11),  
-      legend.text = element_text(face = "bold", size = 11),   
-      plot.title = element_text(hjust = 0.5, size = 30, face = "bold"),  
-      axis.title.x = element_text(size = 12, face = "bold"),  
-      axis.title.y = element_text(size = 12, face = "bold"),  
-      axis.text.x = element_text(size = 12, face = "bold", hjust = 1, angle = 45),  
-      axis.text.y = element_text(size = 12, face = "bold"),   
-      strip.text = element_text(size = 12, face = "bold"),
-      panel.spacing = unit(1, "lines")) 
+theme_set(theme_classic())+
+  theme(text = element_text(family = "sans"), 
+        legend.position = "none",
+        axis.text = element_text(size = 20, face = "bold"),
+        axis.line = element_line(size = 3),
+        strip.text = element_text(size = 17, face = "bold"),
+        plot.title = element_text(hjust = 0.01, face = "bold", size = 40),
+        axis.title.x = element_text(margin = margin(t = 20), size = 20, face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 25), size = 20, face = "bold"),
+        panel.spacing = unit(4, "lines"))
 
-print(p)
+ggsave("Figure1.jpg", plot = pfitness, dpi = 600, width = 20, height = 10, units = "in", path = "../OutputFigures.dir")
+
+print(pfitness)
 ```
+
+### 0.2. Alternative fitness landascapes
+
+```{r}
+library(tidyverse)
+
+C_values <- seq(25, 200, by = 25)
+
+df <- tidyr::expand_grid(distance = 0:20, C = C_values) %>%
+  mutate(
+    fitness = exp(-(distance^2) / C),
+    C_fac   = factor(C, levels = C_values, ordered = TRUE),
+    # small per-C offset for visual separation
+    x_off   = scales::rescale(as.integer(C_fac), to = c(-0.18, 0.18)),
+    distance_j = distance + x_off
+  )
+
+# Okabe–Ito palette (color-blind safe, very distinct)
+colors <- c(
+  "black",
+  "magenta", 
+  "skyblue", 
+  "grey",
+  "firebrick", 
+  "blue",
+  "orange", 
+  "purple"
+)
+colors <- setNames(colors, levels(df$C_fac))
+lt <- c("solid","dashed","dotted","dotdash","longdash","twodash","dotted","dotdash")
+names(lt) <- levels(df$C_fac)
+
+ggplot(df, aes(distance_j, fitness,
+                colour = C_fac, linetype = C_fac, group = C_fac)) +
+  geom_line(linewidth = 0.7) +
+  geom_vline(xintercept = 4, linetype = "dashed", linewidth = 0.6, color = "darkred") +
+  annotate("text", x = 5.5, y = 1.02, label = "Used Max SD = 4",
+           vjust = -0.2, fontface = "bold", size = 5, color = "darkred") +
+  scale_colour_manual(values = colors, name = "C") +
+  scale_linetype_manual(values = lt, name = "C") +  # same name => one legend
+  scale_x_continuous(breaks = 0:20, limits = c(-0.5, 20.5)) +
+  scale_y_continuous(limits = c(0, 1.05), expand = expansion(mult = c(0, 0.05))) +
+  guides(colour = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2)) +
+  labs(x = "Distance |Z - Zopt|", y = "Fitness") +
+  theme_classic() +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+breaks <- seq(0, 1, by = 0.05)
+C_vals <- seq(25, 200, by = 5)  # denser grid looks smoother
+df <- tidyr::expand_grid(distance = 0:5, C = C_vals) %>%
+  mutate(fitness01 = exp(-(distance^2) / C))
+
+ggplot(df, aes(x = C, y = distance, z = fitness01)) +
+  geom_contour_filled(breaks = breaks) +
+  scale_fill_viridis_d(name = "Fitness (0–1)") +
+  scale_x_continuous(breaks = seq(25, 200, 25)) +
+  scale_y_continuous(breaks = 0:5) +
+  labs(x = "C Value (Width)", y = "Distance |p - o|") +
+  theme_classic()
+```
+
+```{r}
+
+# Intersection point and its fitness 
+mark <- tibble(C = 125, distance = 4) %>%
+  mutate(fitness01 = exp(-(distance^2) / C))
+
+ggplot(df, aes(x = C, y = distance, z = fitness01)) +
+  geom_contour_filled(breaks = breaks) +
+  scale_fill_viridis_d(name = "Fitness (0–1)") +
+  scale_x_continuous(breaks = seq(25, 200, 25)) +
+  scale_y_continuous(breaks = 0:5) +
+  geom_vline(xintercept = 125, linetype = "dashed", linewidth = 0.6) +
+  geom_hline(yintercept = 4,   linetype = "dashed", linewidth = 0.6) +
+  # point at the intersection
+  geom_point(data = mark, aes(C, distance), inherit.aes = FALSE,
+             shape = 21, size = 3.2, stroke = 1, fill = "white") +
+  geom_label(
+    data = mark,
+    aes(C, distance, label = sprintf("Fitness = %.3f", fitness01)),
+    inherit.aes = FALSE,
+    nudge_x = 12, nudge_y = 0.3,
+    size = 4.2, label.size = 0.5
+  ) +
+  labs(x = "C Value (Width)", y = "Distance |Z - Zopt|") +
+  theme_classic() +
+  theme(
+    text = element_text(family = "sans"),
+    axis.text = element_text(face = "bold"),
+    plot.title     = element_text(face = "bold"),
+    axis.title = element_text(face = "bold"),
+    strip.text     = element_text(face = "bold"))
+```
+
 
 ## 1. Selection Model Setting
 
@@ -128,7 +224,7 @@ Inf_ModPlot <- z %>% ggplot(aes(x,Y))+
         axis.title.y = element_text(margin = margin(r = 25), size = 20, face = "bold"),
         panel.spacing = unit(4, "lines"))
 
-ggsave("Exponential_Model.png", plot = Inf_ModPlot, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Exponential_Model.jpg", plot = Inf_ModPlot, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
 
 Inf_ModPlot
 ```
@@ -165,7 +261,7 @@ Const_ModPlot <- ggplot(df) +
         axis.title.y = element_text(margin = margin(r = 25), size = 30, face = "bold"),
         panel.spacing = unit(4, "lines"))
  
- ggsave("Constant_Model.png", plot = Const_ModPlot, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ ggsave("Constant_Model.jpg", plot = Const_ModPlot, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
 
 ```
 
@@ -197,7 +293,7 @@ Instant_Model <- ggplot()+
         panel.spacing = unit(4, "lines"))
 
 
-ggsave("Instant_Model.png", plot = Instant_Model, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Instant_Model.jpg", plot = Instant_Model, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
  
 Instant_Model
 ```
@@ -227,7 +323,7 @@ GradI <- ggplot(df) +
         panel.spacing = unit(4, "lines"))
 
 
-ggsave("Gradual_Two_Season_Model.png", plot = GradI, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Gradual_Two_Season_Model.jpg", plot = GradI, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
  
 GradI
 ```
@@ -237,7 +333,7 @@ GradI
 ```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
 #| label: Gradual_Four_Season_Model
 # Generation sequence from 1 to 2000
-Generation <- c(1:100)
+Generation <- c(1:300)
 phenotypes <- rnorm(10000, 0, 1)
 
 # Signals vector
@@ -256,7 +352,7 @@ df <- data.frame(Generation, Optimum)
 
 # Plot the Optimum over the first 501 generations
 
-GradII <- ggplot(df %>% filter(Generation < 502)) + 
+GradII <- ggplot(df) + 
     geom_line(aes(Generation, Optimum), size = 3) + 
   ylim(-4, 4) +  
   labs(title = "D", x = "Generation", y = "Optimum")+
@@ -272,10 +368,93 @@ GradII <- ggplot(df %>% filter(Generation < 502)) +
         panel.spacing = unit(4, "lines"))
 
 
-ggsave("Gradual_Four_Season_Model.png", plot = GradII, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Gradual_Four_Season_Model.jpg", plot = GradII, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
  
 GradII
 ```
+
+```{r}
+
+set.seed(3564);
+seasons = c(12,22,10,16);
+year = sum(seasons);
+sd_values = c(3,1,4,2);
+pheno = rnorm(10000);
+mu_p = mean(pheno);
+sd_p = sd(pheno);
+
+current_time = 1;
+year_counter = 1;
+season_counter = 1;
+
+total_time = 500;
+n_opt = numeric(total_time);
+
+while(current_time <= total_time){
+  for(i in seq_along(seasons)){
+    if(current_time > total_time) break;
+    season_length = seasons[i];
+    sd_val = sd_values[i];
+    remain_time = total_time - current_time + 1;
+    act_length = min(season_length, remain_time);
+    
+    time_pt = 1:act_length;
+    opt = mu_p + sd_val * sd_p * sin(2*pi*time_pt/season_length);
+    end_time = current_time + act_length - 1;
+    n_opt[current_time:end_time] = opt;
+    current_time = current_time + act_length;
+    season_counter = current_time + 1;
+  }
+}
+
+plot(seq(1,total_time), n_opt, type= "l")
+```
+```{r}
+rm(list = ls())
+seasons = c(12, 22, 10, 16);
+sd_values = c(3, 1, 4, 2);
+total_time = 500;
+
+pheno = rnorm(10000, 3,7);
+mu_p  = mean(pheno);
+sd_p = sd(pheno);
+
+# season_id_1y = NULL;
+# 
+# for (i in 0:(length(seasons) - 1)) {
+#     season_id_1y = c(season_id_1y, rep(i + 1, seasons[i]));
+# }
+# 
+# t_within_1y = NULL;
+# for(i in seasons){
+#   t_within_1y = c(t_within_1y, seq(0,i-1)); 
+#   }
+
+
+
+# One-year indices
+season_id_1y =rep(seq_along(seasons), times = seasons);  # 1,1,...,2,2,...,3,3,...,4,4,...
+t_within_1y  <- sequence(seasons);                          # 1..L1, 1..L2, 1..L3, 1..L4
+
+# Repeat to the desired length
+season_id <- rep(season_id_1y, length.out = total_time);
+
+
+# alten_id = NULL
+# for (sea_id in season_id_1y) {
+#
+# }
+n_opt = NULL
+t_within  <- rep(t_within_1y,  length.out = total_time);
+
+L_t   <- seasons[season_id];
+amp_t <- sd_values[season_id] * sd_p;
+
+n_opt <- mu_p + amp_t * sin(2 * pi * t_within / L_t);
+
+plot(seq_len(total_time), n_opt, type = "l", xlab = "Generation", ylab = "Optimum")
+```
+
 
 ## 2. Instantaneous Selection for Polygenic Traits
 
@@ -387,7 +566,7 @@ Freq_Instant_Poly <- create_plot(path, pattern)
 
 # Save to file
 ggsave(
-  filename = "Instant_Poly_AF.png",
+  filename = "Instant_Poly_AF.jpg",
   plot = Freq_Instant_Poly,
   dpi  = 600,
   width = 30,
@@ -462,7 +641,7 @@ Pheno_Instant_Poly <- combined_dataset %>%
     mythemes
 
 ggsave(
-  filename = "Instant_Poly_Pheno.png",
+  filename = "Instant_Poly_Pheno.jpg",
   plot = Pheno_Instant_Poly,
   dpi = 1200,
   width = 25, 
@@ -675,7 +854,7 @@ my_pattern<- "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 
 final_plot <- run_fft_analysis(dirpath, my_pattern)
 
-ggsave("Instant_Poly_SpecAnalysis_Combined.png",
+ggsave("Instant_Poly_SpecAnalysis_Combined.jpg",
        plot = final_plot,
        dpi = 1200, width = 25, height = 15, units = "in",
        path = "../OutputFigures.dir")
@@ -704,9 +883,9 @@ combined_plot <- plot_grid(
 )
 
 ggsave(
-  filename = "Instant_Poly_AF_Pheno_SpecAnalysis.png",
+  filename = "Figure3.jpg", #"Instant_Poly_AF_Pheno_SpecAnalysis.jpg",
   plot     = combined_plot,
-  dpi      = 360,
+  dpi      = 600,
   width    = 49,
   height   = 30,
   units    = "in",
@@ -812,9 +991,9 @@ AF_Mono_Ologo_Poly_Instant <- filtered_dataset %>%
   mythemes
 
 ggsave(
-  filename = "AF_Mono_Ologo_Poly_Instant.png",
+  filename = "AF_Mono_Ologo_Poly_Instant.jpg",
   plot     = AF_Mono_Ologo_Poly_Instant,
-  dpi      = 360,
+  dpi      = 600,
   width    = 49,
   height   = 30,
   units    = "in",
@@ -910,9 +1089,9 @@ Pheno_Mono_Oligo_Poly <- combined_data %>%
   mythemes
 
 ggsave(
-  filename = "Pheno_Mono_Oligo_Poly.png",
+  filename = "Pheno_Mono_Oligo_Poly.jpg",
   plot     = Pheno_Mono_Oligo_Poly,
-  dpi      = 360,
+  dpi      = 600,
   width    = 49,
   height   = 30,
   units    = "in",
@@ -1110,9 +1289,9 @@ pattern <- "^genome\\d+_n(1|10)_H0\\.(1|5|8)(SD(1|2|4))?Gen(10|20|30)\\.csv$"
 Spec_Mono_Oligo_Poly <- run_fft_analysis(dirpath, pattern)
 
 ggsave(
-  filename = "Spec_Mono_Oligo_Poly.png",
+  filename = "Spec_Mono_Oligo_Poly.jpg",
   plot     = Spec_Mono_Oligo_Poly,
-  dpi      = 360,
+  dpi      = 600,
   width    = 20,
   height   = 30,
   units    = "in",
@@ -1138,11 +1317,11 @@ All_Mono_Oligo_Poly <- plot_grid(plot_grid(top_plot, bottom_left,
                                            rel_heights = c(2.4, 2)), 
                                  bottom_right, rel_widths = c(2, 1.2))
 
-ggsave("All_Instant_Mono_Oligo_Poly.png", 
+ggsave("Figure4.jpg", #All_Instant_Mono_Oligo_Poly.jpg
        plot = All_Mono_Oligo_Poly, 
        dpi = 600, 
-       width = 40, 
-       height = 49, 
+       width = 44, 
+       height = 40, 
        units = "in", 
        path = "../OutputFigures.dir")
 
@@ -1236,53 +1415,68 @@ parameter_summary <- replicate_summary %>%
   distinct()
 
 Fixation_Percentages <-
-  ggplot(parameter_summary %>%
-           mutate(H = as_factor(H),
-                  loci = as_factor(loci),
-                  SD = as_factor(SD),
-                  Gen = as_factor(Gen)),
-         aes(x = loci,
-             y = Perc_Loci,
-             shape = SD,
-             color = H,
-             linetype = Gen,
-             group = interaction(H, Gen, SD))) +
-  geom_point(size = 20) +
-  geom_line(size = 5) +
+  ggplot(
+    parameter_summary %>%
+      mutate(
+        H   = as_factor(H),
+        loci= as_factor(loci),
+        SD  = as_factor(SD),
+        Gen = as_factor(Gen)
+      ),
+    aes(
+      x = loci,
+      y = Perc_Loci,
+      color = H,
+      shape = SD,
+      linetype = Gen,
+      group = interaction(H, Gen, SD)
+    )
+  ) +
+  geom_line(linewidth = 3) +
+  geom_point(size = 7, stroke = 0) +
   labs(
     x = "Number of Loci",
     y = "Percentage of Loci Fixed (%)",
     color = "Heritability (h\u00B2)",
     linetype = "Season Length (Gen)",
-    shape = "Distance to Optimum (SD)") +
+    shape = "Distance to Optimum (SD)"
+  ) +
   scale_color_manual(values = c("darkblue", "gray50", "firebrick")) +
+  scale_linetype_manual(
+    values = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+  ) +
   theme_bw() +
   theme(
-    text         = element_text(family = "sans"),
-    axis.text.x  = element_text(face = "bold", size = 50, angle = 15,
-                                 hjust = 1, margin = margin(t = 10)),
-    axis.text.y  = element_text(face = "bold", size = 50, angle = 15,
-                                 margin = margin(r = 10)),
-    axis.line    = element_line(size = 5),
-    plot.title   = element_text(hjust = 0.01, face = "bold", size = 40),
-    axis.title.x = element_text(size = 50, face = "bold", margin = margin(t = 30)),
-    axis.title.y = element_text(size = 50, face = "bold", margin = margin(r = 35)),
-    strip.text   = element_text(size = 50, face = "bold"),
-    panel.spacing= unit(5, "lines"),
-    panel.grid   = element_blank(),
-    legend.position = c(0.95, 0.95),
+    text           = element_text(family = "sans"),
+    axis.text.x    = element_text(face = "bold", size = 30, angle = 15,
+                                  hjust = 1, margin = margin(t = 10)),
+    axis.text.y    = element_text(face = "bold", size = 30, angle = 15,
+                                  margin = margin(r = 10)),
+    axis.line      = element_line(linewidth = 1.2),
+    plot.title     = element_text(hjust = 0.01, face = "bold", size = 30),
+    axis.title.x   = element_text(size = 30, face = "bold",
+                                  margin = margin(t = 30)),
+    axis.title.y   = element_text(size = 30, face = "bold",
+                                  margin = margin(r = 35)),
+    strip.text     = element_text(size = 30, face = "bold"),
+    panel.spacing  = unit(5, "lines"),
+    panel.grid     = element_blank(),
+    legend.position= c(0.95, 0.95),
     legend.justification = c("right", "top"),
-    legend.text  = element_text(size = 50, face = "bold"),
-    legend.title = element_text(size = 50, face = "bold")
+    legend.text    = element_text(size = 32, face = "bold"),
+    legend.title   = element_text(size = 34, face = "bold"),
+    legend.key.width = unit(2.5, "cm")  
   ) +
-  guides(color = guide_legend(override.aes = list(shape = 16, size = 10),
-                              byrow = TRUE))
+  guides(
+    color    = guide_legend(override.aes = list(shape = 16, size = 6), byrow = TRUE),
+    linetype = guide_legend(override.aes = list(linewidth = 2, color = "black"))
+  )
 
-ggsave("Fixation_Percentages.png", 
+ggsave("Figure5.jpg", #Fixation_Percentages.jpg
        plot = Fixation_Percentages, 
-       dpi = 300, 
-       width = 25, 
-       height = 15, 
+       dpi = 600, 
+       width = 40, 
+       height = 20, 
        units = "in", 
        path = "../OutputFigures.dir")
 
@@ -1294,7 +1488,7 @@ print(Fixation_Percentages)
 
 ### 4.1. AF Freq All models by parameters
 
-```{r,  warning=FALSE, fig.width = 15, fig.height = 5, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
 #| label: AF_FS_model_comparison
 mono1 <- read.csv("../../Output.dir/LinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
 mono2 <-  read.csv("../../Output.dir/SinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
@@ -1340,7 +1534,7 @@ AF_FS_model_comparison <- Genome_dataset %>%
   mythemes
   
 ggsave(
-  filename = "AF_FS_model_comparison.png",
+  filename = "Figure6.jpg", #AF_FS_model_comparison.jpg#
   plot = AF_FS_model_comparison,
   dpi = 600, width = 30, height = 15, units = "in",
   path = "../OutputFigures.dir"
@@ -1457,7 +1651,7 @@ All_models_freq <- Genome_dataset_filtered %>%
   theme_bw()+
   mythemes
   
-ggsave("All_models_freq.png", 
+ggsave("All_models_freq.jpg", 
        plot = All_models_freq, 
        dpi = 600, width = 30, height = 20,
        units = "in", path = "../OutputFigures.dir")
@@ -1532,7 +1726,7 @@ All_models_Pheno <- Phenotype_dataset %>% filter(Generation <= 1000) %>%
   theme_bw()+
   mythemes
 
-ggsave("All_models_Pheno.png", plot = All_models_Pheno, dpi = 600, width = 30, height = 25, units = "in", path = "../OutputFigures.dir")
+ggsave("All_models_Pheno.jpg", plot = All_models_Pheno, dpi = 600, width = 30, height = 25, units = "in", path = "../OutputFigures.dir")
 
 print(All_models_Pheno)
 ```
@@ -1590,7 +1784,7 @@ AlleleFreq_dataset <- bind_rows(allele_freq_list) %>%
     Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
   )
 
-  num_cores_to_use <- min(detectCores() - 16, 64) # check the cores before
+  num_cores_to_use <- min(detectCores() - 16, 32) # check the cores before
   cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
   cl <- makeCluster(num_cores_to_use, type = cluster_type)
   registerDoParallel(cl)
@@ -1637,7 +1831,7 @@ stopCluster(cl)
 spectral_data <- bind_rows(spectral_results)
 
 spectral_data <- spectral_data %>%
-  filter(Period < 60)
+  filter(Period < 80)
 
 All_models_Spec <- spectral_data %>%
   mutate(
@@ -1667,7 +1861,7 @@ All_models_Spec <- spectral_data %>%
   mythemes
     
 
-ggsave("All_models_Spec.png", plot = All_models_Spec, dpi = 600, width = 49, height = 30, units = "in", path = "../OutputFigures.dir")
+ggsave("All_models_Spec.jpg", plot = All_models_Spec, dpi = 600, width = 49, height = 30, units = "in", path = "../OutputFigures.dir")
 
 print(All_models_Spec)
 
@@ -1675,23 +1869,23 @@ print(All_models_Spec)
 
 ### 4.2.4. Combined gradual models, comparison on architecture
 
-```{r, warning=FALSE, fig.width = 50, fig.height = 60, dpi = 300, echo=FALSE}
+```{r, warning=FALSE, fig.width = 30, fig.height = 40, dpi = 600, echo=FALSE}
 #| label: Combined_gradual_models_architecture
 
 CGMA <- plot_grid(
-  All_models_freq, 
-  All_models_Pheno, 
+  All_models_freq,
+  All_models_Pheno,
   All_models_Spec,
   ncol = 1,
-  rel_heights = c(2.5, 2.5, 2.1)
+  rel_heights = c(2.2, 2.2, 2.1)
 ) +
-  theme(panel.spacing = unit(2, "lines"))
+  theme(panel.spacing = unit(1, "lines"))
 
+#Combined_gradual_models_architecture.jpg
 
-ggsave("Combined_gradual_models_architecture.png", plot = CGMA, dpi = 300, width = 49, height = 49, units = "in", path = "../OutputFigures.dir")
+ ggsave("Figure7.jpg",  plot = CGMA, dpi = 450, width = 50, height = 70, units = "in", path = "../OutputFigures.dir", limitsize = FALSE)
 
-CGMA
-
+print(CGMA)
 ```
 
 ## 5. Differences between FS models and neutral and constant selection models
@@ -1841,7 +2035,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     #scale_y_continuous(labels = scales::label_number())+
     #facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 1) +
     facet_wrap(Selection ~ ., scales = "free", ncol = 1) +
-    labs(title = "A)", x = NULL, y = NULL) +
+    labs(title = "A) Neutral Model", x = NULL, y = NULL) +
     mythemes
 
   return(fft_plots)
@@ -2000,7 +2194,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     #scale_y_continuous(labels = scales::label_number())+
     #facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 2) +
     facet_wrap(FacetTerm ~ ., scales = "free", ncol = 1) +
-    labs(title = "B)", x = NULL, y = NULL) +
+    labs(title = "B) Gradual 4 Seasons model", x = NULL, y = NULL) +
     mythemes
 
   return(fft_plots)
@@ -2061,10 +2255,275 @@ Spectral_Neutral_and_GradII_Polygenic <- ggdraw() +
              x = 0.015, y = 0.5, angle = 90, 
              hjust = 0, size = 60, fontface = "bold")
 
-
-ggsave("Spectral_Neutral_and_GradII_Polygenic.png", plot = Spectral_Neutral_and_GradII_Polygenic, dpi = 600, width = 30, height = 20, units = "in", path = "../OutputFigures.dir")
+#Spectral_Neutral_and_GradII_Polygenic.jpg
+ggsave("Figure8.jpg", plot = Spectral_Neutral_and_GradII_Polygenic, dpi = 600, width = 30, height = 20, units = "in", bg = "white", path = "../OutputFigures.dir")
 
 
 print(Spectral_Neutral_and_GradII_Polygenic)
 
+```
+
+## 6. Sampled Generations Spectral Analysis
+
+### 6.1 Spectral Instantaneous sampled Generations
+
+```{r, warning=FALSE, fig.width = 23, fig.height = 15, echo=FALSE, dpi = 1200}
+#| label: Instant_Poly_SpecAnalysis
+library(tidyverse)
+
+run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(3, 3)) {
+  # Create the directory to save images if it doesn't exist
+  last_dir <- basename(normalizePath(folder_path))
+  
+  # List files
+  file_list <- list.files(
+    path = folder_path,
+    pattern = pattern,
+    full.names = TRUE
+  )
+  
+  if (length(file_list) == 0) {
+    stop("No files are found")
+  } else {
+    cat("The number of files is ", length(file_list))
+  }
+  
+  ###########################################
+  ######## DataFrame for all replicates #####
+  ###########################################
+  files_df <- data.frame(file_name = file_list) %>%
+    dplyr::mutate(
+      base_name = basename(file_name),
+      genome = ifelse(
+        grepl("genome\\d+", base_name),
+        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
+        NA_real_
+      ),
+      n = ifelse(
+        grepl("_n\\d+", base_name),
+        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
+        NA_real_
+      ),
+      H = ifelse(
+        grepl("_H[0-9]+\\.?[0-9]*", base_name),
+        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
+        NA_real_
+      ),
+      SD = ifelse(
+        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
+        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
+        NA_real_
+      ),
+      Gen = ifelse(
+        grepl("Gen\\d+", base_name),
+        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
+        NA_real_
+      )
+    ) %>%
+    dplyr::mutate(
+      param_combination = paste0(
+        "n_", n, "_H", H,
+        ifelse(!is.na(SD),  paste0("_SD", SD),  ""),
+        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
+      )
+    )
+  
+  ###……………………………..#######
+  ### parallelization for files reading #######
+  ###……………………………..#######
+  suppressPackageStartupMessages({
+    library(doParallel)
+    library(foreach)
+    library(dplyr)
+    library(ggplot2)
+  })
+  
+  # be safe about cores
+  cores_available <- parallel::detectCores(logical = TRUE)
+  num_cores_to_use <- max(1, min(cores_available - 2, 32))
+  cluster_type <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
+  cl <- parallel::makeCluster(num_cores_to_use, type = cluster_type)
+  on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
+  doParallel::registerDoParallel(cl)
+  
+  combined_data_list <- foreach::foreach(
+    i = seq_along(files_df$file_name),
+    .packages = c("dplyr")
+  ) %dopar% {
+    file   <- files_df$file_name[i]
+    params <- files_df[i, ]
+    
+    # read full file
+    full_df <- utils::read.csv(file, stringsAsFactors = FALSE)
+    
+    # sample up to 1000 distinct generations
+    set.seed(4564356)
+    
+    gens <- full_df %>%
+      filter(Generation %% 5 == 0) %>% 
+      dplyr::distinct(Generation) %>%
+      dplyr::slice_sample(n = min(200L, nrow(.)))
+    
+    
+    # keep only those generations
+    df <- dplyr::semi_join(full_df, gens, by = "Generation")
+    
+      
+    df %>%
+      dplyr::mutate(
+        allele_id        = as.factor(Position),
+        generation       = as.numeric(Generation),
+        allele_frequency = Frequency,
+        sample_size      = 10000,
+        file             = params$base_name,
+        genome           = params$genome,
+        n                = params$n,
+        H                = params$H,
+        SD               = params$SD,
+        Gen              = params$Gen,
+        param_combination= params$param_combination
+      ) %>%
+      dplyr::select(
+        allele_id, generation, allele_frequency, sample_size, file,
+        genome, n, H, SD, Gen, param_combination
+      )
+  }
+  
+  combined_data <- dplyr::bind_rows(combined_data_list)
+  
+print(length(unique(combined_data$generation)))
+  
+  
+  mean_allele_data <- combined_data %>%
+    dplyr::group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
+    dplyr::summarize(
+      mean_allele_frequency = mean(allele_frequency),
+      .groups = "drop"
+    )
+  
+  # mean_allele_data <- mean_allele_data %>% filter((H == 0.1 & SD == 1 & Gen == 10) | 
+  #           (H == 0.5 & SD == 2 & Gen == 20) | 
+  #           (H == 0.1 & SD == 2 & Gen == 20) | 
+  #           (H == 0.8 & SD == 4 & Gen == 30))
+  
+  # combined_datapl <- combined_data %>% filter((H == 0.1 & SD == 1 & Gen == 10) | 
+  #           (H == 0.5 & SD == 2 & Gen == 20) | 
+  #           (H == 0.1 & SD == 2 & Gen == 20) | 
+  #           (H == 0.8 & SD == 4 & Gen == 30))
+  # 
+  # GenePlot <- ggplot(combined_datapl, aes(x = generation, y = allele_frequency, color = factor(allele_id), group = factor(allele_id))) +
+  #   geom_line(linewidth = 3) +
+  #   facet_wrap(~ H+SD+Gen, scales = "free", ncol = 2) +
+  #   #ggplot2::scale_y_continuous(labels = scales::label_number())+
+  #   theme(legend.position = "none")
+  # 
+  # print(GenePlot)
+  
+  #### Convert to time series ####
+  ts_data_list <- mean_allele_data %>%
+    dplyr::group_by(n, genome, H, SD, Gen, param_combination) %>%
+    dplyr::summarize(
+      ts_data = list(stats::ts(mean_allele_frequency,
+                               start = min(generation),
+                               frequency = 1)),
+      .groups = "drop"
+    )
+  
+  ### Compute spectral density ####
+  spec_results_list <- lapply(ts_data_list$ts_data, function(ts_data) {
+    stats::spectrum(ts_data, spans = spectrum_span, plot = FALSE)
+  })
+  
+  #### Prepare data for plotting
+  plot_data_list <- vector("list", length(spec_results_list))
+  for (i in seq_along(spec_results_list)) {
+    spec_result <- spec_results_list[[i]]
+    params      <- ts_data_list[i, ]
+    period      <- 1 / spec_result$freq
+    
+    df_spec <- data.frame(
+      Period = period,
+      Spectrum = spec_result$spec,
+      n = params$n,
+      genome = params$genome,
+      H = params$H,
+      SD = params$SD,
+      Gen = params$Gen,
+      param_combination = params$param_combination
+    )
+    plot_data_list[[i]] <- df_spec
+  }
+  
+  plot_data <- dplyr::bind_rows(plot_data_list)
+  
+  # Limit Period by threshold for each param_combination 
+  plot_data <- plot_data %>%
+    dplyr::group_by(param_combination) %>%
+    dplyr::mutate(
+      threshold = dplyr::case_when(
+        Gen == 10 ~ 10,
+        Gen == 20 ~ 10,
+        Gen == 30 ~ 20,
+        TRUE      ~ max(Period)
+      )
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(
+      Period < threshold &
+        (
+          (H == 0.1 & SD == 1 & Gen == 10) | 
+            (H == 0.5 & SD == 2 & Gen == 20) | 
+            (H == 0.1 & SD == 2 & Gen == 20) | 
+            (H == 0.8 & SD == 4 & Gen == 30)
+        )
+    ) %>%
+    dplyr::mutate(
+      H_label   = paste0("H = ", H),
+      SD_label  = ifelse(!is.na(SD),  paste0("SD = ", SD),  "No SD"),
+      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
+      H_SD_Gen  = paste0("h\u00B2 = ", H, " SD=", SD, " Gen=", Gen)
+    )
+  
+  spec_plot_comb1 <- ggplot2::ggplot(
+    plot_data, 
+    ggplot2::aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
+  ) +
+    ggplot2::geom_line(linewidth = 3) +
+    ggplot2::facet_wrap(~ H_SD_Gen, scales = "free", ncol = 2) +
+    ggplot2::scale_y_continuous(labels = scales::label_number()) +
+    ggplot2::labs(
+      title = "C) Spectral Density", x = "Period (Generations)", y = "Spectral Density"
+    )+
+    theme_set(theme_classic())+
+  theme(text = element_text(family = "sans"), 
+        legend.position = "none",
+        axis.text = element_text(size = 20, face = "bold"),
+        axis.line = element_line(size = 3),
+        strip.text = element_text(size = 17, face = "bold"),
+        plot.title = element_text(hjust = 0.01, face = "bold", size = 40),
+        axis.title.x = element_text(margin = margin(t = 20), size = 20, face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 25), size = 20, face = "bold"),
+        panel.spacing = unit(4, "lines"))
+  
+  return(spec_plot_comb1)
+}
+
+###############################################################################
+################## Run The Function for Spectral Analysis ####################
+###############################################################################
+
+dirpath   <- "../../Output.dir/LinFS.dir/"
+my_pattern<- "^genome\\d+_n100_H0\\.(1|5|8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+#my_pattern<- "^genome10_n100_H0\\.(1|5|8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
+
+
+final_plot <- run_fft_analysis(dirpath, my_pattern)
+
+ggsave("SampledGen_Instant_Poly_SpecAnalysis_Combined.jpg",
+       plot = final_plot,
+       dpi = 1200, width = 25, height = 15, units = "in",
+       path = "../OutputFigures.dir")
+
+
+final_plot ## This is actually close to what Bergland did. They collected their samples, and sequenced males from isofemales from 1-5 generations
 ```
