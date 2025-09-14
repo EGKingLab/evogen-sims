@@ -142,25 +142,15 @@ while (current_time < total_time)  // '<' prevents hitting index 2002
         opt = mu_p + sd_val * sd_p *
               sin(2.0 * 22/7 * (time_pt / asFloat(season_length)));
 
-        end_time = current_time + act_length - 1;     // max 2001
-        nopt[current_time:end_time] = opt;           // safe slice
+        end_time = current_time + act_length - 1; // max 2001
+        nopt[current_time:end_time] = opt; // safe slice
 
         current_time   = end_time + 1;
-        season_counter = i;           // use i+1 if you prefer 1..4
+        season_counter = i;  // we can also use i+1 if the preference is 1..4
     }
     year_counter = year_counter + 1;
 }
-		
-		
-	/*	
 	
-	nopt = rep(0, size(generations));
-	for (i in signals) {
-		nopt = nopt + stdv * sin((22/7) * generations / i) +  mean(phenotypes);
-	
-		}
-	nopt = nopt/4;
-	*/
 	
 	defineGlobal("newopt", nopt);
 	
