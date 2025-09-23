@@ -100,7 +100,7 @@ print(pfitness)
 ### 0.2. Alternative fitness landascapes
 
 ```{r}
-library(tidyverse)
+##library(tidyverse)
 
 C_values <- seq(25, 200, by = 25)
 
@@ -191,7 +191,6 @@ ggplot(df, aes(x = C, y = distance, z = fitness01)) +
     axis.title = element_text(face = "bold"),
     strip.text     = element_text(face = "bold"))
 ```
-
 
 ## 1. Selection Model Setting
 
@@ -330,6 +329,8 @@ GradI
 
 ### 1.4 Gradual Two Season Selection model
 
+> This is an old one
+
 ```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
 #| label: Gradual_Four_Season_Model
 # Generation sequence from 1 to 2000
@@ -368,13 +369,13 @@ GradII <- ggplot(df) +
         panel.spacing = unit(4, "lines"))
 
 
-ggsave("Gradual_Four_Season_Model.jpg", plot = GradII, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+# ggsave("Gradual_Four_Season_Model.jpg", plot = GradII, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
  
 GradII
 ```
 
-```{r}
-
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+#| label: Gradual_Four_Season_Model_NEW
 set.seed(3564);
 seasons = c(12,22,10,16);
 year = sum(seasons);
@@ -407,52 +408,24 @@ while(current_time <= total_time){
   }
 }
 
-plot(seq(1,total_time), n_opt, type= "l")
-```
-```{r}
-rm(list = ls())
-seasons = c(12, 22, 10, 16);
-sd_values = c(3, 1, 4, 2);
-total_time = 500;
+df <- data.frame(Generation = seq(1,total_time), Optimum =  n_opt)
 
-pheno = rnorm(10000, 3,7);
-mu_p  = mean(pheno);
-sd_p = sd(pheno);
+# Plot the Optimum over the first 120 generations marking a two cycles
 
-# season_id_1y = NULL;
-# 
-# for (i in 0:(length(seasons) - 1)) {
-#     season_id_1y = c(season_id_1y, rep(i + 1, seasons[i]));
-# }
-# 
-# t_within_1y = NULL;
-# for(i in seasons){
-#   t_within_1y = c(t_within_1y, seq(0,i-1)); 
-#   }
-
-
-
-# One-year indices
-season_id_1y =rep(seq_along(seasons), times = seasons);  # 1,1,...,2,2,...,3,3,...,4,4,...
-t_within_1y  <- sequence(seasons);                          # 1..L1, 1..L2, 1..L3, 1..L4
-
-# Repeat to the desired length
-season_id <- rep(season_id_1y, length.out = total_time);
-
-
-# alten_id = NULL
-# for (sea_id in season_id_1y) {
-#
-# }
-n_opt = NULL
-t_within  <- rep(t_within_1y,  length.out = total_time);
-
-L_t   <- seasons[season_id];
-amp_t <- sd_values[season_id] * sd_p;
-
-n_opt <- mu_p + amp_t * sin(2 * pi * t_within / L_t);
-
-plot(seq_len(total_time), n_opt, type = "l", xlab = "Generation", ylab = "Optimum")
+ggplot(df[1:120,]) + 
+    geom_line(aes(Generation, Optimum), size = 3) + 
+  ylim(-4, 4) +  
+  labs(title = "D", x = "Generation", y = "Optimum")+
+  theme_set(theme_bw())+ 
+  theme(text = element_text(family = "sans"), 
+        legend.position = "none",
+        axis.text = element_text(size = 20, face = "bold"),
+        axis.line = element_line(size = 3),
+        strip.text = element_text(size = 17, face = "bold"),
+        plot.title = element_text(hjust = 0.01, face = "bold", size = 40),
+        axis.title.x = element_text(margin = margin(t = 20), size = 30, face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 25), size = 30, face = "bold"),
+        panel.spacing = unit(4, "lines"))
 ```
 
 
@@ -866,7 +839,7 @@ final_plot
 ### 2.4. Combined Polygenic Instantaneous for AF, Pheno, and Spec Analysis
 
 ```{r, warning=FALSE, fig.width = 30, fig.height = 20, dpi = 1200, echo=FALSE}
-#| label: Instant_Poly_AF_Pheno_SpecAnalysis
+#| label: Instant_Poly_AF_Pheno_SpecAnalysis_comb
 
 top_row <- plot_grid(
   Pheno_Instant_Poly, 
@@ -1488,7 +1461,7 @@ print(Fixation_Percentages)
 
 ### 4.1. AF Freq All models by parameters
 
-```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 22, fig.height = 10, dpi=1200, echo=FALSE}
 #| label: AF_FS_model_comparison
 mono1 <- read.csv("../../Output.dir/LinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
 mono2 <-  read.csv("../../Output.dir/SinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
@@ -1869,7 +1842,7 @@ print(All_models_Spec)
 
 ### 4.2.4. Combined gradual models, comparison on architecture
 
-```{r, warning=FALSE, fig.width = 30, fig.height = 40, dpi = 600, echo=FALSE}
+```{r, warning=FALSE, fig.width = 30, fig.height = 35, dpi = 600, echo=FALSE}
 #| label: Combined_gradual_models_architecture
 
 CGMA <- plot_grid(
@@ -1893,6 +1866,9 @@ print(CGMA)
 ### 5.1. Spectral Neutral Polygenic
 
 ```{r, warning=FALSE, fig.width = 12, fig.height = 8, dpi = 1200, echo=FALSE}
+library(cowplot)
+library(purrr)
+
 run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   theme_set(theme_cowplot())
  
@@ -2042,7 +2018,8 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 }
 
 dirpath <- "../../Output.dir/NS.dir/"
-pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1)(SD(1|4))?(Gen(10|30))?\\.csv$"
+
+pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
 
 neut_spec_plots <- run_fft_analysis(dirpath, pattern)
 ```
@@ -2177,7 +2154,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
       !is.na(Gen) & Gen == 10 ~ 40,
       !is.na(Gen) & Gen == 20 ~ 50,
       !is.na(Gen) & Gen == 30 ~ 80,
-      TRUE ~ 60
+      TRUE ~ 80
     )) %>%
     filter(Period < threshold) %>%
     ungroup() %>%
@@ -2188,20 +2165,23 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
       n_label = paste0("n_", n)
     )
 
-  fft_plots <- ggplot(plot_data %>% mutate(FacetTerm = paste0(Selection)), aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))) + # FacetTerm = paste0(Selection, ": ", "h\u00B2 = ", H, " SD = ", SD
-    geom_line(linewidth = 1.1) +
-    scale_y_continuous(labels = scales::scientific_format())+
-    #scale_y_continuous(labels = scales::label_number())+
-    #facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 2) +
-    facet_wrap(FacetTerm ~ ., scales = "free", ncol = 1) +
-    labs(title = "B) Gradual 4 Seasons model", x = NULL, y = NULL) +
-    mythemes
+  fft_plots <- ggplot(
+  plot_data %>% mutate(FacetTerm = paste0(Selection)),
+  aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
+) +
+  geom_line(linewidth = 1.1) +
+  scale_y_continuous(labels = scales::scientific_format()) +
+  #scale_x_continuous(breaks = seq(0, 40, by = 2)) +  
+  facet_wrap(FacetTerm ~ ., scales = "free", ncol = 1) +
+  labs(title = "B) Gradual 4 Seasons model", x = NULL, y = NULL) +
+  mythemes
 
   return(fft_plots)
 }
 
-
 dirpath <- "../../Output.dir/SinFSGen.dir/"
+#dirpath <- "../../Output.dir/FourSeasFourAmp.dir/"
+#pattern <- "^genome\\d+_n(1|10|100)_H0\\.(8)(SD(1))?(Gen(10|30))?\\.csv$"
 pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1)(SD(1))?(Gen(10|30))?\\.csv$"
 
 gradII_spec_plots <- run_fft_analysis(dirpath, pattern)
@@ -2267,9 +2247,9 @@ print(Spectral_Neutral_and_GradII_Polygenic)
 
 ### 6.1 Spectral Instantaneous sampled Generations
 
-```{r, warning=FALSE, fig.width = 23, fig.height = 15, echo=FALSE, dpi = 1200}
-#| label: Instant_Poly_SpecAnalysis
-library(tidyverse)
+```{r, warning=FALSE, fig.width = 15, fig.height = 10, echo=FALSE, dpi = 1200}
+#| label: Instant_Poly_SpecAnalysis_Sampled
+#library(tidyverse)
 
 run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(3, 3)) {
   # Create the directory to save images if it doesn't exist
@@ -2328,9 +2308,10 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(3, 3)) {
       )
     )
   
-  ###……………………………..#######
+  ###################……………………………..#############
   ### parallelization for files reading #######
-  ###……………………………..#######
+  ##################……………………………..##############
+  
   suppressPackageStartupMessages({
     library(doParallel)
     library(foreach)
