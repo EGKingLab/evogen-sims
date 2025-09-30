@@ -35,6 +35,7 @@ initialize() {
 	defineConstant("generations", seq(0, 2001, 1));
 	//defineConstant("signals", c(5, 30, 10, 15));
 	defineConstant("signals", c(12, 22, 10, 16));
+	defineConstant("pi", 3.141593);
 	initializeRecombinationRate(1e-8);
 	
 	// Set colors for mutation types
@@ -140,7 +141,7 @@ while (current_time < total_time)  // '<' prevents hitting index 2001
 
         time_pt = 1:act_length;  // phase counter; not used for indexing
         opt = mu_p + sd_val * sd_p *
-              sin(2.0 * 22/7 * (time_pt / asFloat(season_length)));
+              sin(2*pi * (time_pt / asFloat(season_length)));
 
         end_time = current_time + act_length - 1;     // max 2001
         nopt[current_time:end_time] = opt;           // safe slice
@@ -150,6 +151,13 @@ while (current_time < total_time)  // '<' prevents hitting index 2001
     }
     year_counter = year_counter + 1;
 }
+
+
+//---------------------------- You can delete this ----------------------
+
+//-----------------------------------------------------------------------
+
+
 		
 		
 	/*	

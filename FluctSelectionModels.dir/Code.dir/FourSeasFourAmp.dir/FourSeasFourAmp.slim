@@ -16,6 +16,7 @@ initialize() {
 	
 	defineConstant("nloci", loci);
 	defineConstant("nneutral", region);
+	defineConstant("pi", 3.141593);
 	pos = 0;
 	q = NULL;
 	
@@ -32,7 +33,7 @@ initialize() {
 	m2.convertToSubstitution = F;
 	m2.mutationStackPolicy = "l";
 	defineConstant("Q", q);
-	defineConstant("generations", seq(0, 2001, 1));
+	defineConstant("generations", seq(0, 2101, 1));
 	//defineConstant("signals", c(5, 30, 10, 15));
 	defineConstant("signals", c(12, 22, 10, 16));
 	initializeRecombinationRate(1e-8);
@@ -119,7 +120,7 @@ mu_p  = mean(pheno);
 sd_p  = sd(pheno);
 
 // float preallocation (avoid int/float mismatch)
-nopt = rep(0.0, 2001);
+nopt = rep(0.0, 2101);
 
 current_time   = 0;  // 0-based indexing in Eidos
 year_counter   = 0;
@@ -140,7 +141,7 @@ while (current_time < total_time)  // '<' prevents hitting index 2002
 
         time_pt = 1:act_length;  // phase counter; not used for indexing
         opt = mu_p + sd_val * sd_p *
-              sin(2.0 * 22/7 * (time_pt / asFloat(season_length)));
+              sin(2*pi * (time_pt / asFloat(season_length)));
 
         end_time = current_time + act_length - 1; // max 2001
         nopt[current_time:end_time] = opt; // safe slice
@@ -180,7 +181,7 @@ while (current_time < total_time)  // '<' prevents hitting index 2002
 
 // Implement the selection process for generations 2 to 2000
 
-2:2000 late(){
+2:2100 late(){
 	// Get individuals in the population
 	inds = sim.subpopulations.individuals;
 	
@@ -228,6 +229,6 @@ while (current_time < total_time)  // '<' prevents hitting index 2002
 
 }
 
-2001 late(){
+2101 late(){
 	sim.simulationFinished();
 }
