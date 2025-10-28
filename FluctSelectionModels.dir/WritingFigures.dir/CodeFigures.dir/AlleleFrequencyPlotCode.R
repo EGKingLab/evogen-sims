@@ -71,7 +71,7 @@ process_files <- function(dirpath, pattern, plot_type) {
              loci = loci,
              sd = sd,
              gen = gen,
-             h2_sd = paste("h\u00B2 = ", herit, " ", "sd = ", sd, sep = ""),
+             h2_sd = paste("h\u00B2 = ", herit, " ", "\u0394\ = ", sd, sep = ""),
              h2_facet = ifelse(is.na(gen) & is.na(sd),
                                paste("h\u00B2 = ", herit, sep = ""),
                                h2_sd))

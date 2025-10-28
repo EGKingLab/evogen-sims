@@ -59,7 +59,7 @@ process_files <- function(dirpath, pattern, plot_type) {
     dataframes[[file]] <- data
   }
   combined_data <- bind_rows(dataframes) %>% 
-    mutate(h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+    mutate(h2_sd = paste("H = ", H," ", "\u0394\ = ", SD, sep = ""),
            loci_gen = paste("loci = ", loci," ", "Gen = ", Gen, sep = ""))
   
   # plots for either linear or sinusoidal selections
