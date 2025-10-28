@@ -1,0 +1,716 @@
+---
+title: "Complex Models: Gradual 4 seasons"
+author: "E.T"
+format:
+  docx:
+    toc: true
+    fontsize: 10pt
+    fig-cap-location: bottom
+    fig-numbering: false  
+  html:
+    toc: true
+  pdf:
+    toc: true
+    knitr:
+      opts_chunk:
+        dev: "cairo_png"
+        dev.args:
+        bg: "white" 
+editor: visual
+---
+
+> This file contains all plots for publication in sequence.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+setwd("/mnt/pixstor/kingeg-lab/etb68/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/CodeFigures.dir")
+
+library(forcats)
+library(stringi)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(patchwork)
+library(cowplot)
+library(purrr)
+library(doParallel)
+
+theme_set(theme_cowplot())
+mythemes <- function(){
+  theme(axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "italic"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+}
+
+mythemes <- theme_bw() +
+  theme(
+    text = element_text(family = "sans"), 
+    legend.position = "none",
+    axis.text.x = element_text(face = "bold", size = 50, angle =25, margin = margin(t = 20), hjust = 1),
+    axis.text.y = element_text(face = "bold", size = 50, angle = 15, margin = margin(r = 10)),
+    axis.line = element_line(size = 3),
+    plot.title      = element_text(hjust = 0.01, face = "bold", size = 70, margin = margin(b = 1, unit = "lines")),
+    plot.margin = unit(c(5, 1, 1, 1), "lines"),
+    axis.title.x = element_text(size = 50, face = "bold", margin = margin(t = 30)),
+    axis.title.y = element_text(size = 50, face = "bold", margin = margin(r = 35)),
+    strip.text = element_text(size = 50, face = "bold"),
+    panel.spacing = unit(5, "lines"),
+    panel.grid = element_blank()
+  )
+```
+
+### 1. Beyond Instant Model
+
+```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
+#| label: AF_FS_model_comparison
+Instat <- read.csv("../../Output.dir/LinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
+GradII <-  read.csv("../../Output.dir/SinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
+GradIV_1 <- read.csv("../../Output.dir/SinFSGen.dir/genome10_n100_H0.8SD4.csv")
+GradIV_2 <- read.csv("../../Output.dir/FourSeasFourAmp.dir/genome10_n100_H0.8.csv")
+
+
+# Add a column to distinguish the datasets
+geno_file <- Instat %>% mutate(Selection = "Instantaneous")
+geno_file2 <- GradII %>% mutate(Selection = "Gradual 2-Seasons")
+geno_file3 <- GradIV_1 %>% mutate(Selection = "Gradual 4-Seasons Same \u0394") #
+geno_file4 <- GradIV_2 %>% mutate(Selection = "Gradual 4-Seasons Different \u0394s")
+
+Genome_dataset <- rbind(geno_file, 
+                        geno_file2, geno_file3, geno_file4) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Instantaneous", 
+                                 "Gradual 2-Seasons",
+                                 "Gradual 4-Seasons Different \u0394s", 
+                                 "Gradual 4-Seasons  Same \u0394"))
+
+## Select 30 random positions
+  set.seed(12345)
+  selected_positions <- Genome_dataset %>%
+  distinct(Position) %>%
+  sample_n(size = min(30, n()), replace = FALSE) %>%
+  pull(Position)
+
+ Genome_dataset <- Genome_dataset %>%
+      filter(Position %in% selected_positions)
+  
+ # Genome_dataset %>% filter(Generation == 1) %>% dplyr::select(-Selection) %>% dplyr::arrange(Effect)
+
+# Highlighted positions, their initial frequency and effect size
+# 982341   0.86225 0.000008 
+# 1067762   0.31885 0.140653
+# 811499   0.60695 3.562828
+# 323379   0.48965 2.431675
+ 
+AF_FS_model_comparison <- Genome_dataset %>% 
+  filter(Generation <= 1000) %>%
+  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
+  geom_line(
+    aes(
+      color = factor(Position == 982341 | Position == 1067762|Position == 323379|Position == 811499), # 323379 Highlight 
+      size  = factor(Position == 982341|Position == 1067762 |Position == 323379 |Position == 811499) # 323379
+    ),
+    alpha = 0.8
+  ) +
+  scale_color_manual(values = c("TRUE" = "magenta", "FALSE" = "grey")) +
+  scale_size_manual(values  = c("TRUE" = 1, "FALSE" = 0.5)) +
+  facet_wrap(Selection ~ .) +
+  theme_bw() +
+  mythemes
+  
+# ggsave(
+#   filename = "Figure6.jpg", #AF_FS_model_comparison.jpg#
+#   plot = AF_FS_model_comparison,
+#   dpi = 600, width = 30, height = 15, units = "in",
+#   path = "../OutputFigures.dir"
+# )
+
+print(AF_FS_model_comparison)
+
+```
+
+```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+
+# Effect sizes for highlighted positions
+pos_meta <- tibble::tribble(
+  ~Position, ~effect_size,
+    982341,   0.000008,
+   1067762,   0.140653,
+    811499,   3.562828,
+    323379,   2.431675
+) %>%
+  mutate(beta_lab = sprintf("\u03B2=%s", signif(effect_size, 3)))
+
+# Colors (Okabe–Ito palette)
+col_vals <- setNames(
+  c("#0072B2", "#D55E00", "#009E73", "#CC79A7"),
+  pos_meta$beta_lab
+)
+
+df <- Genome_dataset %>%
+  filter(Generation <= 1000) %>%
+  left_join(pos_meta, by = "Position") %>%
+  mutate(is_highlight = !is.na(effect_size))
+
+# Right-edge labels (effect only)
+lab_df <- df %>%
+  filter(is_highlight) %>%
+  group_by(Selection, Position, beta_lab) %>%
+  filter(Generation == max(Generation)) %>%
+  ungroup()
+
+AF_FS_model_comparison <-
+  ggplot(df, aes(Generation, Frequency, group = Position)) +
+  # Background
+  geom_line(data = dplyr::filter(df, !is_highlight),
+            color = "grey70", linewidth = 0.5, alpha = 0.6) +
+  # Highlights (legend keyed by β only)
+  geom_line(data = dplyr::filter(df, is_highlight),
+            aes(color = beta_lab), linewidth = 1.1, alpha = 0.95) +
+  # On-plot labels showing β only
+  # geom_text(data = lab_df,
+  #           aes(label = beta_lab, color = beta_lab),
+  #           hjust = 0, nudge_x = 12, size = 3.6, show.legend = FALSE) +
+  scale_color_manual(name = "Effect size", values = col_vals) +
+ # scale_x_continuous(expand = expansion(mult = c(0.01, 0.10))) +
+  facet_wrap(Selection ~ .) +
+  labs(x = "Generation", y = "Allele Frequency") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  mythemes
+
+ggsave("Figure6.jpg", 
+       plot = AF_FS_model_comparison, 
+       dpi = 600, width = 30, height = 20,
+       units = "in", bg = "white", path = "../OutputFigures.dir")
+
+print(AF_FS_model_comparison)
+```
+
+### 2. AF All models comparisons
+
+```{r,  warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(cowplot)
+
+n_values <- c(1, 10, 100) # Loci to compare
+gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci")
+
+selections <- list(#"LinFS.dir" = "Instantaneous",
+  "SinFS.dir" = "Gradual 2-Seasons",
+  "SinFSGen.dir" = "Gradual 4-Seasons Same \u0394",
+  "FourSeasFourAmp.dir" = "Gradual 4-Seasons Different \u0394"
+)
+
+dataset_list <- list()
+
+for (n in n_values) {
+  for (dir_name in names(selections)) {
+    selection_label <- selections[[dir_name]]
+    if (dir_name == "SinFSGen.dir") {
+      filename <- paste0("../../Output.dir/", dir_name, "/genome10_n", n, "_H0.5SD4.csv")
+    }else if(dir_name == "FourSeasFourAmp.dir"){
+      filename <- paste0("../../Output.dir/", dir_name, "/genome10_n", n, "_H0.5.csv")
+    } else {
+      filename <- paste0("../../Output.dir/", dir_name, "/genome10_n", n, "_H0.5SD4Gen20.csv")
+    }
+    
+    if (file.exists(filename)) {
+      data <- read.csv(filename)
+      
+  data <- data %>%
+    mutate(Selection = selection_label,
+          Gene_Number = gene_number_labels[as.character(n)])
+      
+      dataset_list[[length(dataset_list) + 1]] <- data
+    } else {
+      warning(paste("File not found:", filename))
+    }
+  }
+}
+
+Genome_dataset <- bind_rows(dataset_list) %>%
+  mutate(
+    Selection = fct_relevel(Selection,"Instantaneous", "Gradual 2-Seasons", "Gradual 4-Seasons Same \u0394", "Gradual 4-Seasons Different \u0394"), #"Instantaneous", 
+    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
+  )
+
+monogenic_positions <- Genome_dataset %>%
+  filter(Gene_Number == "1 Locus") %>%
+  pull(Position) %>%
+  unique()
+monogenic_highlight <- ifelse(length(monogenic_positions) >= 1, monogenic_positions[1], NA)
+
+highlight_positions <- data.frame(
+  Gene_Number = c("1 Locus", "10 Loci", "100 Loci"),
+  Highlight_Position = c(monogenic_highlight, 427101, 323379) # 1037246, 201349
+)
+
+Genome_dataset <- Genome_dataset %>%
+  left_join(highlight_positions, by = "Gene_Number") %>%
+  mutate(Highlight = Position == Highlight_Position)
+
+
+# Get all positions for Polygenic
+Polygenic_positions <- Genome_dataset %>%
+  filter(Gene_Number == "100 Loci") %>%
+  pull(Position) %>%
+  unique()
+
+Polygenic_highlight <- highlight_positions %>%
+  filter(Gene_Number == "100 Loci") %>%
+  pull(Highlight_Position)
+
+# Remove the highlighted position from positions to sample 
+positions_to_sample <- setdiff(Polygenic_positions, Polygenic_highlight)
+
+# Randomly sample 29 positions (since we have 1 highlighted position)
+set.seed(123) 
+sampled_positions <- sample(positions_to_sample, 
+                            size = min(29, length(positions_to_sample)), 
+                            replace = FALSE)
+
+selected_Polygenic_positions <- c(sampled_positions, Polygenic_highlight)
+
+Genome_dataset_filtered <- Genome_dataset %>%
+  filter(
+    (Gene_Number != "100 Loci") | (Position %in% selected_Polygenic_positions)
+  )
+
+All_models_freq <- Genome_dataset_filtered %>% 
+  filter(Generation <= 1000) %>%
+  ggplot(aes(x = Generation, 
+             y = Frequency, 
+             group = factor(Position), 
+             color = as.factor(Highlight),
+             size = as.factor(Highlight))) +
+  geom_line(alpha = 0.8) +
+  scale_size_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
+  scale_color_manual(values = c("TRUE" = "magenta", "FALSE" = "grey")) +
+  labs(title = "A) Allele Frequency", x = "Generation", y = "Frequency") +
+  facet_grid(Selection ~ Gene_Number) +
+  theme_bw()+
+  mythemes
+
+
+print(All_models_freq)
+```
+
+### 3. Phenotype All models comparisons
+
+```{r,  warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE, message=FALSE}
+#| label: All_models_Pheno
+
+n_values <- c(1, 10, 100)
+gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci")
+
+selections <- list(
+  #"LinFS.dir" = "Instantaneous",
+  "SinFS.dir" = "Gradual 2-Seasons",
+  "SinFSGen.dir" = "Gradual 4-Seasons Same \u0394",
+  "FourSeasFourAmp.dir" = "Gradual 4-Seasons Different \u0394"
+)
+
+phenotype_list <- list()
+for (n in n_values) {
+  for (dir_name in names(selections)) {
+    selection_label <- selections[[dir_name]]
+    if (dir_name == "SinFSGen.dir") {
+      file_pattern <- paste0("MeanPhenotypes\\d+_n", n, "_H0\\.5SD4\\.csv$")
+      file_path <- paste0("../../Output.dir/", dir_name)
+    } else if (dir_name == "FourSeasFourAmp.dir") {
+      file_pattern <- paste0("MeanPhenotypes\\d+_n", n, "_H0\\.5\\.csv$")
+      file_path <- paste0("../../Output.dir/", dir_name)
+    } else {
+      file_pattern <- paste0("MeanPhenotypes\\d+_n", n, "_H0\\.5SD4Gen20\\.csv$")
+      file_path <- paste0("../../Output.dir/", dir_name)
+    }
+    file_list <- list.files(
+      path = file_path,
+      pattern = file_pattern,
+      full.names = TRUE
+    )
+    
+    for (file in file_list) {
+      data <- read.csv(file)
+      replicate_value <- as.numeric( sub(".*MeanPhenotypes(\\d+)_.*", "\\1", basename(file)))
+      
+      data <- data %>%
+        mutate(
+          Selection = selection_label,
+          Gene_Number = gene_number_labels[as.character(n)],
+          Replicate = replicate_value
+        )
+      phenotype_list[[length(phenotype_list) + 1]] <- data
+    }
+  }
+}
+
+Phenotype_dataset <- bind_rows(phenotype_list) %>%
+  mutate(
+    Selection = fct_relevel(Selection, "Gradual 2-Seasons", "Gradual 4-Seasons Same \u0394", "Gradual 4-Seasons Different \u0394"), # "Instantaneous", 
+    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
+  )
+
+All_models_Pheno <- Phenotype_dataset %>% filter(Generation <= 1000) %>% 
+  ggplot(aes(x = Generation, y = Phenotype, group = Replicate)) +
+  #geom_boxplot() + # outlier.size = 0.5, width = 0.6, alpha = 0.7
+  geom_line(linewidth = 1, alpha = 0.7, color = "black") + # outlier.size = 0.5, width = 0.6, alpha = 0.7
+  stat_summary(fun = mean,                              
+               aes(group = 1), 
+               geom = "line", 
+               color = "red", 
+               alpha = 1, 
+               size = 3) +
+  facet_grid(Selection ~ Gene_Number) +
+  labs(title = "B) Phenotypes", x = "Generation", y = "Phenotype")+
+  theme_bw()+
+  mythemes
+
+# ggsave("All_models_Pheno.jpg", plot = All_models_Pheno, dpi = 600, width = 30, height = 25, units = "in", path = "../OutputFigures.dir")
+
+print(All_models_Pheno)
+```
+
+### 4. Spectral All models comparisons
+
+```{r,  warning=FALSE, fig.width = 30, fig.height = 18, dpi=1600, echo=FALSE, message=FALSE}
+#| label: All_models_Spec
+n_values <- c(1, 10,100)#1, 
+gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci", "300" = "300 Loci")
+
+selections <- list(
+#"LinFS.dir" = "Instantaneous",
+"SinFS.dir" = "Gradual 2-Seasons",
+"SinFSGen.dir" = "Gradual 4-Seasons Same \u0394", 
+"FourSeasFourAmp.dir" = "Gradual 4-Seasons Different \u0394"
+)
+
+allele_freq_list <- list()
+for (n in n_values) {
+  for (dir_name in names(selections)) {
+    selection_label <- selections[[dir_name]]
+    if (dir_name == "SinFSGen.dir") {
+      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD2\\.csv$")
+      file_path <- paste0("../../Output.dir/", dir_name)
+    }else if (dir_name == "FourSeasFourAmp.dir") {
+      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5\\.csv$")
+      file_path <- paste0("../../Output.dir/", dir_name)
+    } else {
+      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD2Gen20\\.csv$")
+      file_path <- paste0("../../Output.dir/", dir_name)
+    }
+    
+    file_list <- list.files(
+      path = file_path,
+      pattern = file_pattern,
+      full.names = TRUE
+    )
+    
+    for (file in file_list) {
+      data <- read.csv(file) #%>% filter(Generation >=1800)
+      replicate_value <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", basename(file)))
+      
+      data <- data %>%
+        mutate(
+          Selection = selection_label,
+          Gene_Number = gene_number_labels[as.character(n)],
+          Replicate = factor(replicate_value)
+        )
+      
+      allele_freq_list[[length(allele_freq_list) + 1]] <- data
+    }
+  }
+}
+
+AlleleFreq_dataset <- bind_rows(allele_freq_list) %>%
+  mutate(
+    Selection = fct_relevel(Selection, "Instantaneous", "Gradual 2-Seasons", "Gradual 4-Seasons Same \u0394", "Gradual 4-Seasons Different \u0394"),
+    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci", "300 Loci")
+  )
+
+  num_cores_to_use <- min(detectCores() - 16, 32) # check the cores before
+  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
+  cl <- makeCluster(num_cores_to_use, type = cluster_type)
+  registerDoParallel(cl)
+
+grouped_data <- AlleleFreq_dataset %>%
+  group_by(Selection, Gene_Number, Replicate)
+
+unique_combinations <- grouped_data %>%
+  summarize() %>%
+  ungroup()
+
+spectral_results <- foreach(i = 1:nrow(unique_combinations), .packages = c("dplyr", "stats")) %dopar% {
+  sel <- unique_combinations$Selection[i]
+  gene_num <- unique_combinations$Gene_Number[i]
+  rep <- unique_combinations$Replicate[i]
+  
+  df <- AlleleFreq_dataset %>%
+    filter(Selection == sel, Gene_Number == gene_num, Replicate == rep) %>%
+    arrange(Generation)
+  
+  mean_freq_df <- df %>%
+    group_by(Generation) %>%
+    summarize(Mean_Frequency = mean(Frequency, na.rm = TRUE)) %>%
+    arrange(Generation)
+  
+ts_data <- ts(mean_freq_df$Mean_Frequency, 
+              start = min(mean_freq_df$Generation), frequency = 1)
+  
+spec_result <- spectrum(ts_data, spans = 2, plot = FALSE)
+period <- 1 / spec_result$freq
+  
+  data.frame(
+    Period = period,
+    Spectrum = spec_result$spec,
+    Selection = sel,
+    Gene_Number = gene_num,
+    Replicate = rep
+  )
+}
+
+# Stop cluster
+stopCluster(cl)
+
+spectral_data <- bind_rows(spectral_results)
+
+spectral_data <- spectral_data %>%
+  filter(Period < 80)
+
+All_models_Spec <- spectral_data %>%
+  mutate(
+    Facet_formula = factor(
+      paste0(Gene_Number, " ", Selection),
+      levels = c(
+        "1 Locus Instantaneous", "10 Loci Instantaneous", "100 Loci Instantaneous",  "300 Loci Instantaneous",
+        "1 Locus Gradual 2-Seasons", "10 Loci Gradual 2-Seasons", "100 Loci Gradual 2-Seasons",  "300 Loci Gradual 2-Seasons",
+        "1 Locus Gradual 4-Seasons Same \u0394", "10 Loci Gradual 4-Seasons Same \u0394", "100 Loci Gradual 4-Seasons Same \u0394" , "300 Loci Gradual 4-Seasons Same \u0394" ,
+        "1 Locus Gradual 4-Seasons Different \u0394", "10 Loci Gradual 4-Seasons Different \u0394", "100 Loci Gradual 4-Seasons Different \u0394", "300 Loci Gradual 4-Seasons Different \u0394"
+      )
+    )
+  ) %>% 
+  ggplot(aes(x = Period, y = Spectrum, group = Replicate, color = Replicate)) +
+  geom_line(alpha = 1, size = 2) +
+  scale_y_continuous(labels = scales::label_number())+
+  #facet_wrap( ~ Selection + Gene_Number, scales = "free", ncol = 3) +
+  facet_wrap( ~ Facet_formula, scales = "free", ncol = 3, dir = "h") +
+  #scale_color_viridis_d() +  # Use a discrete color palette
+  labs(
+    x = "Period (Generations)",
+    y = "Spectral Density",
+    color = "Replicate"
+  ) +
+  labs(title = "Spectral Density", x = "Period (Generations)",
+       y = "Spectral Density")+
+  theme_bw()+
+  mythemes
+    
+# 
+# ggsave("All_models_Spec.jpg", plot = All_models_Spec, dpi = 600, width = 49, height = 30, units = "in", path = "../OutputFigures.dir")
+
+ggsave("Figure7.jpg",  plot = All_models_Spec, width = 70, height = 30, units = "in", path = "../OutputFigures.dir", limitsize = FALSE)
+
+print(All_models_Spec)
+
+```
+
+```{r,  warning=FALSE, fig.width = 35, fig.height = 12, dpi=1200, echo=FALSE, message=FALSE}
+# ---- Libraries ----
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(foreach)
+library(doParallel)
+
+# ---- Params & labels ----
+n_values <- c(1, 10, 100)
+gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci")
+
+# Human-readable labels for each directory
+selections <- list(
+  # "LinFS.dir"         = "Instantaneous",  # keep commented if not used
+  "SinFS.dir"         = "Gradual 2-Seasons",
+  "SinFSGen.dir"      = "Gradual 4-Seasons Same \u0394",
+  "FourSeasFourAmp.dir" = "Gradual 4-Seasons Different \u0394"
+)
+
+# Optional theme injector (keeps your 'mythemes' if defined)
+theme_add <- if (exists("mythemes", inherits = TRUE)) mythemes else theme()
+
+# ---- Read all files ----
+allele_freq_list <- list()
+
+for (n in n_values) {
+  for (dir_name in names(selections)) {
+    selection_label <- selections[[dir_name]]
+
+    # Build file patterns per directory, matching your naming scheme
+    if (dir_name == "SinFSGen.dir") {
+      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD4\\.csv$")
+      file_path <- file.path("../../Output.dir", dir_name)
+    } else if (dir_name == "FourSeasFourAmp.dir") {
+      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5\\.csv$")
+      file_path <- file.path("../../Output.dir", dir_name)
+    } else {
+      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD4Gen10\\.csv$")
+      file_path <- file.path("../../Output.dir", dir_name)
+    }
+
+    file_list <- list.files(path = file_path, pattern = file_pattern, full.names = TRUE)
+
+    if (length(file_list) == 0) {
+      message(sprintf("No files matched in %s with pattern %s", file_path, file_pattern))
+      next
+    }
+
+    for (file in file_list) {
+      data <- read.csv(file, stringsAsFactors = FALSE)
+      replicate_value <- as.numeric(sub(".*genome(\\d+)_.*", "\\1", basename(file)))
+
+      data <- data %>%
+        mutate(
+          Selection   = selection_label,
+          Gene_Number = gene_number_labels[as.character(n)],
+          Replicate   = factor(replicate_value)
+        )
+
+      allele_freq_list[[length(allele_freq_list) + 1]] <- data
+    }
+  }
+}
+
+if (length(allele_freq_list) == 0) {
+  stop("No input files found; check file paths/patterns.")
+}
+
+AlleleFreq_dataset <- bind_rows(allele_freq_list) %>%
+  mutate(
+    Selection = fct_relevel(
+      Selection,
+      "Instantaneous", "Gradual 2-Seasons", "Gradual 4-Seasons Same \u0394", "Gradual 4-Seasons Different \u0394"
+    ),
+    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
+  )
+
+# ---- Parallel setup ----
+dc <- parallel::detectCores(logical = TRUE)
+num_cores_to_use <- max(1, min(dc - 16, 32))  # safe guard
+cluster_type <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
+cl <- parallel::makeCluster(num_cores_to_use, type = cluster_type)
+doParallel::registerDoParallel(cl)
+on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
+
+# ---- Mean-of-spectra per (Selection, Gene_Number, Replicate) ----
+# Helper: compute averaged spectrum across loci for one group df
+compute_mean_spectrum <- function(df_group) {
+  df_group <- df_group %>% arrange(Generation)
+
+  positions <- sort(unique(df_group$Position))
+  if (length(positions) == 0) {
+    return(data.frame(Period = numeric(0), Spectrum = numeric(0)))
+  }
+
+  # Per-locus spectra list (same sampling; expect same freq grid)
+  spec_list <- lapply(positions, function(pos) {
+    sub <- df_group[df_group$Position == pos, c("Generation", "Frequency")]
+    sub <- sub[order(sub$Generation), , drop = FALSE]
+    series <- sub$Frequency
+
+    # Require non-NA series
+    if (anyNA(series)) return(NULL)
+
+    # Compute spectrum
+    res <- stats::spectrum(ts(series, frequency = 1), spans = 2, plot = FALSE)
+    data.frame(freq = res$freq, spec = res$spec)
+  })
+
+  spec_list <- Filter(Negate(is.null), spec_list)
+  if (length(spec_list) == 0) {
+    return(data.frame(Period = numeric(0), Spectrum = numeric(0)))
+  }
+
+  # Align lengths (truncate to the minimal n.freq if needed)
+  n_vec <- vapply(spec_list, function(x) nrow(x), integer(1))
+  n_min <- min(n_vec)
+  spec_mat <- do.call(cbind, lapply(spec_list, function(x) x$spec[seq_len(n_min)]))
+  base_freq <- spec_list[[1]]$freq[seq_len(n_min)]
+
+  spec_mean <- rowMeans(spec_mat, na.rm = TRUE)
+
+  # Drop zero frequency before converting to period
+  keep <- base_freq > 0
+  period <- 1 / base_freq[keep]
+  spec_mean <- spec_mean[keep]
+
+  data.frame(Period = period, Spectrum = spec_mean)
+}
+
+# Unique combinations to iterate
+unique_combinations <- AlleleFreq_dataset %>%
+  distinct(Selection, Gene_Number, Replicate)
+
+spectral_results <- foreach::foreach(
+  i = 1:nrow(unique_combinations),
+  .packages = c("dplyr", "stats")
+) %dopar% {
+  sel      <- unique_combinations$Selection[i]
+  gene_num <- unique_combinations$Gene_Number[i]
+  rep      <- unique_combinations$Replicate[i]
+
+  df <- AlleleFreq_dataset %>%
+    filter(Selection == sel, Gene_Number == gene_num, Replicate == rep)
+
+  out <- compute_mean_spectrum(df)
+  if (nrow(out) == 0) {
+    return(NULL)
+  }
+
+  transform(out,
+            Selection = sel,
+            Gene_Number = gene_num,
+            Replicate = rep)
+}
+
+spectral_data <- bind_rows(Filter(Negate(is.null), spectral_results)) %>%
+  filter(Period < 40)
+
+# ---- Facet label factor ----
+spectral_data <- spectral_data %>%
+  mutate(
+    Facet_formula = factor(
+      paste0(Gene_Number, " ", Selection),
+      levels = c(
+        "1 Locus Instantaneous", "10 Loci Instantaneous", "100 Loci Instantaneous",
+        "1 Locus Gradual 2-Seasons", "10 Loci Gradual 2-Seasons", "100 Loci Gradual 2-Seasons",
+        "1 Locus Gradual 4-Seasons Same \u0394", "10 Loci Gradual 4-Seasons Same \u0394", "100 Loci Gradual 4-Seasons Same \u0394",
+        "1 Locus Gradual 4-Seasons Different \u0394", "10 Loci Gradual 4-Seasons Different \u0394", "100 Loci Gradual 4-Seasons Different \u0394"
+      )
+    )
+  )
+
+# ---- Plot ----
+All_models_Spec <-
+  ggplot(spectral_data, aes(x = Period, y = Spectrum, group = Replicate, color = Replicate)) +
+  geom_line(alpha = 1, linewidth = 1) +
+  scale_y_continuous(labels = scales::label_number()) +
+  facet_wrap(~ Facet_formula, scales = "free", ncol = 4, dir = "v") +
+  labs(
+    title = "C) Spectral Density",
+    x = "Period (Generations)",
+    y = "Spectral Density",
+    color = "Replicate"
+  ) +
+  theme_bw() + theme_add
+
+print(All_models_Spec)
+
+# Optionally save:
+# ggsave("All_models_Spec.jpg", plot = All_models_Spec, dpi = 600, width = 49, height = 30, units = "in", path = "../OutputFigures.dir")
+```

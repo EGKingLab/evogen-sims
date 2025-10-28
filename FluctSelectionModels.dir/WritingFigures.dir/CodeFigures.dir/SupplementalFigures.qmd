@@ -134,7 +134,7 @@ combined_data <- process_files(dirpath, pattern)
 
 SingleLocusAF <- combined_data %>%
   mutate(
-    H_SD_Gen = paste0("h\u00B2 = ", H, " SD = ", SD, " Gen = ", Gen)
+    H_SD_Gen = paste0("h\u00B2 = ", H, "\u0394\ = ", SD, " Gen = ", Gen)
   ) %>% 
   ggplot(aes(x = Generation, y = Frequency)) +
   geom_line(aes(group = replicate),
@@ -521,7 +521,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     ungroup() %>%
     mutate(
       Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
-      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      h2_sd = paste("H = ", H," ", "\u0394\ = ", SD, sep = ""), 
       #H_label = paste0("H = ", H),
       #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
       Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
@@ -558,7 +558,7 @@ instantplots_SPA <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci1Gen10
-#| fig-cap: "SI 1.2.1.1. Spectral density across 30 replicates for monogenic trait (single locus) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.1.1. Spectral density across 30 replicates for monogenic trait (single locus) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci1Gen10 <- instantplots_SPA[[1]] +
@@ -577,7 +577,7 @@ print(Inst_Spect_Loci1Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci1Gen20
-#| fig-cap: "SI 1.2.1.2. Spectral density across 30 replicates for monogenic trait (single locus) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.1.2. Spectral density across 30 replicates for monogenic trait (single locus) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci1Gen20 <- instantplots_SPA[[2]] +
@@ -596,7 +596,7 @@ print(Inst_Spect_Loci1Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci1Gen30
-#| fig-cap: "SI 1.2.1.3. Spectral density across 30 replicates for monogenic trait (single locus) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.1.3. Spectral density across 30 replicates for monogenic trait (single locus) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci1Gen30 <- instantplots_SPA[[3]] +
@@ -617,7 +617,7 @@ print(Inst_Spect_Loci1Gen30)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci10Gen10
-#| fig-cap: "SI 1.2.2.1. Spectral density across 30 replicates for oligogenic trait (10 loci) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.2.1. Spectral density across 30 replicates for oligogenic trait (10 loci) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci10Gen10 <- instantplots_SPA[[4]] +
@@ -636,7 +636,7 @@ print(Inst_Spect_Loci10Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci10Gen20
-#| fig-cap: "SI 1.2.2.2.  Spectral density across 30 replicates for oligogenic trait (10 loci) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.2.2.  Spectral density across 30 replicates for oligogenic trait (10 loci) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci10Gen20 <- instantplots_SPA[[5]] +
@@ -655,7 +655,7 @@ print(Inst_Spect_Loci10Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci10Gen30
-#| fig-cap: "SI 1.2.2.3. Spectral density across 30 replicates for oligogenic trait (10 loci) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.2.3. Spectral density across 30 replicates for oligogenic trait (10 loci) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci10Gen30 <- instantplots_SPA[[6]] +
@@ -676,7 +676,7 @@ print(Inst_Spect_Loci10Gen30)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci70Gen10
-#| fig-cap: "SI 1.2.3.1. Spectral density across 30 replicates for polygenic trait (70 loci) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.3.1. Spectral density across 30 replicates for polygenic trait (70 loci) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci70Gen10 <- instantplots_SPA[[7]] +
@@ -695,7 +695,7 @@ print(Inst_Spect_Loci70Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci70Gen20
-#| fig-cap: "SI 1.2.3.2. Spectral density across 30 replicates for polygenic trait (70 loci) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.3.2. Spectral density across 30 replicates for polygenic trait (70 loci) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci70Gen20 <- instantplots_SPA[[8]] +
@@ -714,7 +714,7 @@ print(Inst_Spect_Loci70Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci70Gen30
-#| fig-cap: "SI 1.2.3.3. Spectral density across 30 replicates for polygenic trait (70 loci) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.3.3. Spectral density across 30 replicates for polygenic trait (70 loci) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci70Gen30 <- instantplots_SPA[[9]] +
@@ -735,7 +735,7 @@ print(Inst_Spect_Loci70Gen30)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci300Gen10
-#| fig-cap: "SI 1.2.4.1. Spectral density across 30 replicates for polygenic trait (300 loci) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.4.1. Spectral density across 30 replicates for polygenic trait (300 loci) with instantaneous selection model, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci300Gen10 <- instantplots_SPA[[13]] +
@@ -754,7 +754,7 @@ print(Inst_Spect_Loci300Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci300Gen20
-#| fig-cap: "SI 1.2.4.2. Spectral density across 30 replicates for polygenic trait (300 loci) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.4.2. Spectral density across 30 replicates for polygenic trait (300 loci) with instantaneous selection model, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci300Gen20 <- instantplots_SPA[[14]] +
@@ -773,7 +773,7 @@ print(Inst_Spect_Loci300Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Inst_Spect_Loci300Gen30
-#| fig-cap: "SI 1.2.4.3. Spectral density across 30 replicates for polygenic trait (300 loci) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 1.2.4.3. Spectral density across 30 replicates for polygenic trait (300 loci) with instantaneous selection model, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 Inst_Spect_Loci300Gen30 <- instantplots_SPA[[15]] +
@@ -790,7 +790,7 @@ Inst_Spect_Loci300Gen30 <- instantplots_SPA[[15]] +
 print(Inst_Spect_Loci300Gen30)
 ```
 
-# 2. Gradual I model
+# 2. Simple Gradual Model
 
 ## 2.1. Allele frequency all parameters
 
@@ -867,7 +867,7 @@ combined_data <- process_files(dirpath, pattern)
 
 SingleLocusAF <- combined_data %>%
   mutate(
-    H_SD_Gen = paste0("h\u00B2 = ", H, " SD = ", SD, " Gen = ", Gen)
+    H_SD_Gen = paste0("h\u00B2 = ", H, "\u0394\ = ", SD, " Gen = ", Gen)
   ) %>% 
   ggplot(aes(x = Generation, y = Frequency)) +
   geom_line(aes(group = replicate),
@@ -1253,7 +1253,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     ungroup() %>%
     mutate(
       Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
-      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      h2_sd = paste("H = ", H," ", "\u0394\ = ", SD, sep = ""), 
       #H_label = paste0("H = ", H),
       #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
       Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
@@ -1290,7 +1290,7 @@ gradIplots_SPA <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci1Gen10
-#| fig-cap: "SI 2.2.1.1. Spectral density across 30 replicates for monogenic trait (1 locus) with gradual two equal seasons selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.1.1. Spectral density across 30 replicates for monogenic trait (1 locus) with gradual optima change two equal seasons, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci1Gen10 <- gradIplots_SPA[[1]] +
@@ -1309,7 +1309,7 @@ print(GradualI_Spect_Loci1Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci1Gen20
-#| fig-cap: "SSI 2.2.1.2. Spectral density across 30 replicates for monogenic trait (1 locus) with gradual two equal seasons selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SSI 2.2.1.2. Spectral density across 30 replicates for monogenic trait (1 locus) with gradual optima change two equal seasons, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci1Gen20 <- gradIplots_SPA[[2]] +
@@ -1328,7 +1328,7 @@ print(GradualI_Spect_Loci1Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci1Gen30
-#| fig-cap: "SI 2.2.1.3. Spectral density across 30 replicates for monogenic trait (1 locus) with gradual two equal seasons selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.1.3. Spectral density across 30 replicates for monogenic trait (1 locus) with gradual optima change two equal seasons, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci1Gen30 <- gradIplots_SPA[[3]] +
@@ -1349,7 +1349,7 @@ print(GradualI_Spect_Loci1Gen30)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci10Gen10
-#| fig-cap: "SI 2.2.2.1. Spectral density across 30 replicates for oligogenic trait (10 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.2.1. Spectral density across 30 replicates for oligogenic trait (10 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci10Gen10 <- gradIplots_SPA[[4]] +
@@ -1368,7 +1368,7 @@ print(GradualI_Spect_Loci10Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci10Gen20
-#| fig-cap: "SI 2.2.2.2. Spectral density across 30 replicates for oligogenic trait (10 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.2.2. Spectral density across 30 replicates for oligogenic trait (10 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci10Gen20 <- gradIplots_SPA[[5]] +
@@ -1387,7 +1387,7 @@ print(GradualI_Spect_Loci10Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci10Gen30
-#| fig-cap: "SI 2.2.2.3. Spectral density across 30 replicates for oligogenic trait (10 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.2.3. Spectral density across 30 replicates for oligogenic trait (10 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci10Gen30 <- gradIplots_SPA[[6]] +
@@ -1408,7 +1408,7 @@ print(GradualI_Spect_Loci10Gen30)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci70Gen10
-#| fig-cap: "SSI 2.2.3.1. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SSI 2.2.3.1. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci70Gen10 <- gradIplots_SPA[[7]] +
@@ -1427,7 +1427,7 @@ print(GradualI_Spect_Loci70Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci70Gen20
-#| fig-cap: "SI 2.2.3.2. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.3.2. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci70Gen20 <- gradIplots_SPA[[8]] +
@@ -1446,7 +1446,7 @@ print(GradualI_Spect_Loci70Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci70Gen30
-#| fig-cap: "SI 2.2.3.3. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.3.3. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci70Gen30 <- gradIplots_SPA[[9]] +
@@ -1467,7 +1467,7 @@ print(GradualI_Spect_Loci70Gen30)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci300Gen10
-#| fig-cap: "SI 2.2.4.1. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 10 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.4.1. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 10 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci300Gen10 <- gradIplots_SPA[[13]] +
@@ -1486,7 +1486,7 @@ print(GradualI_Spect_Loci300Gen10)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci300Gen20
-#| fig-cap: "SI 2.2.4.2. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 20 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.4.2. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 20 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci300Gen20 <- gradIplots_SPA[[14]] +
@@ -1505,7 +1505,7 @@ print(GradualI_Spect_Loci300Gen20)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_Spect_Loci300Gen30
-#| fig-cap: "SI 2.2.4.3. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual two equal seasons selection model, all parameter combinations with selection length of 30 generations. Each peak  represents a full cycle of selection period."
+#| fig-cap: "SI 2.2.4.3. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual optima change two equal seasons, all parameter combinations with selection length of 30 generations. Each peak represents a full cycle of selection period."
 #| fig-pos: "H"
 
 GradualI_Spect_Loci300Gen30 <- gradIplots_SPA[[15]] +
@@ -1522,7 +1522,7 @@ GradualI_Spect_Loci300Gen30 <- gradIplots_SPA[[15]] +
 print(GradualI_Spect_Loci300Gen30)
 ```
 
-# 3. Gradual II model
+# 3. Complex model I
 
 ## 3.1. Allele frequency all parameters for a single replicate
 
@@ -1540,7 +1540,7 @@ gradIIeQualDplots_AF <- result$plots
 
 ```{r, warning=FALSE, fig.width = 30, fig.height = 20, echo=FALSE, message=FALSE}
 #| label: GradII_Single_Locus_AllReplicates
-#| fig-cap: "SSI 3.1.1. Single locus 30 replicates allele frequency dynamics for gradual four unequal seasons selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
+#| fig-cap: "SSI 3.1.1. Single locus 30 replicates allele frequency dynamics for gradual optima change with even optima and uneven season length, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
 #| fig-pos: "H"
 #| 
 #####################################################
@@ -1636,11 +1636,11 @@ GradII_SingleLocusAF
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradII_Olig_AF
-#| fig-cap: "SI 3.1.2. Allele frequency dynamics for all parameter combinations from a single replicate, gradual four unequal seasons selection model. Each line  represents the frequency trajectory for a locus from oligogenic trait (10 loci)."
+#| fig-cap: "SI 3.1.2. Allele frequency dynamics for all parameter combinations from a single replicate, gradual optima change with even optima and uneven season length. Each line  represents the frequency trajectory for a locus from oligogenic trait (10 loci)."
 #| fig-pos: "H"
 
 GradII_Olig_AF <- gradIIeQualDplots_AF[[10]] +
-  ggtitle("Gradual II Oligogenic") +
+  ggtitle("Complex Model I Oligogenic") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -1657,11 +1657,11 @@ print(GradII_Olig_AF)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradII_Poly_70_AF
-#| fig-cap: "SI 3.1.3. Allele frequency dynamics for all parameter combinations from a single replicate, gradual four unequal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (70 loci)."
+#| fig-cap: "SI 3.1.3. Allele frequency dynamics for all parameter combinations from a single replicate, gradual optima change with even optima and uneven season length. Each line  represents the frequency trajectory for a locus from polygenic trait (70 loci)."
 #| fig-pos: "H"
 
 GradII_Poly_70_AF <- gradIIeQualDplots_AF[[70]] +
-  ggtitle("Gradual II Equal D Poligenic (70 loci)") +
+  ggtitle("Complex Model I Poligenic (70 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -1678,11 +1678,11 @@ print(GradII_Poly_70_AF)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradII_Poly_300_AF
-#| fig-cap: "SI 3.1.4. Allele frequency dynamics for all parameter combinations from a single replicate, gradual four unequal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (300 loci)."
+#| fig-cap: "SI 3.1.4. Allele frequency dynamics for all parameter combinations from a single replicate, gradual optima change with even optima and uneven season length. Each line  represents the frequency trajectory for a locus from polygenic trait (300 loci)."
 #| fig-pos: "H"
 
 GradII_Poly_300_AF <- gradIIeQualDplots_AF[[300]] +
-  ggtitle("Gradual II Equal D Poligenic (300 loci)") +
+  ggtitle("Complex Model I Poligenic (300 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -1865,7 +1865,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     ungroup() %>%
     mutate(
       Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
-      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      h2_sd = paste("H = ", H," ", "\u0394\ = ", SD, sep = ""), 
       #H_label = paste0("H = ", H),
       #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
       Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
@@ -1901,11 +1901,11 @@ result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradII_Poly_70_SA
-#| fig-cap: "SI 3.2.1. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual four unequal seasons selection model, all parameter combinations. For high parameters, ach peak  represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
+#| fig-cap: "SI 3.2.1. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual optima change with even optima and uneven season length, all parameter combinations. For high parameters, Each peak represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
 #| fig-pos: "H"
 
 GradII_Poly_70_SA <- result[[3]] +
-  ggtitle("Spectral Density: Gradual II Equal D Polygenic (70 loci)") +
+  ggtitle("Spectral Density: Complex Model I Polygenic (70 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -1922,10 +1922,10 @@ print(GradII_Poly_70_SA)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradII_GradII_Poly_300_SA
-#| fig-cap: "SI 3.2.2. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual four unequal seasons selection model, all parameter combinations. For high parameters, ach peak  represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
+#| fig-cap: "SI 3.2.2. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual optima change with even optima and uneven season length, all parameter combinations. For high parameters, Each peak represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
 #| fig-pos: "H"
 GradII_GradII_Poly_300_SA <- result[[5]] +
-  ggtitle("Spectral Density: Gradual II Equal D Polygenic (300 loci)") +
+  ggtitle("Spectral Density: Complex Model I Polygenic (300 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -1938,9 +1938,7 @@ GradII_GradII_Poly_300_SA <- result[[5]] +
 print(GradII_GradII_Poly_300_SA)
 ```
 
-
-
-# 4. Gradual II Unequal D model
+# 4. Complex model II
 
 ## 4.1. Allele frequency all parameters for a single replicate
 
@@ -1956,9 +1954,9 @@ gradIIplots_AF <- result$plots
 
 ### 4.1.1. Monogenic
 
-```{r, warning=FALSE, fig.width = 15, fig.height = 7, echo=FALSE, message=FALSE}
-#| label: GradII_Single_Locus_AllReplicates
-#| fig-cap: "SSI 3.1.1. Single locus 30 replicates allele frequency dynamics for gradual four unequal seasons selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
+```{r, warning=FALSE, fig.width = 40, fig.height = 15, echo=FALSE, message=FALSE}
+#| label: GradII_Uneq_Single_Locus_AllReplicates
+#| fig-cap: "SI 4.1.1. Single locus 30 replicates allele frequency dynamics for gradual optima change with uneven optima and uneven season length, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
 #| fig-pos: "H"
 #| 
 #####################################################
@@ -1984,9 +1982,9 @@ process_files <- function(dirpath, pattern) {
     
     data <- read.csv(file, header = TRUE) %>% 
       mutate(
-        H         = H,
-        loci      = loci,
-        SD        = SD,
+        H = H,
+        loci = loci,
+        SD = SD,
         replicate = as.factor(replicate))
 
     dataframes[[fname]] <- data
@@ -2022,7 +2020,7 @@ GradII_SingleLocusAF <- combined_data %>%
                geom = "line", 
                color = "red3", 
                alpha = 1, 
-               size = 2) +
+               size = 1) +
   facet_wrap(~ h2_sd, ncol = 3) +
   labs(
     x = "Generation",
@@ -2050,16 +2048,15 @@ GradII_SingleLocusAF <- combined_data %>%
 GradII_SingleLocusAF
 ```
 
-
 ### 4.1.2. Oligogenic
 
-```{r, fig.height = 5, fig.width = 15, echo=FALSE}
-#| label: GradII_Olig_AF
-#| fig-cap: "SI 3.1.2. Allele frequency dynamics for all parameter combinations from a single replicate, gradual four unequal seasons selection model. Each line  represents the frequency trajectory for a locus from oligogenic trait (10 loci)."
+```{r, fig.width = 40, fig.height = 15, echo=FALSE}
+#| label: GradII_Uneq_Olig_AF
+#| fig-cap: "SI 4.1.2. Allele frequency dynamics for all parameter combinations from a single replicate, gradual optima change with uneven optima and uneven season length. Each line  represents the frequency trajectory for a locus from oligogenic trait (10 loci)."
 #| fig-pos: "H"
 
 GradII_Olig_AF <- gradIIplots_AF[[10]] +
-  ggtitle("Gradual II Oligogenic") +
+  ggtitle("Complex Model II") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -2074,13 +2071,13 @@ print(GradII_Olig_AF)
 
 ### 4.1.3. Polygenic 70 loci
 
-```{r, fig.height = 5, fig.width = 15, echo=FALSE}
+```{r, fig.width = 40, fig.height = 15, echo=FALSE}
 #| label: GradII_UnequalD_Poly_70_AF
-#| fig-cap: "SI 3.1.3. Allele frequency dynamics for all parameter combinations from a single replicate, gradual four unequal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (70 loci)."
+#| fig-cap: "SI 4.1.3. Allele frequency dynamics for all parameter combinations from a single replicate, gradual optima change with uneven optima and uneven season length. Each line  represents the frequency trajectory for a locus from polygenic trait (70 loci)."
 #| fig-pos: "H"
 
 GradII_UnequalD_Poly_70_AF <- gradIIplots_AF[[70]] +
-  ggtitle("Gradual II Unequal D Poligenic (70 loci)") +
+  ggtitle("Complex Model II Poligenic (70 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -2093,16 +2090,15 @@ GradII_UnequalD_Poly_70_AF <- gradIIplots_AF[[70]] +
 print(GradII_UnequalD_Poly_70_AF)
 ```
 
-
 ### 4.1.4. Polygenic 300 loci
 
-```{r, fig.height = 7, fig.width = 15, echo=FALSE}
+```{r, fig.width = 40, fig.height = 15, echo=FALSE}
 #| label: GradII_UnequalD_Poly_300_AF
-#| fig-cap: "SI 3.1.4. Allele frequency dynamics for all parameter combinations from a single replicate, gradual four unequal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (300 loci)."
+#| fig-cap: "SI 4.1.4. Allele frequency dynamics for all parameter combinations from a single replicate, gradual optima change with uneven optima and uneven season length. Each line  represents the frequency trajectory for a locus from polygenic trait (300 loci)."
 #| fig-pos: "H"
 
 GradII_UnequalD_Poly_300_AF <- gradIIplots_AF[[300]] +
-  ggtitle("Gradual II Unequal D Poligenic (300 loci)") +
+  ggtitle("Complex Model II Poligenic (300 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -2285,7 +2281,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     ungroup() %>%
     mutate(
       Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
-      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      h2_sd = paste("H = ", H," ", "\u0394\ = ", SD, sep = ""), 
       #H_label = paste0("H = ", H),
       #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
       Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
@@ -2311,7 +2307,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
 ```
 
-```{r, fig.height = 5, fig.width = 15, echo=FALSE}
+```{r, fig.width = 40, fig.height = 15, echo=FALSE}
 dirpath <- "../../Output.dir/SinFSGen.dir/"
 pattern <- "^genome"
 result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
@@ -2319,13 +2315,13 @@ result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
 
 ### 4.2.1. Polygenic 70
 
-```{r, fig.height = 5, fig.width = 15, echo=FALSE}
+```{r, fig.width = 40, fig.height = 25, echo=FALSE}
 #| label: GradII_UnequalD_Poly_70_SA
-#| fig-cap: "SI 3.2.1. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual four unequal seasons selection model, all parameter combinations. For high parameters, ach peak  represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
+#| fig-cap: "SI 4.2.1. Spectral density across 30 replicates for polygenic trait (70 loci) with gradual optima change with uneven optima and uneven season length, all parameter combinations. For high parameters, Each peak represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
 #| fig-pos: "H"
 
 GradII_UnequalD_Poly_70_SA <- result[[3]] +
-  ggtitle("Spectral Density: Gradual II Unequal D Polygenic (70 loci)") +
+  ggtitle("Spectral Density: Complex Model II Polygenic (70 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -2340,12 +2336,12 @@ print(GradII_UnequalD_Poly_70_SA)
 
 ### 4.2.2. Polygenic 300
 
-```{r, fig.height = 5, fig.width = 15, echo=FALSE}
+```{r, fig.width = 40, fig.height = 25, echo=FALSE}
 #| label: GradII_GradII_UnequalD_Poly_300_SA
-#| fig-cap: "SI 3.2.2. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual four unequal seasons selection model, all parameter combinations. For high parameters, ach peak  represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
+#| fig-cap: "SI 4.2.2. Spectral density across 30 replicates for polygenic trait (300 loci) with gradual optima change with uneven optima and uneven season length, all parameter combinations. For high parameters, Each peak represents one of the four full cycle of selection periods while the peaks are murky under low heritability and selection pressure (first column)."
 #| fig-pos: "H"
 GradII_GradII_UnequalD_Poly_300_SA <- result[[5]] +
-  ggtitle("Spectral Density: Gradual II Unequal D Polygenic (300 loci)") +
+  ggtitle("Spectral Density: Complex Model II Polygenic (300 loci)") +
   theme(
     plot.title = element_text(
       hjust = 0.5,         
@@ -2358,12 +2354,11 @@ GradII_GradII_UnequalD_Poly_300_SA <- result[[5]] +
 print(GradII_GradII_UnequalD_Poly_300_SA)
 ```
 
-
 # 5. Null model
 
 ```{r, warning=FALSE, fig.width = 20, fig.height = 5, echo=FALSE, message=FALSE}
 ## | label: NS_All_Locus_AllReplicates
-## | fig-cap: "SI 2.1.1. Single locus 30 replicates allele frequency dynamics for gradual two equal seasons selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
+## | fig-cap: "SI 5.1.1. Single locus 30 replicates allele frequency dynamics for gradual two equal seasons selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
 ## | fig-pos: "H"
 library(dplyr)
 library(ggplot2)
@@ -2444,7 +2439,7 @@ sampled_data <- combined_data %>%
 
 sampledreplc_AF <- sampled_data %>%
   mutate(
-    H_SD_Gen = paste0("h\u00B2 = ", H, " SD = ", SD, " Gen = ", Gen)
+    H_SD_Gen = paste0("h\u00B2 = ", H, "\u0394\ = ", SD, " Gen = ", Gen)
   ) %>% 
   ggplot(aes(x = Generation, y = Frequency, color = replicate)) +
   geom_line(aes(group = (replicate)),
@@ -2487,7 +2482,7 @@ sampledreplc_AF <- sampled_data %>%
 
 ```{r, fig.width = 20, fig.height = 5, echo=FALSE, message = FALSE}
 #| label: NS_All_Locus_AllReplicates
-#| fig-cap: "SI 4.1. Allele frequency dynamics for monogenic, oligogec (10 loci), and polygenic (300 loci) traits models. Each line represent a single locus sampled from all loci within a single replicate of each model."
+#| fig-cap: "SI 5.1. Allele frequency dynamics for monogenic, oligogec (10 loci), and polygenic (300 loci) traits models. Each line represent a single locus sampled from all loci within a single replicate of each model."
 #| 
 sampledreplc_AF
 ```
@@ -2555,9 +2550,9 @@ pheno_processing <- function(dirpath, pattern) {
 
 ```
 
-```{r, fig.width = 25, fig.height = 7, echo=FALSE, message = FALSE}
+```{r, fig.width = 40, fig.height = 15, echo=FALSE, message = FALSE}
 #| label: Ns_Pheno_All_architectures
-#| fig-cap: "SI 4.2. Mean population phenotypic plot across 30 replicates (each line represents a single replicate) for Null selection, showing parameter interactions."
+#| fig-cap: "SI 5.2. Mean population phenotypic plot across 30 replicates (each line represents a single replicate) for Null selection, showing parameter interactions."
 #| fig-pos: "H"
 dirpath <- "../../Output.dir/NS.dir/"
 pattern <- "^MeanPhenotypes\\d+_n(1|10|300)_H0\\.(8)(SD(1|2|4))?(Gen(10|20|30))?\\.csv$"
@@ -2727,9 +2722,9 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
 
 ```
 
-```{r, fig.width = 25, fig.height = 7, echo=FALSE}
+```{r, fig.width = 40, fig.height = 15, echo=FALSE}
 #| label: Ns_SpectralAnalysis_All_architectures
-#| fig-cap: "SI 4.3. Spectral density across 30 replicates for all genetic architecture under Null selection model. The density plots do not show any peak as selection is purely driven by random drift."
+#| fig-cap: "SI 5.3. Spectral density across 30 replicates for all genetic architecture under Null selection model. The density plots do not show any peak as selection is purely driven by random drift."
 #| fig-pos: "H"
 #| 
 dirpath <- "../../Output.dir/NS.dir/"
@@ -2756,7 +2751,7 @@ plots <- result$plots
 
 ```{r, fig.height = 20, fig.width = 30, echo=FALSE}
 #| label: CS_Single_Locus_AllReplicates
-#| fig-cap: "SI 5.1.1. Single locus 30 replicates allele frequency dynamics for constant selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
+#| fig-cap: "SI 6.1.1. Single locus 30 replicates allele frequency dynamics for constant selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
 #| fig-pos: "H"
 #| 
 #####################################################
@@ -2851,7 +2846,7 @@ CS_SingleLocusAF
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Olig_AF
-#| fig-cap: "SSI 5.1.2. Allele frequency dynamics for all parameter combinations from a single replicate, constant selection model. Each line  represents the frequency trajectory for a locus from oligogenic trait (10 loci)."
+#| fig-cap: "SI 6.1.2. Allele frequency dynamics for all parameter combinations from a single replicate, constant selection model. Each line  represents the frequency trajectory for a locus from oligogenic trait (10 loci)."
 #| fig-pos: "H"
 
 Constant_Olig_AF <- plots[[10]] +
@@ -2872,7 +2867,7 @@ print(Constant_Olig_AF)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Poly_70_AF
-#| fig-cap: "SSI 5.1.3: Allele frequency dynamics for all parameter combinations from a single replicate, constant selection model. Each line  represents the frequency trajectory for a locus of 30 sampled loci from polygenic trait (70 loci)."
+#| fig-cap: "SI 6.1.3: Allele frequency dynamics for all parameter combinations from a single replicate, constant selection model. Each line  represents the frequency trajectory for a locus of 30 sampled loci from polygenic trait (70 loci)."
 #| fig-pos: "H"
 
 Constant_Poly_70_AF <- plots[[70]] +
@@ -2885,7 +2880,6 @@ Constant_Poly_70_AF <- plots[[70]] +
       margin = margin(b = 40) 
     )
   )
-
 print(Constant_Poly_70_AF)
 ```
 
@@ -2893,7 +2887,7 @@ print(Constant_Poly_70_AF)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Poly_300_AF
-#| fig-cap: "SI 5.1.4. Allele frequency dynamics for all parameter combinations from a single replicate, constant selection model. Each line  represents the frequency trajectory for a locus of 30 sampled loci from polygenic trait (300 loci)."
+#| fig-cap: "SI 6.1.4. Allele frequency dynamics for all parameter combinations from a single replicate, constant selection model. Each line  represents the frequency trajectory for a locus of 30 sampled loci from polygenic trait (300 loci)."
 #| fig-pos: "H"
 
 Constant_Poly_300_AF <- plots[[300]] +
@@ -2917,16 +2911,14 @@ source("PhenotypePlotCode.R")
 dirpath <- "../../Output.dir/CS.dir/"
 pattern <- "^MeanPhenotypes"
 result <- process_files(dirpath, pattern, "loci")
-
 plots <- result$plots
-
 ```
 
 ### 6.2.1. Polygenic 70
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Poly_70_Pheno
-#| fig-cap: "SI 5.2.1. Polygenic (70 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-cap: "SI 6.2.1. Polygenic (70 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
 #| fig-pos: "H"
 
 Constant_Poly_70_Pheno <- plots[[70]] +
@@ -2939,7 +2931,6 @@ Constant_Poly_70_Pheno <- plots[[70]] +
       margin = margin(b = 40) 
     )
   )
-
 print(Constant_Poly_70_Pheno)
 ```
 
@@ -2947,9 +2938,8 @@ print(Constant_Poly_70_Pheno)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Poly_100_Pheno
-#| fig-cap: "SI 5.2.2 Polygenic (100 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-cap: "SI 6.2.2 Polygenic (100 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
 #| fig-pos: "H"
-
 
 Constant_Poly_100_Pheno <- plots[[100]] +
   ggtitle("Phenotypes: Constantant Polygenic (100 loci)") +
@@ -2961,7 +2951,6 @@ Constant_Poly_100_Pheno <- plots[[100]] +
       margin = margin(b = 40) 
     )
   )
-
 print(Constant_Poly_100_Pheno)
 ```
 
@@ -2969,9 +2958,8 @@ print(Constant_Poly_100_Pheno)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Poly_300_Pheno
-#| fig-cap: "SI 5.2.3. Polygenic (300 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
+#| fig-cap: "SI 6.2.3. Polygenic (300 loci) mean population phenotypic plot across 30 replicates (each line represents a single replicate) for constant selection, showing parameter interactions."
 #| fig-pos: "H"
-
 Constant_Poly_300_Pheno <- plots[[300]] +
   ggtitle("Phenotypes: Constantant Polygenic (300 loci)") +
   theme(
@@ -2982,7 +2970,6 @@ Constant_Poly_300_Pheno <- plots[[300]] +
       margin = margin(b = 40) 
     )
   )
-
 print(Constant_Poly_300_Pheno)
 ```
 
@@ -2996,10 +2983,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   library(dplyr)
   library(ggplot2)
   library(cowplot)
-  
-  
   theme_set(theme_classic())
-  
   mythemes <- theme_bw() +
     theme(
       text            = element_text(family = "sans"), 
@@ -3019,14 +3003,11 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
       panel.grid      = element_blank()
     )
   
-  # File list
-  
   file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
   
   if (length(file_list) == 0) {
     stop("No files found with the given pattern.")
   }
-  
   # Create a data frame with filenames and extract parameters
   
   files_df <- data.frame(file_name = file_list) %>%
@@ -3155,7 +3136,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     ungroup() %>%
     mutate(
       Genome_Gen = paste0("Genome = ", Genome, " Gen = ", Gen),
-      h2_sd = paste("H = ", H," ", "SD = ", SD, sep = ""),
+      h2_sd = paste("H = ", H," ", "\u0394\ = ", SD, sep = ""), 
       #H_label = paste0("H = ", H),
       #SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
       Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
@@ -3192,7 +3173,7 @@ result <- run_fft_analysis(dirpath, pattern, spectrum_span = 2)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Mono_SA
-#| fig-cap: "SI 5.3.1. Spectral density across 30 replicates for monogenic trait (single locus) with constant selection model, all parameter combinations. The density plots do not show any peak, and indication that there is no periodicity."
+#| fig-cap: "SI 6.3.1. Spectral density across 30 replicates for monogenic trait (single locus) with constant selection model, all parameter combinations. The density plots do not show any peak, and indication that there is no periodicity."
 #| fig-pos: "H"
 
 Constant_Mono_SA <- result[[1]] +
@@ -3213,7 +3194,7 @@ print(Constant_Mono_SA)
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: Constant_Poly_300_SA
-#| fig-cap: "SI 5.3.2. Spectral density across 30 replicates for polygenic trait (300 loci) with constant selection model, all parameter combinations. The density plots do not show any peak, and indication that there is no periodicity."
+#| fig-cap: "SI 6.3.2. Spectral density across 30 replicates for polygenic trait (300 loci) with constant selection model, all parameter combinations. The density plots do not show any peak, and indication that there is no periodicity."
 #| fig-pos: "H"
 
 Constant_Poly_300_SA <- result[[5]] +

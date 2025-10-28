@@ -2719,7 +2719,7 @@ print(Spectral_Neutral_and_GradII_Polygenic)
 
 ```
 
-### Allele Frequency Dynamics
+### 5.4 Allele Frequency Dynamics
 
 ```{r, warning=FALSE, fig.width = 22, fig.height = 10, dpi=1200, echo=FALSE}
 #| label: AF_CSNSFS_model_comparison
@@ -3014,6 +3014,9 @@ print(Spectral_Neutral_Constant_and_GradII_Polygenic)
 
 ```
 
+
+## Extra Code, not for published paper. This is to consider spectal analysis for some generations, not all 2000. 
+
 ## 6. Sampled Generations Spectral Analysis
 
 ### 6.1 Spectral Instantaneous sampled Generations
@@ -3123,16 +3126,16 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(3, 3)) {
       
     df %>%
       dplyr::mutate(
-        allele_id        = as.factor(Position),
-        generation       = as.numeric(Generation),
+        allele_id = as.factor(Position),
+        generation  = as.numeric(Generation),
         allele_frequency = Frequency,
-        sample_size      = 10000,
-        file             = params$base_name,
-        genome           = params$genome,
-        n                = params$n,
-        H                = params$H,
-        SD               = params$SD,
-        Gen              = params$Gen,
+        sample_size = 10000,
+        file = params$base_name,
+        genome = params$genome,
+        n = params$n,
+        H = params$H,
+        SD = params$SD,
+        Gen = params$Gen,
         param_combination= params$param_combination
       ) %>%
       dplyr::select(
@@ -3189,11 +3192,11 @@ print(length(unique(combined_data$generation)))
   #### Prepare data for plotting
   plot_data_list <- vector("list", length(spec_results_list))
   for (i in seq_along(spec_results_list)) {
-    spec_result <- spec_results_list[[i]]
-    params      <- ts_data_list[i, ]
-    period      <- 1 / spec_result$freq
+    spec_result = spec_results_list[[i]]
+    params  = ts_data_list[i, ]
+    period = 1 / spec_result$freq
     
-    df_spec <- data.frame(
+    df_spec = data.frame(
       Period = period,
       Spectrum = spec_result$spec,
       n = params$n,
@@ -3203,10 +3206,10 @@ print(length(unique(combined_data$generation)))
       Gen = params$Gen,
       param_combination = params$param_combination
     )
-    plot_data_list[[i]] <- df_spec
+    plot_data_list[[i]] = df_spec
   }
   
-  plot_data <- dplyr::bind_rows(plot_data_list)
+  plot_data = dplyr::bind_rows(plot_data_list)
   
   # Limit Period by threshold for each param_combination 
   plot_data <- plot_data %>%
@@ -3230,13 +3233,13 @@ print(length(unique(combined_data$generation)))
         )
     ) %>%
     dplyr::mutate(
-      H_label   = paste0("H = ", H),
-      SD_label  = ifelse(!is.na(SD),  paste0("SD = ", SD),  "No SD"),
+      H_label = paste0("H = ", H),
+      SD_label = ifelse(!is.na(SD),  paste0("SD = ", SD),  "No SD"),
       Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
-      H_SD_Gen  = paste0("h\u00B2 = ", H, " SD=", SD, " Gen=", Gen)
+      H_SD_Gen = paste0("h\u00B2 = ", H, " SD=", SD, " Gen=", Gen)
     )
   
-  spec_plot_comb1 <- ggplot2::ggplot(
+  spec_plot_comb1 = ggplot2::ggplot(
     plot_data, 
     ggplot2::aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
   ) +

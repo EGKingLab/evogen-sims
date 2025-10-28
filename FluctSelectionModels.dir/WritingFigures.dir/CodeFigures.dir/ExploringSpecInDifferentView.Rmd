@@ -1,0 +1,65 @@
+```{r}
+library(tidyverse)
+library(purrr)
+library(stringr)
+
+rm(list = ls())
+
+dir_path <- "~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/FourSeasFourAmp.dir/"
+
+# Grab all genome* CSVs (e.g., genome1_..., genome2_...)
+files <- list.files(
+  dir_path,
+  pattern = "^genome\\d+_.*\\.csv$",
+  full.names = TRUE
+)
+
+process_file <- function(path) {
+  # Extract replicate label from filename, e.g., "genome1"
+  replicate_id <- str_extract(basename(path), "genome\\d+")
+
+  # Read + reshape wide (one column per Position)
+  geno <- read.csv(path) %>%
+    #filter(Generation >= 1500) %>%
+    select(-Origin, -Effect) %>%
+    mutate(Position = paste0("Pos_", Position)) %>%
+    pivot_wider(names_from = Position, values_from = Frequency) %>%
+    arrange(Generation) %>%
+    replace(is.na(.), 0)
+
+  # Build one spectrum per Pos_* column
+  spec_list <- geno %>%
+    select(-Generation) %>%
+    imap(~ spectrum(
+      ts(.x, start = min(geno$Generation), frequency = 1),
+      method = "pgram", plot = FALSE, spans = c(2, 2)
+    ))
+
+  # Tidy: extract freq/spec, convert to period, average across loci
+  spec_mu <- tibble(Position = names(spec_list), Spec = spec_list) %>%
+    mutate(data = map(Spec, ~ tibble(freq = .x$freq, spec = .x$spec))) %>%
+    select(Position, data) %>%
+    unnest(data) %>%
+   # filter(is.finite(freq), freq > 0) %>%           # avoid 1/0
+    mutate(period = 1 / freq) %>%
+    filter(period < 40) %>%                         # your cutoff
+    group_by(period) %>%
+    summarise(spec_mu = mean(spec, na.rm = TRUE), .groups = "drop") %>%
+    mutate(Replicate = replicate_id)
+
+  spec_mu
+}
+
+# Run over all files and combine
+all_spec <- map_df(files, process_file)
+
+# Plot: one line per replicate, colored by file/replicate
+ggplot(all_spec, aes(x = period, y = spec_mu, color = Replicate)) +
+  geom_line() +
+  labs(
+    x = "Period (generations) = 1 / frequency",
+    y = "Mean spectral density across loci",
+    title = "Averaged periodograms by replicate (period < 100)"
+  ) +
+  theme(legend.position = "none")
+```
