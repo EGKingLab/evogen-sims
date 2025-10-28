@@ -1,10 +1,11 @@
 Code.dir ----> contains the SLiM codes for all selection models with:
-	CS.dir for constant selection, 
-	NS.dir for neutral selection, 
+	CS.dir for constant new optima selection, 
+	NS.dir for null selection, 
 	LinFS.dir for instantaneous selection, 
-	SinFS.dir for gradual two equal seasons, 
-	and lastly SinFSGen.dir for Gradual four unequal seasons selection models. 
-
+	SinFS.dir for gradual two equal seasons also known as simple gradual, 
+	SinFSGen.dir for gradual four seasons, uneven season lengths and even distance to optima Δ, also known as complex gradual model I
+	and lastly FourSeasFourAmp.dir for Gradual four unequal seasons, uneven season lengths and uneven distance to optima Δ also known as complex gradual model II. 
+	
 To run each model, make sure that you have created the directory for output files, and change directories as necessary.
 You will need to run bash files interactive, but if necessary, you can create a slurm file to run the codes as well.
 
