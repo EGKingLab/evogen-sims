@@ -33,7 +33,7 @@ initialize() {
 	m2.convertToSubstitution = F;
 	m2.mutationStackPolicy = "l";
 	defineConstant("Q", q);
-	defineConstant("generations", seq(0, 2101, 1));
+	defineConstant("generations", seq(0, 2001, 1));
 	//defineConstant("signals", c(5, 30, 10, 15));
 	defineConstant("signals", c(12, 22, 10, 16));
 	initializeRecombinationRate(1e-8);
@@ -120,7 +120,7 @@ mu_p  = mean(pheno);
 sd_p  = sd(pheno);
 
 // float preallocation (avoid int/float mismatch)
-nopt = rep(0.0, 2101);
+nopt = rep(0.0, 2001);
 
 current_time   = 0;  // 0-based indexing in Eidos
 year_counter   = 0;
@@ -181,7 +181,7 @@ while (current_time < total_time)  // '<' prevents hitting index 2002
 
 // Implement the selection process for generations 2 to 2000
 
-2:2100 late(){
+2:2000 late(){
 	// Get individuals in the population
 	inds = sim.subpopulations.individuals;
 	
@@ -229,6 +229,6 @@ while (current_time < total_time)  // '<' prevents hitting index 2002
 
 }
 
-2101 late(){
+2001 late(){
 	sim.simulationFinished();
 }
