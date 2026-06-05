@@ -2321,7 +2321,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
     #facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 1) +
     facet_wrap(Selection ~ ., scales = "free", ncol = 1) +
     labs(title = "A) Null Model", x = NULL, y = NULL) +
-    mythemes
+    mythemes()
 
   return(fft_plots)
 }
@@ -3014,14 +3014,13 @@ print(Spectral_Neutral_Constant_and_GradII_Polygenic)
 
 ```
 
-
-## Extra Code, not for published paper. This is to consider spectal analysis for some generations, not all 2000. 
+## Extra Code, not for published paper. This is to consider spectal analysis for some generations, not all 2000.
 
 ## 6. Sampled Generations Spectral Analysis
 
 ### 6.1 Spectral Instantaneous sampled Generations
 
-```{r, warning=FALSE, fig.width = 15, fig.height = 10, echo=FALSE, dpi = 1200}
+```{r, warning=FALSE, fig.width = 30, fig.height = 15, echo=FALSE, dpi = 1200}
 #| label: Instant_Poly_SpecAnalysis_Sampled
 #library(tidyverse)
 
@@ -3115,7 +3114,7 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(3, 3)) {
     set.seed(4564356)
     
     gens <- full_df %>%
-      filter(Generation %% 5 == 0) %>% 
+      filter(Generation == min(Generation)| Generation %% 5 == 0) %>% 
       dplyr::distinct(Generation) %>%
       dplyr::slice_sample(n = min(200L, nrow(.)))
     
@@ -3219,7 +3218,7 @@ print(length(unique(combined_data$generation)))
         Gen == 10 ~ 10,
         Gen == 20 ~ 10,
         Gen == 30 ~ 20,
-        TRUE      ~ max(Period)
+        TRUE ~ max(Period)
       )
     ) %>%
     dplyr::ungroup() %>%
@@ -3282,3 +3281,540 @@ ggsave("SampledGen_Instant_Poly_SpecAnalysis_Combined.jpg",
 
 final_plot ## This is actually close to what Bergland did. They collected their samples, and sequenced males from isofemales from 1-5 generations
 ```
+
+### 6.2. Computing the amplitude
+
+```{r}
+rm(list = ls())
+file_path <- "~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/LinFS.dir"
+pattern <- "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"
+files <- list.files(path = file_path, pattern = pattern, full.names = TRUE)
+
+length(files)
+```
+
+
+```{r, fig.width = 30, fig.height = 30, echo=FALSE}
+library(data.table)
+library(furrr)
+library(future)
+mythemes <- theme_bw() +
+  theme(
+    text = element_text(family = "sans"),
+    axis.text.x = element_text(face = "bold", size = 50, angle = 75, margin = margin(t = 20), hjust = 1),
+    axis.text.y = element_text(face = "bold", size = 50, angle = 15, margin = margin(r = 10)),
+    axis.line   = element_line(size = 3),
+    plot.title  = element_text(hjust = 0.01, face = "bold", size = 70, margin = margin(b = 1, unit = "lines")),
+    plot.margin = unit(c(5, 1, 1, 1), "lines"),
+    axis.title.x = element_text(size = 50, face = "bold", margin = margin(t = 30)),
+    axis.title.y = element_text(size = 50, face = "bold", margin = margin(r = 35)),
+    strip.text   = element_text(size = 50, face = "bold"),
+    panel.spacing = unit(5, "lines"),
+    panel.grid    = element_blank(),
+
+    # ----- Legend -----
+    legend.position   = "right",
+    legend.title      = element_text(size = 50, face = "bold"),
+    legend.text       = element_text(size = 45),
+    legend.key.size   = unit(3, "lines"),    # overall key box
+    legend.key.height = unit(3, "lines"),    # vertical extent of each entry
+    legend.key.width  = unit(4, "lines"),    # horizontal extent (room for line + shape)
+    legend.spacing.y  = unit(1.5, "lines"),  # gap between SD legend and h² legend
+    legend.margin     = margin(10, 10, 10, 10),
+    legend.background = element_rect(fill = "white", color = NA),
+    legend.key        = element_rect(fill = "white", color = NA)
+  )
+
+file_dir <- "~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/LinFS.dir"
+
+# Named-capture regex: each (?<name>...) becomes a column in str_match output.
+file_pattern <- paste0(
+  "^genome(?<repl>[123])",
+  "_n(?<loci>\\d+)",
+  "_H0\\.(?<h2>[18])",
+  "(?:SD(?<SD>[14]))?",
+  "(?:Gen(?<Gen>10|30))?",
+  "\\.csv$"
+)
+
+combo_levels <- c(
+  "High Combo",
+  "Mid_High Combo",
+  "Mid_Low Combo",
+  "Low Combo",
+  "Other"
+)
+
+# #################################
+# Locate files — keep only ones the parser can actually handle
+# #################################
+all_files <- list.files(file_dir, pattern = "\\.csv$", full.names = TRUE)
+files     <- all_files[stringr::str_detect(basename(all_files), file_pattern)]
+
+if (length(files) == 0L) stop("No files matched file_pattern in: ", file_dir)
+message("Matched ", length(files), " of ", length(all_files), " CSV files.")
+
+# #################################
+# Parse filename with named groups + str_match
+# #################################
+parse_filename <- function(path, pattern) {
+  fname  <- basename(path)
+  params <- stringr::str_match(fname, pattern)
+
+  tibble(
+    source_file = fname,
+    repl = as.integer(params[, "repl"]),
+    loci = as.integer(params[, "loci"]),
+    h2   = as.numeric(params[, "h2"]) / 10,    # avoids "0.NA" coercion warning
+    SD   = as.integer(params[, "SD"]),         # NA if absent
+    Gen  = as.integer(params[, "Gen"])         # NA if absent
+  ) %>%
+    mutate(
+      combo = case_when(
+        h2 == 0.8 & Gen == 30 & SD == 4 ~ "High Combo",
+        h2 == 0.1 & Gen == 10 & SD == 1 ~ "Low Combo",
+        h2 == 0.1 & Gen == 30 & SD == 4 ~ "Mid_High Combo",
+        h2 == 0.8 & Gen == 30 & SD == 1 ~ "Mid_Low Combo",
+        TRUE ~ "Other"
+      )
+    )
+}
+
+# #################################
+# Process one file — keep ALL positions passing the filter (no sampling)
+# #################################
+process_genome_file <- function(path, pattern) {
+  meta <- parse_filename(path, pattern)
+
+  if (is.na(meta$repl) || is.na(meta$loci) || is.na(meta$h2)) {
+    warning("Could not parse filename: ", basename(path))
+    return(tibble())
+  }
+
+  dt <- fread(
+    path,
+    select = c("Generation", "Position", "Frequency", "Effect", "Origin"),
+    blank.lines.skip = TRUE
+  )
+  if (nrow(dt) == 0L) return(tibble())
+
+  if (!is.na(meta$Gen)) {
+    first_generation <- min(dt$Generation, na.rm = TRUE)
+    dt <- dt[Generation == first_generation | Generation %% meta$Gen == 0]
+  }
+  if (nrow(dt) == 0L) {
+    warning("No rows left after generation thinning: ", basename(path))
+    return(tibble())
+  }
+
+  dt[, `:=`(
+    source_file = meta$source_file,
+    repl        = meta$repl,
+    loci        = meta$loci,
+    h2          = meta$h2,
+    Gen         = meta$Gen,
+    SD          = meta$SD,
+    combo       = meta$combo,
+    PositionID  = paste(Position, Effect, Origin, sep = "_")
+  )]
+
+  position_stats <- dt[
+    , .(max_freq      = suppressWarnings(max(Frequency, na.rm = TRUE)),
+        n_generations = uniqueN(Generation)),
+    by = .(repl, loci, h2, Gen, SD, combo, PositionID)
+  ][
+    is.finite(max_freq) & max_freq > 0.05 & max_freq < 0.98 & n_generations >= 10L
+  ]
+
+  if (nrow(position_stats) == 0L) {
+    warning("No positions passed filtering: ", basename(path))
+    return(tibble())
+  }
+
+  keep_keys <- position_stats[, .(repl, loci, h2, Gen, SD, combo, PositionID)]
+  out <- dt[keep_keys,
+            on = c("repl", "loci", "h2", "Gen", "SD", "combo", "PositionID"),
+            nomatch = NULL]
+
+  out[, `:=`(
+    facet_label = combo,
+    combo       = factor(combo, levels = combo_levels)
+  )]
+
+  as_tibble(out)
+}
+
+# #################################
+# Process files in parallel
+# #################################
+n_workers <- min(8L, length(files))
+plan(multisession, workers = n_workers)
+
+mydata <- future_map_dfr(
+  files,
+  process_genome_file,
+  pattern = file_pattern,
+  .options = furrr_options(
+    seed = TRUE,
+    packages = c("data.table", "tidyverse")
+  )
+)
+
+plan(sequential)
+
+# #################################
+# Summarising by generation
+# #################################
+gen_summary <- mydata %>%
+  group_by(source_file, repl, loci, h2, Gen, SD, combo, Generation) %>%
+  summarise(
+    mean_freq = mean(Frequency, na.rm = TRUE),
+    se_freq   = sd(Frequency, na.rm = TRUE) / sqrt(sum(!is.na(Frequency))),
+    n_pos     = n_distinct(PositionID),
+    .groups   = "drop"
+  ) %>%
+  mutate(
+    SD_f = factor(SD),
+    h2_f = factor(h2)
+  )
+
+# Cap each Gen's time window proportionally: Gen * 20
+#   Gen = 10  →  Generation ≤ 200
+#   Gen = 30  →  Generation ≤ 600
+plot_data <- gen_summary %>%
+  filter(!is.na(Gen)) %>%
+  group_by(source_file) %>%
+  filter(Generation == min(Generation, na.rm = TRUE) | Generation %% Gen == 0) %>%
+  ungroup() %>%
+  filter(Generation <= Gen * 20)
+
+# #################################
+# "Repl X : Gen = Y" panel labels, ordered repl-first then Gen
+# #################################
+panel_levels <- plot_data %>%
+  distinct(repl, Gen) %>%
+  arrange(repl, Gen) %>%
+  mutate(panel_label = paste0("Repl ", repl, " : Gen = ", Gen)) %>%
+  pull(panel_label)
+
+plot_data <- plot_data %>%
+  mutate(panel_label = factor(
+    paste0("Repl ", repl, " : Gen = ", Gen),
+    levels = panel_levels
+  ))
+
+#################################
+# Per-panel x-axis breaks at multiples of Gen
+
+# Because each panel's data is filtered to Generation ≤ Gen*20,
+# the upper limit reveals Gen ≈ limits[2] / 20. Snap to a tidy step.
+gen_aligned_breaks <- function(limits) {
+  upper <- limits[2]
+  if (!is.finite(upper) || upper <= 0) return(pretty(limits))
+  raw_step <- upper / 20
+  step <- if (raw_step <= 12)  10
+          else if (raw_step <= 35) 30
+          else round(raw_step / 10) * 10
+  c(1, seq(step, floor(upper / step) * step, by = step))
+}
+
+# #################################
+# Figures for each genetic architecture
+# #################################
+make_plot <- function(df, loci_value) {
+  ggplot(
+    df,
+    aes(x = Generation, y = mean_freq,
+        color = SD_f, shape = h2_f,
+        group = source_file)
+  ) +
+    geom_point(size = 10) +
+    geom_line() +
+    facet_wrap(~ panel_label, scales = "free", ncol = 2) +
+    scale_x_continuous(breaks = gen_aligned_breaks) +
+    scale_color_brewer(palette = "Set1", name = "SD") +
+    scale_shape_manual(values = c(16, 17), name = expression(h^2)) +
+    labs(
+      title = bquote("Genetic architecture: " ~ Loci == .(loci_value)),
+      x = "Generation",
+      y = "Mean allele frequency"
+    ) +
+    mythemes
+}
+
+plots_by_loci <- plot_data %>%
+  group_by(loci) %>%
+  group_split() %>%
+  set_names(map_chr(., ~ as.character(unique(.x$loci)))) %>%
+  imap(~ make_plot(.x, loci_value = .y))
+
+# Print each plot
+for (nm in names(plots_by_loci)) print(plots_by_loci[[nm]])
+# 
+# # Save one PDF per architecture
+# iwalk(plots_by_loci, function(p, L) {
+#   ggsave(
+#     filename = paste0("allele_freq_n", L, ".pdf"),
+#     plot     = p,
+#     width    = 11,
+#     height   = 7
+#   )
+# })
+```
+
+
+
+```{r, fig.width = 30, fig.height = 30, echo=FALSE}
+library(data.table)
+library(furrr)
+library(future)
+
+file_dir <- "~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/LinFS.dir"
+
+# Named-capture regex: each (?<name>...) becomes a column in str_match output.
+file_pattern <- paste0(
+  "^genome(?<repl>[123])",
+  "_n(?<loci>\\d+)",
+  "_H0\\.(?<h2>[18])",
+  "(?:SD(?<SD>[14]))?",
+  "(?:Gen(?<Gen>10|30))?",
+  "\\.csv$"
+)
+
+combo_levels <- c(
+  "High Combo",
+  "Mid_High Combo",
+  "Mid_Low Combo",
+  "Low Combo",
+  "Other"
+)
+
+# #################################
+# Locate files — keep only ones the parser can actually handle
+# #################################
+all_files <- list.files(file_dir, pattern = "\\.csv$", full.names = TRUE)
+files     <- all_files[stringr::str_detect(basename(all_files), file_pattern)]
+
+if (length(files) == 0L) stop("No files matched file_pattern in: ", file_dir)
+message("Matched ", length(files), " of ", length(all_files), " CSV files.")
+
+# #################################
+# Parse filename with named groups + str_match
+# #################################
+parse_filename <- function(path, pattern) {
+  fname  <- basename(path)
+  params <- stringr::str_match(fname, pattern)
+
+  tibble(
+    source_file = fname,
+    repl = as.integer(params[, "repl"]),
+    loci = as.integer(params[, "loci"]),
+    h2   = as.numeric(params[, "h2"]) / 10,
+    SD   = as.integer(params[, "SD"]),
+    Gen  = as.integer(params[, "Gen"])
+  ) %>%
+    mutate(
+      combo = case_when(
+        h2 == 0.8 & Gen == 30 & SD == 4 ~ "High Combo",
+        h2 == 0.1 & Gen == 10 & SD == 1 ~ "Low Combo",
+        h2 == 0.1 & Gen == 30 & SD == 4 ~ "Mid_High Combo",
+        h2 == 0.8 & Gen == 30 & SD == 1 ~ "Mid_Low Combo",
+        TRUE ~ "Other"
+      )
+    )
+}
+
+# #################################
+# Process one file — keep ALL positions passing the filter (no sampling)
+# #################################
+process_genome_file <- function(path, pattern) {
+  meta <- parse_filename(path, pattern)
+
+  if (is.na(meta$repl) || is.na(meta$loci) || is.na(meta$h2)) {
+    warning("Could not parse filename: ", basename(path))
+    return(tibble())
+  }
+
+  dt <- fread(
+    path,
+    select = c("Generation", "Position", "Frequency", "Effect", "Origin"),
+    blank.lines.skip = TRUE
+  )
+  if (nrow(dt) == 0L) return(tibble())
+
+  if (!is.na(meta$Gen)) {
+    first_generation <- min(dt$Generation, na.rm = TRUE)
+    dt <- dt[Generation == first_generation | Generation %% meta$Gen == 0]
+  }
+  if (nrow(dt) == 0L) {
+    warning("No rows left after generation thinning: ", basename(path))
+    return(tibble())
+  }
+
+  dt[, `:=`(
+    source_file = meta$source_file,
+    repl        = meta$repl,
+    loci        = meta$loci,
+    h2          = meta$h2,
+    Gen         = meta$Gen,
+    SD          = meta$SD,
+    combo       = meta$combo,
+    PositionID  = paste(Position, Effect, Origin, sep = "_")
+  )]
+
+  position_stats <- dt[
+    , .(max_freq      = suppressWarnings(max(Frequency, na.rm = TRUE)),
+        n_generations = uniqueN(Generation)),
+    by = .(repl, loci, h2, Gen, SD, combo, PositionID)
+  ][
+    is.finite(max_freq) & max_freq > 0.05 & max_freq < 0.98 & n_generations >= 10L
+  ]
+
+  if (nrow(position_stats) == 0L) {
+    warning("No positions passed filtering: ", basename(path))
+    return(tibble())
+  }
+
+  keep_keys <- position_stats[, .(repl, loci, h2, Gen, SD, combo, PositionID)]
+  out <- dt[keep_keys,
+            on = c("repl", "loci", "h2", "Gen", "SD", "combo", "PositionID"),
+            nomatch = NULL]
+
+  out[, `:=`(
+    facet_label = combo,
+    combo       = factor(combo, levels = combo_levels)
+  )]
+
+  as_tibble(out)
+}
+
+# #################################
+# Process files in parallel
+# #################################
+n_workers <- min(8L, length(files))
+plan(multisession, workers = n_workers)
+
+mydata <- future_map_dfr(
+  files,
+  process_genome_file,
+  pattern = file_pattern,
+  .options = furrr_options(
+    seed = TRUE,
+    packages = c("data.table", "tidyverse")
+  )
+)
+
+plan(sequential)
+
+# #################################
+# Per-position baseline frequency + absolute change |p(t) - p(0)|
+# #################################
+# Baseline = each position's Frequency at its file's earliest generation.
+# Done as an explicit join so positions missing the first generation get NA
+# (and drop out cleanly) rather than silently anchoring on the wrong row.
+baseline <- mydata %>%
+  group_by(source_file) %>%
+  filter(Generation == min(Generation, na.rm = TRUE)) %>%
+  ungroup() %>%
+  select(source_file, PositionID, start_freq = Frequency)
+
+mydata <- mydata %>%
+  inner_join(baseline, by = c("source_file", "PositionID")) %>%
+  mutate(abs_dfreq = abs(Frequency - start_freq))
+
+# #################################
+# Summarising by generation
+# #################################
+gen_summary <- mydata %>%
+  group_by(source_file, repl, loci, h2, Gen, SD, combo, Generation) %>%
+  summarise(
+    mean_abs_dfreq = mean(abs_dfreq, na.rm = TRUE),
+    se_abs_dfreq   = sd(abs_dfreq,   na.rm = TRUE) / sqrt(sum(!is.na(abs_dfreq))),
+    n_pos          = n_distinct(PositionID),
+    .groups        = "drop"
+  ) %>%
+  mutate(
+    SD_f = factor(SD),
+    h2_f = factor(h2)
+  )
+
+# Cap each Gen's time window proportionally: Gen * 20
+plot_data <- gen_summary %>%
+  filter(!is.na(Gen)) %>%
+  group_by(source_file) %>%
+  filter(Generation == min(Generation, na.rm = TRUE) | Generation %% Gen == 0) %>%
+  ungroup() %>%
+  filter(Generation <= Gen * 20)
+
+# #################################
+# "Repl X : Gen = Y" panel labels, ordered repl-first then Gen
+# #################################
+panel_levels <- plot_data %>%
+  distinct(repl, Gen) %>%
+  arrange(repl, Gen) %>%
+  mutate(panel_label = paste0("Repl ", repl, " : Gen = ", Gen)) %>%
+  pull(panel_label)
+
+plot_data <- plot_data %>%
+  mutate(panel_label = factor(
+    paste0("Repl ", repl, " : Gen = ", Gen),
+    levels = panel_levels
+  ))
+
+# #################################
+# Per-panel x-axis breaks at multiples of Gen
+# #################################
+gen_aligned_breaks <- function(limits) {
+  upper <- limits[2]
+  if (!is.finite(upper) || upper <= 0) return(pretty(limits))
+  raw_step <- upper / 20
+  step <- if (raw_step <= 12)  10
+          else if (raw_step <= 35) 30
+          else round(raw_step / 10) * 10
+  c(1, seq(step, floor(upper / step) * step, by = step))
+}
+
+# #################################
+# One figure per loci (genetic architecture)
+# #################################
+make_plot <- function(df, loci_value) {
+  ggplot(
+    df,
+    aes(x = Generation, y = mean_abs_dfreq,
+        color = SD_f, shape = h2_f,
+        group = source_file)
+  ) +
+    geom_point(size = 10) +
+    geom_line() +
+    facet_wrap(~ panel_label, scales = "free", ncol = 2) +
+    scale_x_continuous(breaks = gen_aligned_breaks) +
+    scale_color_brewer(palette = "Set1", name = "SD") +
+    scale_shape_manual(values = c(16, 17), name = expression(h^2)) +
+    labs(
+      title = paste0("Genetic architecture: Loci = ", loci_value),
+      y = "Mean |Δp| from generation 0",
+      x = "Generation"
+    ) +
+    mythemes
+}
+
+plots_by_loci <- plot_data %>%
+  group_by(loci) %>%
+  group_split() %>%
+  set_names(map_chr(., ~ as.character(unique(.x$loci)))) %>%
+  imap(~ make_plot(.x, loci_value = .y))
+
+# Print to active device
+for (nm in names(plots_by_loci)) print(plots_by_loci[[nm]])
+
+# # Save one PDF per architecture
+# iwalk(plots_by_loci, function(p, L) {
+#   ggsave(
+#     filename = paste0("allele_freq_abs_dfreq_n", L, ".pdf"),
+#     plot     = p,
+#     width    = 11,
+#     height   = 7
+#   )
+# })
+```
+
