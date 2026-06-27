@@ -2127,21 +2127,21 @@ run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
   
   mythemes <- theme_bw() +
     theme(
-      text            = element_text(family = "sans"), 
+      text = element_text(family = "sans"), 
       legend.position = "none",
-      axis.text.x     = element_text(face = "bold", size = 40, angle = 25, 
+      axis.text.x = element_text(face = "bold", size = 40, angle = 25, 
                                        margin = margin(t = 20), hjust = 1),
-      axis.text.y     = element_text(face = "bold", size = 40, angle = 15, 
+      axis.text.y = element_text(face = "bold", size = 40, angle = 15, 
                                        margin = margin(r = 10)),
-      axis.line       = element_line(size = 3),
-      plot.title      = element_text(hjust = 0.01, face = "bold", size = 80, 
+      axis.line = element_line(size = 3),
+      plot.title = element_text(hjust = 0.01, face = "bold", size = 80, 
                                        margin = margin(b = 1, unit = "lines")),
-      plot.margin     = unit(c(5, 1, 1, 1), "lines"),
-      axis.title.x    = element_text(size = 40, face = "bold", margin = margin(t = 30)),
-      axis.title.y    = element_text(size = 40, face = "bold", margin = margin(r = 35)),
-      strip.text      = element_text(size = 40, face = "bold"),
-      panel.spacing   = unit(5, "lines"),
-      panel.grid      = element_blank()
+      plot.margin = unit(c(5, 1, 1, 1), "lines"),
+      axis.title.x = element_text(size = 40, face = "bold", margin = margin(t = 30)),
+      axis.title.y = element_text(size = 40, face = "bold", margin = margin(r = 35)),
+      strip.text = element_text(size = 40, face = "bold"),
+      panel.spacing = unit(5, "lines"),
+      panel.grid = element_blank()
     )
   
   # File list
@@ -3209,4 +3209,584 @@ Constant_Poly_300_SA <- result[[5]] +
   )
 
 print(Constant_Poly_300_SA)
+```
+
+## 7. Long-term runs with mutation rate
+
+```{r, echo=FALSE, message=FALSE}
+
+#| label: LongTermRunsWithMutatioRate_10Ne
+
+rm(list = ls())
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(future)
+library(furrr)
+
+###############################################################################
+############################ Settings ##########################################
+###############################################################################
+
+base_dir <- "/home/etb68/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/LongRuns.dir"
+
+plot_dir <- "/home/etb68/Mylab/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/OutputFigures.dir/PolymorphismMaintenance_plt.dir"
+dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
+
+replicates <- 1:5
+
+target_n   <- 100
+target_H   <- c(0.1, 0.8)
+target_SD  <- c(1, 4)
+target_Gen <- c(10, 30)
+
+n_workers <- 32
+plan(multisession, workers = n_workers)
+
+required_cols <- c("Generation", "Position", "Effect", "Origin", "Frequency")
+
+###############################################################################
+############################ Model folders #####################################
+###############################################################################
+
+folders <- tibble::tribble(
+  ~folder,            ~selection,  ~mutation,
+  "NS_Mut_Ext.dir",   "Null",      "Mutation",
+  "NS_Ext.dir",       "Null",      "No mutation",
+  "FS_Mut_Ext.dir",   "Seasonal",  "Mutation",
+  "FS_Ext.dir",       "Seasonal",  "No mutation"
+)
+
+###############################################################################
+############################ File list #########################################
+###############################################################################
+
+seasonal_files <- expand_grid(
+  replicate = replicates,
+  n = target_n,
+  H = target_H,
+  SD = target_SD,
+  Gen = target_Gen
+) %>%
+  crossing(folders %>% filter(selection == "Seasonal")) %>%
+  mutate(
+    filename = paste0(
+      "genome", replicate,
+      "_n", n,
+      "_H", H,
+      "SD", SD,
+      "Gen", Gen,
+      ".csv"
+    )
+  )
+
+null_files <- expand_grid(
+  replicate = replicates,
+  n = target_n,
+  H = target_H
+) %>%
+  crossing(folders %>% filter(selection == "Null")) %>%
+  mutate(
+    SD = NA_real_,
+    Gen = NA_real_,
+    filename = paste0(
+      "genome", replicate,
+      "_n", n,
+      "_H", H,
+      ".csv"
+    )
+  )
+
+files <- bind_rows(seasonal_files, null_files) %>%
+  mutate(
+    file = file.path(base_dir, folder, filename)
+  ) %>%
+  filter(file.exists(file)) %>%
+  select(
+    file, filename, replicate, n, H, SD, Gen, selection, mutation
+  )
+
+if (nrow(files) == 0) {
+  stop("No target files were found. Check base_dir and parameter values.")
+}
+
+###############################################################################
+############################ Helper functions ##################################
+###############################################################################
+
+read_sim_file <- function(file) {
+  
+  df <- tryCatch(
+    read_csv(file, show_col_types = FALSE, progress = FALSE),
+    error = function(e) {
+      warning("Failed to read: ", file, " (", conditionMessage(e), ")")
+      return(NULL)
+    }
+  )
+  
+  if (is.null(df) || nrow(df) == 0) {
+    return(NULL)
+  }
+  
+  missing_cols <- setdiff(required_cols, names(df))
+  
+  if (length(missing_cols) > 0) {
+    warning(
+      "Skipping ", file,
+      " - missing columns: ",
+      paste(missing_cols, collapse = ", ")
+    )
+    return(NULL)
+  }
+  
+  df %>%
+    mutate(
+      Allele = paste(Position, Effect, Origin, sep = "_"),
+      fixed_here = !is.na(Frequency) & Frequency == 1,
+      lost_here = !is.na(Frequency) & Frequency == 0,
+      segregating_here = !is.na(Frequency) & Frequency > 0 & Frequency < 1
+    )
+}
+
+safe_mean <- function(x) {
+  x <- x[is.finite(x)]
+  if (length(x) == 0) return(NA_real_)
+  mean(x)
+}
+
+###############################################################################
+############################ Main calculation ##################################
+###############################################################################
+
+calculate_metrics <- function(file, info) {
+  
+  df <- read_sim_file(file)
+  
+  if (is.null(df)) {
+    return(NULL)
+  }
+  
+  generations <- sort(unique(df$Generation))
+  first_generation <- min(generations)
+  max_generation <- max(generations)
+  
+  first_cohort <- df %>%
+    filter(Generation == first_generation, segregating_here) %>%
+    distinct(Allele) %>%
+    pull(Allele)
+  
+  if (length(first_cohort) == 0) {
+    warning("No segregating first-cohort QTLs found in: ", file)
+    return(NULL)
+  }
+  
+  first_cohort_fates <- df %>%
+    filter(Allele %in% first_cohort) %>%
+    group_by(Allele) %>%
+    summarise(
+      last_seen = max(Generation),
+      
+      first_fixed = if (any(fixed_here)) {
+        min(Generation[fixed_here])
+      } else {
+        NA_real_
+      },
+      
+      first_zero = if (any(lost_here)) {
+        min(Generation[lost_here])
+      } else {
+        NA_real_
+      },
+      
+      .groups = "drop"
+    ) %>%
+    rowwise() %>%
+    mutate(
+      inferred_loss = if (
+        is.na(first_fixed) &&
+        last_seen < max_generation
+      ) {
+        generations[generations > last_seen][1]
+      } else {
+        NA_real_
+      },
+      
+      first_lost = {
+        losses <- c(first_zero, inferred_loss)
+        losses <- losses[!is.na(losses)]
+        if (length(losses) == 0) NA_real_ else min(losses)
+      },
+      
+      absorbed_generation = {
+        fates <- c(first_fixed, first_lost)
+        fates <- fates[!is.na(fates)]
+        if (length(fates) == 0) NA_real_ else min(fates)
+      }
+    ) %>%
+    ungroup()
+  
+  total_first_cohort <- n_distinct(first_cohort_fates$Allele)
+  
+  first_cohort_metrics <- tibble(Generation = generations) %>%
+    rowwise() %>%
+    mutate(
+      first_cohort_fixed_or_lost = sum(
+        !is.na(first_cohort_fates$absorbed_generation) &
+          first_cohort_fates$absorbed_generation <= Generation
+      ),
+      
+      first_cohort_fixation_loss_rate =
+        first_cohort_fixed_or_lost / total_first_cohort
+    ) %>%
+    ungroup() %>%
+    arrange(Generation) %>%
+    mutate(
+      first_cohort_fixation_loss_rate =
+        cummax(first_cohort_fixation_loss_rate)
+    )
+  
+  segregating_metrics <- df %>%
+    group_by(Generation) %>%
+    summarise(
+      segregating_qtl_alleles = n_distinct(Allele[segregating_here]),
+      .groups = "drop"
+    )
+  
+  first_cohort_metrics %>%
+    left_join(segregating_metrics, by = "Generation") %>%
+    mutate(
+      segregating_qtl_alleles = replace_na(segregating_qtl_alleles, 0L),
+      filename = info$filename,
+      replicate = info$replicate,
+      n = info$n,
+      H = info$H,
+      SD = info$SD,
+      Gen = info$Gen,
+      selection = info$selection,
+      mutation = info$mutation
+    )
+}
+
+###############################################################################
+############################ Run analysis ######################################
+###############################################################################
+
+qtl_metrics <- files %>%
+  mutate(row_id = row_number()) %>%
+  split(.$row_id) %>%
+  future_map_dfr(
+    function(info) {
+      calculate_metrics(
+        file = info$file,
+        info = info
+      )
+    },
+    .options = furrr_options(seed = TRUE)
+  )
+
+plan(sequential)
+
+if (nrow(qtl_metrics) == 0) {
+  stop("No QTL metrics were returned.")
+}
+
+###############################################################################
+############################ Duplicate null for facets #########################
+###############################################################################
+
+sdgen_grid <- expand_grid(
+  SD = target_SD,
+  Gen = target_Gen
+)
+
+qtl_disp <- bind_rows(
+  qtl_metrics %>%
+    filter(selection == "Seasonal"),
+  
+  qtl_metrics %>%
+    filter(selection == "Null") %>%
+    select(-SD, -Gen) %>%
+    crossing(sdgen_grid)
+)
+
+###############################################################################
+############################ Labels ############################################
+###############################################################################
+
+qtl_disp <- qtl_disp %>%
+  mutate(
+    model = case_when(
+      selection == "Null" & mutation == "No mutation" ~ "Null + no mutation",
+      selection == "Null" & mutation == "Mutation" ~ "Null + mutation",
+      selection == "Seasonal" & mutation == "No mutation" ~ "Seasonal + no mutation",
+      selection == "Seasonal" & mutation == "Mutation" ~ "Seasonal + mutation"
+    ),
+    
+    model = factor(
+      model,
+      levels = c(
+        "Null + mutation",
+        "Null + no mutation",
+        "Seasonal + mutation",
+        "Seasonal + no mutation"
+      )
+    ),
+    
+    H_label = paste0("H = ", H),
+    param_label = paste0("\u0394 = ", SD, ": Gen = ", Gen),
+    replicate_label = paste0("Replicate = ", replicate)
+  )
+
+###############################################################################
+############################ Mean across replicates ############################
+###############################################################################
+
+qtl_mean <- qtl_disp %>%
+  group_by(
+    Generation,
+    H, SD, Gen,
+    H_label, param_label,
+    selection, mutation, model
+  ) %>%
+  summarise(
+    mean_first_cohort_fixation_loss_rate =
+      safe_mean(first_cohort_fixation_loss_rate),
+    
+    mean_segregating_qtl_alleles =
+      safe_mean(segregating_qtl_alleles),
+    
+    n_replicates =
+      sum(is.finite(first_cohort_fixation_loss_rate)),
+    
+    .groups = "drop"
+  ) %>%
+  filter(
+    is.finite(mean_first_cohort_fixation_loss_rate),
+    is.finite(mean_segregating_qtl_alleles)
+  )
+
+###############################################################################
+############################ Theme #############################################
+###############################################################################
+
+theme_qtl <- theme_classic(base_size = 14) +
+  theme(
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(face = "bold", size = 15),
+    plot.title = element_text(face = "bold", hjust = 0, size = 18),
+    strip.text = element_text(face = "bold", size = 10),
+    legend.title = element_text(face = "bold"),
+    legend.position = "bottom",
+    panel.spacing = unit(0.9, "lines")
+  )
+
+```
+
+
+```{r, fig.width=25, fig.height=18, echo=FALSE, message=FALSE}
+#| label: IntialQTLs_MeanFixationRate_AcrossReplicate_ByReplicate
+#| fig-cap: "SI 7.1. The average change (5 replicates) and by replicate initial QTL fixation across generations for null and instantaneous fluctuating selection models, with and without mutation rate, while comparing the interaction between large and small parameter values. "
+#| fig-pos: "H"
+###############################################################################
+############################ Plot 1 ############################################
+## Mean initial QTL fixation/loss rate across replicates
+###############################################################################
+
+initial_QTL_fixation_loss_rate <- ggplot(
+  qtl_mean,
+  aes(
+    x = Generation,
+    y = mean_first_cohort_fixation_loss_rate,
+    color = model,
+    group = model
+  )
+) +
+  geom_line(linewidth = 1.1, alpha = 0.7) +
+  facet_grid(H_label ~ param_label) +
+  coord_cartesian(ylim = c(0, 1)) +
+  scale_y_continuous(breaks = seq(0, 1, 0.25)) +
+  labs(
+    x = "Generation",
+    y = "Initial QTL fixation/loss rate",
+    color = "Model",
+    title = "Initial QTL fixation/loss across models"
+  ) +
+  theme_qtl
+
+initial_QTL_fixation_loss_rate
+
+
+###############################################################################
+############################ Plot 2 ############################################
+## Initial QTL fixation/loss rate by replicate
+###############################################################################
+
+initial_QTL_fixation_loss_rate_by_replicate <- ggplot(
+  qtl_disp,
+  aes(
+    x = Generation,
+    y = first_cohort_fixation_loss_rate,
+    color = model,
+    group = model
+  )
+) +
+  geom_line(linewidth = 0.9, alpha = 0.7) +
+  facet_grid(
+    replicate_label ~ paste(param_label, H_label, sep = " : ")
+  ) +
+  coord_cartesian(ylim = c(0, 1)) +
+  scale_y_continuous(breaks = seq(0, 1, 0.5)) +
+  labs(
+    x = "Generation",
+    y = "Initial QTL fixation/loss rate",
+    color = "Model",
+    title = "Initial QTL fixation/loss by replicate"
+  ) +
+  theme_qtl +
+  theme(
+    strip.text = element_text(face = "bold", size = 8)
+  )
+
+initial_QTL_fixation_loss_rate_by_replicate
+
+```
+
+```{r, fig.width=25, fig.height=18, echo=FALSE, message=FALSE}
+#| label: NumberOfSegregatingQTLs_MeanFixationRate_AcrossReplicate_ByReplicate
+#| fig-cap: "SI 7.2. The average change (5 replicates) and by replicate segregating sites across generations for null and instantaneous fluctuating selection models, with and without mutation rate, while comparing the interaction between large and small parameter values. "
+#| fig-pos: "H"
+###############################################################################
+############################ Plot 3 ############################################
+## Mean number of segregating QTL alleles across replicates
+###############################################################################
+
+segregating_qtl_alleles_all_models <- ggplot(
+  qtl_mean,
+  aes(
+    x = Generation,
+    y = mean_segregating_qtl_alleles,
+    color = model,
+    group = model
+  )
+) +
+  geom_line(linewidth = 1.1, alpha = 0.7) +
+  facet_grid(H_label ~ param_label) +
+  labs(
+    x = "Generation",
+    y = "Number of segregating QTL alleles",
+    color = "Model",
+    title = "Segregating QTL alleles across models"
+  ) +
+  theme_qtl
+
+segregating_qtl_alleles_all_models
+
+###############################################################################
+############################ Plot 4 ############################################
+## Number of segregating QTL alleles by replicate
+###############################################################################
+
+segregating_qtl_alleles_by_replicate <- ggplot(
+  qtl_disp,
+  aes(
+    x = Generation,
+    y = segregating_qtl_alleles,
+    color = model,
+    group = model
+  )
+) +
+  geom_line(linewidth = 0.9, alpha = 0.7) +
+  facet_grid(
+    replicate_label ~ paste(param_label, H_label, sep = " : ")
+  ) +
+  labs(
+    x = "Generation",
+    y = "Number of segregating QTL alleles",
+    color = "Model",
+    title = "Segregating QTL alleles by replicate"
+  ) +
+  theme_qtl +
+  theme(
+    strip.text = element_text(face = "bold", size = 8)
+  )
+
+segregating_qtl_alleles_by_replicate
+
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+#| label: saving all the plots
+###############################################################################
+############################ Save plots ########################################
+###############################################################################
+
+ggsave(
+  file.path(plot_dir, "initial_QTL_fixation_loss_rate.pdf"),
+  initial_QTL_fixation_loss_rate,
+  width = 20,
+  height = 8,
+  limitsize = FALSE,
+  device = cairo_pdf
+)
+
+ggsave(
+  file.path(plot_dir, "initial_QTL_fixation_loss_rate.png"),
+  initial_QTL_fixation_loss_rate,
+  width = 20,
+  height = 8,
+  limitsize = FALSE
+)
+
+ggsave(
+  file.path(plot_dir, "segregating_qtl_alleles_all_models.pdf"),
+  segregating_qtl_alleles_all_models,
+  width = 20,
+  height = 8,
+  limitsize = FALSE,
+  device = cairo_pdf
+)
+
+ggsave(
+  file.path(plot_dir, "segregating_qtl_alleles_all_models.png"),
+  segregating_qtl_alleles_all_models,
+  width = 20,
+  height = 8,
+  limitsize = FALSE
+)
+
+ggsave(
+  file.path(plot_dir, "initial_QTL_fixation_loss_rate_by_replicate.pdf"),
+  initial_QTL_fixation_loss_rate_by_replicate,
+  width = 25,
+  height = 18,
+  limitsize = FALSE,
+  device = cairo_pdf
+)
+
+ggsave(
+  file.path(plot_dir, "initial_QTL_fixation_loss_rate_by_replicate.png"),
+  initial_QTL_fixation_loss_rate_by_replicate,
+  width = 25,
+  height = 18,
+  limitsize = FALSE
+)
+
+ggsave(
+  file.path(plot_dir, "segregating_qtl_alleles_by_replicate.pdf"),
+  segregating_qtl_alleles_by_replicate,
+  width = 25,
+  height = 18,
+  limitsize = FALSE,
+  device = cairo_pdf
+)
+
+ggsave(
+  file.path(plot_dir, "segregating_qtl_alleles_by_replicate.png"),
+  segregating_qtl_alleles_by_replicate,
+  width = 25,
+  height = 18,
+  limitsize = FALSE
+)
 ```
