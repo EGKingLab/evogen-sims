@@ -1,5 +1,5 @@
 ---
-title: "New Organized Figures"
+title: "Figures Used In the Main Document of the Manuscript"
 author: "E.T"
 format:
   docx:
@@ -23,7 +23,10 @@ editor: visual
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
-setwd("/mnt/pixstor/kingeg-lab/etb68/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/CodeFigures.dir")
+# setwd("/mnt/pixstor/kingeg-lab/etb68/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/CodeFigures.dir")
+
+file_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(file_path))
 
 library(forcats)
 library(stringi)
@@ -45,158 +48,12 @@ mythemes <- function(){
 }
 ```
 
-## 0.Fitness landscapes
-
-### 0.1 Fitness under C = 125
-
-```{r, echo=FALSE,fig.width=8, fig.height=4, warning=FALSE}
-#| label: Change in fitness as we shift optimum
-#| fig-cap: "Figure L: Change in fitness as the optimum moves away from the phenotype (vertical dashed line). The numbers are the fitness values at given optimum and each point is at 0.5 interval."
-#| fig-pos: "H"
-# Needed Parameters
-C_value <- 125 # Constant to control the steepness
-optimum <- seq(-4, 4, by = 0.5)
-
-# Calculating fitness at phenotype zero (hypothetical mean phenotype) for each optimum value
-df <- tibble(
-  optimum = optimum,
-  fitness_at_zero = exp(- (1 / C_value) * (0 - optimum)^2)
-)
-
-# Subset the data to include only points every 0.5 interval
-df_label <- df %>% 
-  filter(round(optimum * 2) == optimum * 2)
-
-# Create the plot
-pfitness <- ggplot(df, aes(x = optimum, y = fitness_at_zero)) +
-  geom_line(size = 3) +
-  geom_vline(xintercept = 0, linetype = "dashed", size = 2, color = "black")+
-  geom_point(data = df_label, size = 7, color = "darkred") +
-  geom_text(data = df_label, 
-            aes(label = round(fitness_at_zero, 3)), 
-            vjust = -0.8, hjust = -1, size = 7, angle= 270,color = "darkred") +
-  ylim(0.85, 1)+
-  labs(
-   # title = "Fitness at Phenotype Zero as a Function of Optimum",
-    x = "Distance to Optimum",
-    y = "Fitness Value"
-  ) +
-theme_set(theme_classic())+
-  theme(text = element_text(family = "sans"), 
-        legend.position = "none",
-        axis.text = element_text(size = 20, face = "bold"),
-        axis.line = element_line(size = 3),
-        strip.text = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.01, face = "bold", size = 40),
-        axis.title.x = element_text(margin = margin(t = 20), size = 20, face = "bold"),
-        axis.title.y = element_text(margin = margin(r = 25), size = 20, face = "bold"),
-        panel.spacing = unit(4, "lines"))
-
-ggsave("Figure1.jpg", plot = pfitness, dpi = 600, width = 20, height = 10, units = "in", path = "../OutputFigures.dir")
-
-print(pfitness)
-```
-
-### 0.2. Alternative fitness landascapes
-
-```{r}
-##library(tidyverse)
-
-C_values <- seq(25, 200, by = 25)
-
-df <- tidyr::expand_grid(distance = 0:20, C = C_values) %>%
-  mutate(
-    fitness = exp(-(distance^2) / C),
-    C_fac   = factor(C, levels = C_values, ordered = TRUE),
-    # small per-C offset for visual separation
-    x_off   = scales::rescale(as.integer(C_fac), to = c(-0.18, 0.18)),
-    distance_j = distance + x_off
-  )
-
-# Okabe–Ito palette (color-blind safe, very distinct)
-colors <- c(
-  "black",
-  "magenta", 
-  "skyblue", 
-  "grey",
-  "firebrick", 
-  "blue",
-  "orange", 
-  "purple"
-)
-colors <- setNames(colors, levels(df$C_fac))
-lt <- c("solid","dashed","dotted","dotdash","longdash","twodash","dotted","dotdash")
-names(lt) <- levels(df$C_fac)
-
-ggplot(df, aes(distance_j, fitness,
-                colour = C_fac, linetype = C_fac, group = C_fac)) +
-  geom_line(linewidth = 0.7) +
-  geom_vline(xintercept = 4, linetype = "dashed", linewidth = 0.6, color = "darkred") +
-  annotate("text", x = 5.5, y = 1.02, label = "Used Max SD = 4",
-           vjust = -0.2, fontface = "bold", size = 5, color = "darkred") +
-  scale_colour_manual(values = colors, name = "C") +
-  scale_linetype_manual(values = lt, name = "C") +  # same name => one legend
-  scale_x_continuous(breaks = 0:20, limits = c(-0.5, 20.5)) +
-  scale_y_continuous(limits = c(0, 1.05), expand = expansion(mult = c(0, 0.05))) +
-  guides(colour = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2)) +
-  labs(x = "Distance |Z - Zopt|", y = "Fitness") +
-  theme_classic() +
-  theme(legend.position = "bottom")
-```
-
-```{r}
-breaks <- seq(0, 1, by = 0.05)
-C_vals <- seq(25, 200, by = 5)  # denser grid looks smoother
-df <- tidyr::expand_grid(distance = 0:5, C = C_vals) %>%
-  mutate(fitness01 = exp(-(distance^2) / C))
-
-ggplot(df, aes(x = C, y = distance, z = fitness01)) +
-  geom_contour_filled(breaks = breaks) +
-  scale_fill_viridis_d(name = "Fitness (0–1)") +
-  scale_x_continuous(breaks = seq(25, 200, 25)) +
-  scale_y_continuous(breaks = 0:5) +
-  labs(x = "C Value (Width)", y = "Distance |p - o|") +
-  theme_classic()
-```
-
-```{r}
-
-# Intersection point and its fitness 
-mark <- tibble(C = 125, distance = 4) %>%
-  mutate(fitness01 = exp(-(distance^2) / C))
-
-ggplot(df, aes(x = C, y = distance, z = fitness01)) +
-  geom_contour_filled(breaks = breaks) +
-  scale_fill_viridis_d(name = "Fitness (0–1)") +
-  scale_x_continuous(breaks = seq(25, 200, 25)) +
-  scale_y_continuous(breaks = 0:5) +
-  geom_vline(xintercept = 125, linetype = "dashed", linewidth = 0.6) +
-  geom_hline(yintercept = 4,   linetype = "dashed", linewidth = 0.6) +
-  # point at the intersection
-  geom_point(data = mark, aes(C, distance), inherit.aes = FALSE,
-             shape = 21, size = 3.2, stroke = 1, fill = "white") +
-  geom_label(
-    data = mark,
-    aes(C, distance, label = sprintf("Fitness = %.3f", fitness01)),
-    inherit.aes = FALSE,
-    nudge_x = 12, nudge_y = 0.3,
-    size = 4.2, label.size = 0.5
-  ) +
-  labs(x = "C Value (Width)", y = "Distance |Z - Zopt|") +
-  theme_classic() +
-  theme(
-    text = element_text(family = "sans"),
-    axis.text = element_text(face = "bold"),
-    plot.title     = element_text(face = "bold"),
-    axis.title = element_text(face = "bold"),
-    strip.text     = element_text(face = "bold"))
-```
 
 ## 1. Selection Model Setting
 
 ### 1.0. Infinitessimal model
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 300, warning=FALSE}
 #| label: Exponential_Model
 ########### Infinitisimal Model #################
 a = 5
@@ -223,14 +80,14 @@ Inf_ModPlot <- z %>% ggplot(aes(x,Y))+
         axis.title.y = element_text(margin = margin(r = 25), size = 20, face = "bold"),
         panel.spacing = unit(4, "lines"))
 
-ggsave("Exponential_Model.jpg", plot = Inf_ModPlot, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Exponential_Model.jpg", plot = Inf_ModPlot, dpi = 300, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
 
 Inf_ModPlot
 ```
 
 ### 1.1 Constant model
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 300, warning=FALSE}
 # Generation sequence from 1 to 2000
 Generation <- c(1:2000)
 
@@ -260,13 +117,14 @@ Const_ModPlot <- ggplot(df) +
         axis.title.y = element_text(margin = margin(r = 25), size = 30, face = "bold"),
         panel.spacing = unit(4, "lines"))
  
- ggsave("Constant_Model.jpg", plot = Const_ModPlot, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ ggsave("Constant_Model.jpg", plot = Const_ModPlot, dpi = 300, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ Const_ModPlot
 
 ```
 
 ### 1.2 Instantaneous Selection model
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 300, warning=FALSE}
 #| label: Instant_Model
 Opti_Gen <- tibble(Generation = seq(1:100),
                    Optimum1 = rep(c(rep(110, 10), rep(90, 10)), 5),
@@ -292,14 +150,14 @@ Instant_Model <- ggplot()+
         panel.spacing = unit(4, "lines"))
 
 
-ggsave("Instant_Model.jpg", plot = Instant_Model, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Instant_Model.jpg", plot = Instant_Model, dpi = 300, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
  
 Instant_Model
 ```
 
 ### 1.3 Gradual Two Season Selection model
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 300, warning=FALSE}
 #| label: Gradual_Two_Season_Model
 Generation <- seq(1, 100, length.out = 400) 
 phenotypes <- rnorm(10000, 0, 1)
@@ -322,61 +180,15 @@ GradI <- ggplot(df) +
         panel.spacing = unit(4, "lines"))
 
 
-ggsave("Gradual_Two_Season_Model.jpg", plot = GradI, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
+ggsave("Gradual_Two_Season_Model.jpg", plot = GradI, dpi = 300, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
  
 GradI
 ```
 
-### 1.4 Gradual Four Season Selection model
 
-> This is an old one
+> A model with four different selection strength
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
-#| label: Gradual_Four_Season_Model
-# Generation sequence from 1 to 2000
-Generation <- c(1:300)
-phenotypes <- rnorm(10000, 0, 1)
-
-# Signals vector
-signals = c(12, 22, 10, 16) # 5, 10, 20, 30
-
-# Initialize Optimum vector
-Optimum = rep(0, length(Generation))
-
-# Loop over each signal to calculate the Optimum
-for (i in signals) {
-  Optimum = Optimum + (mean(phenotypes) + sd(phenotypes)*4) * sin((22/7) * Generation / i)
-}
-Optimum = Optimum / 4
-
-df <- data.frame(Generation, Optimum)
-
-# Plot the Optimum over the first 501 generations
-
-GradII <- ggplot(df) + 
-    geom_line(aes(Generation, Optimum), size = 3) + 
-  ylim(-4, 4) +  
-  labs(title = "D", x = "Generation", y = "Optimum")+
-  theme_set(theme_bw())+ 
-  theme(text = element_text(family = "sans"), 
-        legend.position = "none",
-        axis.text = element_text(size = 20, face = "bold"),
-        axis.line = element_line(size = 3),
-        strip.text = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.01, face = "bold", size = 40),
-        axis.title.x = element_text(margin = margin(t = 20), size = 30, face = "bold"),
-        axis.title.y = element_text(margin = margin(r = 25), size = 30, face = "bold"),
-        panel.spacing = unit(4, "lines"))
-
-
-# ggsave("Gradual_Four_Season_Model.jpg", plot = GradII, dpi = 1200, width = 7, height = 4, units = "in", path = "../OutputFigures.dir")
- 
-GradII
-```
-
-> New with four different selection strength
-
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 300, warning=FALSE}
 #| label: Gradual_Four_Season_Model_NEW
 set.seed(3564);
 seasons = c(12,22,10,16);
@@ -414,7 +226,7 @@ df <- data.frame(Generation = seq(1,total_time), Optimum =  n_opt)
 
 # Plot the Optimum over the first 120 generations marking a two cycles
 
-ggplot(df[1:120,]) + 
+ggplot(df[1:100,]) + 
     geom_line(aes(Generation, Optimum), size = 3) + 
   ylim(-4, 4) +  
   labs(title = "D", x = "Generation", y = "Optimum")+
@@ -430,9 +242,9 @@ ggplot(df[1:120,]) +
         panel.spacing = unit(4, "lines"))
 ```
 
-> New with same selection strength
+> A model with same selection strength
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 1200, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, dpi = 300, warning=FALSE}
 #| label: Gradual_Four_Season_Model_NEW_sameSD
 set.seed(3564);
 seasons = c(12,22,10,16);
@@ -468,16 +280,16 @@ while(current_time <= total_time){
 }
 
 df <- data.frame(Generation = seq(1,total_time), Optimum =  n_opt)
-
-# df <- read.csv("~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/SinFSGen.dir/MeanPhenotypes1_n300_H0.8SD4.csv") %>%
-#   dplyr::select(c(Generation, Optimum))
-
- df <- read.csv("~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/SinFS.dir/MeanPhenotypes13_n300_H0.5SD1Gen30.csv") %>% 
-   dplyr::select(c(Generation, Optimum))
+# 
+# # df <- read.csv("~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/SinFSGen.dir/MeanPhenotypes1_n300_H0.8SD4.csv") %>%
+# #   dplyr::select(c(Generation, Optimum))
+# 
+#  df <- read.csv("~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/SinFS.dir/MeanPhenotypes13_n300_H0.5SD1Gen30.csv") %>% 
+#    dplyr::select(c(Generation, Optimum))
 
 # Plot the Optimum over the first 120 generations marking a two cycles
 
-ggplot(df[1:120,]) + 
+ggplot(df[1:100,]) + 
     geom_line(aes(Generation, Optimum), size = 3) +  
   labs(title = "D", x = "Generation", y = "Optimum")+
   theme_set(theme_bw())+ 
@@ -492,8 +304,7 @@ ggplot(df[1:120,]) +
         panel.spacing = unit(4, "lines"))
 ```
 
-## 2. Instantaneous Selection for Polygenic Traits
-
+## 2. Null and Constant Models Comparison
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
 ###############################################################################
 # Required Libraries
@@ -513,13 +324,15 @@ library(cowplot)
 ###############################################################################
 mythemes <- theme_bw() +
   theme(
+    plot.title.position = "plot", 
+    plot.title = element_text(hjust = 0, vjust = 1, size = 70, face = "bold", margin = margin(b = 10)),
+    plot.margin = margin(t = 5, r = 5, b = 5, l = 0),
     text = element_text(family = "sans"), 
     legend.position = "none",
     axis.text.x = element_text(face = "bold", size = 50, angle =25, margin = margin(t = 20), hjust = 1),
     axis.text.y = element_text(face = "bold", size = 50, angle = 15, margin = margin(r = 10)),
     axis.line = element_line(size = 3),
-    plot.title      = element_text(hjust = 0.01, face = "bold", size = 70, margin = margin(b = 1, unit = "lines")),
-    plot.margin = unit(c(5, 1, 1, 1), "lines"),
+    # plot.title = element_text(hjust = 0, vjust = 1, face = "bold", margin = margin(b = 1, unit = "lines")),
     axis.title.x = element_text(size = 50, face = "bold", margin = margin(t = 30)),
     axis.title.y = element_text(size = 50, face = "bold", margin = margin(r = 35)),
     strip.text = element_text(size = 50, face = "bold"),
@@ -529,9 +342,797 @@ mythemes <- theme_bw() +
 
 ```
 
-### 2.1. Polygenic Instantaneous AF
+### 2.1. Allele Frequency
 
-```{r, warning=FALSE, fig.width = 30, fig.height = 30, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width=40, fig.height=20, dpi=1200, echo=FALSE, message=FALSE}
+#| label: AF_CSNS_model_comparison
+
+first_existing_file <- function(candidates, model_name) {
+
+  existing_files <- candidates[file.exists(candidates)]
+
+  if (length(existing_files) == 0) {
+    stop(
+      "No file was found for ", model_name, ". Tried:\n",
+      paste(candidates, collapse = "\n")
+    )
+  }
+
+  existing_files[[1]]
+}
+
+null_file <- first_existing_file(
+  candidates = c(
+    "../../Output.dir/NS.dir/genome10_n100_H0.1.csv"
+  ),
+  model_name = "Null model"
+)
+
+constant_low_file <- first_existing_file(
+  candidates = c(
+    "../../Output.dir/CS.dir/genome10_n100_H0.1SD1Gen10.csv",
+    "../../Output.dir/CS.dir/genome10_n100_H0.1SD1.csv"
+  ),
+  model_name = "Constant model low"
+)
+
+constant_high_file <- first_existing_file(
+  candidates = c(
+    "../../Output.dir/CS.dir/genome10_n100_H0.8SD4Gen30.csv",
+    "../../Output.dir/CS.dir/genome10_n100_H0.8SD4.csv"
+  ),
+  model_name = "Constant model high"
+)
+
+###############################################################################
+# Read only the columns required for the plot
+###############################################################################
+
+read_af_model <- function(file, selection_label) {
+
+  required_columns <- c(
+    "Position",
+    "Generation",
+    "Frequency"
+  )
+
+  model_data <- read.csv(
+    file,
+    stringsAsFactors = FALSE
+  )
+
+  missing_columns <- setdiff(
+    required_columns,
+    names(model_data)
+  )
+
+  if (length(missing_columns) > 0) {
+    stop(
+      basename(file),
+      " is missing: ",
+      paste(missing_columns, collapse = ", ")
+    )
+  }
+
+  model_data %>%
+    transmute(
+      Position = Position,
+      Generation = as.numeric(Generation),
+      Frequency = as.numeric(Frequency),
+      Selection = selection_label
+    ) %>%
+    filter(
+      !is.na(Position),
+      is.finite(Generation),
+      is.finite(Frequency)
+    )
+}
+
+null_data <- read_af_model(
+  null_file,
+  "Null model"
+)
+
+constant_low_data <- read_af_model(
+  constant_low_file,
+  "Constant model low"
+)
+
+constant_high_data <- read_af_model(
+  constant_high_file,
+  "Constant model high"
+)
+
+###############################################################################
+# Select the same 30 loci in all three models
+###############################################################################
+
+common_positions <- Reduce(
+  intersect,
+  list(
+    unique(null_data$Position),
+    unique(constant_low_data$Position),
+    unique(constant_high_data$Position)
+  )
+)
+
+if (length(common_positions) == 0) {
+  stop(
+    "There are no Position values shared by all three model files."
+  )
+}
+
+###############################################################################
+# Effect sizes for highlighted positions
+###############################################################################
+
+pos_meta <- tibble::tribble(
+  ~Position, ~effect_size,
+  982341,     0.000008,
+  811499,     3.562828
+) %>%
+  mutate(
+    beta_lab = sprintf(
+      "\u03B2=%s",
+      signif(effect_size, 3)
+    )
+  )
+
+missing_highlight_positions <- setdiff(
+  pos_meta$Position,
+  common_positions
+)
+
+if (length(missing_highlight_positions) > 0) {
+  warning(
+    "The following highlighted positions are not shared by all models: ",
+    paste(missing_highlight_positions, collapse = ", ")
+  )
+}
+
+###############################################################################
+# Always retain shared highlighted loci, then sample the remaining loci
+###############################################################################
+
+set.seed(12345)
+
+number_of_positions <- min(
+  30L,
+  length(common_positions)
+)
+
+highlight_positions <- intersect(
+  pos_meta$Position,
+  common_positions
+)
+
+if (length(highlight_positions) > number_of_positions) {
+  highlight_positions <- highlight_positions[
+    seq_len(number_of_positions)
+  ]
+}
+
+number_random <- number_of_positions -
+  length(highlight_positions)
+
+random_pool <- setdiff(
+  common_positions,
+  highlight_positions
+)
+
+random_positions <- if (number_random > 0) {
+  sample(
+    random_pool,
+    size = number_random,
+    replace = FALSE
+  )
+} else {
+  numeric(0)
+}
+
+selected_positions <- c(
+  highlight_positions,
+  random_positions
+)
+
+###############################################################################
+# Combine the three models
+###############################################################################
+
+Genome_dataset <- bind_rows(
+  null_data,
+  constant_low_data,
+  constant_high_data
+) %>%
+  filter(
+    Position %in% selected_positions,
+    Generation <= 1000
+  ) %>%
+  mutate(
+    Selection = factor(
+      Selection,
+      levels = c(
+        "Null model",
+        "Constant model low",
+        "Constant model high"
+      )
+    )
+  ) %>%
+  left_join(
+    pos_meta,
+    by = "Position"
+  ) %>%
+  mutate(
+    is_highlight = !is.na(effect_size)
+  )
+
+###############################################################################
+# Highlight colors
+###############################################################################
+
+col_vals <- setNames(
+  c(
+    "#0072B2",
+    "darkred"
+  ),
+  pos_meta$beta_lab
+)
+
+
+###############################################################################
+# Allele-frequency plot
+###############################################################################
+
+AF_CSNS_model_comparison <- ggplot(
+  Genome_dataset,
+  aes(
+    x = Generation,
+    y = Frequency,
+    group = interaction(
+      Selection,
+      Position
+    )
+  )
+) +
+  geom_line(
+    data = filter(
+      Genome_dataset,
+      !is_highlight
+    ),
+    color = "grey70",
+    linewidth = 0.5,
+    alpha = 0.6
+  ) +
+  geom_line(
+    data = filter(
+      Genome_dataset,
+      is_highlight
+    ),
+    aes(
+      color = beta_lab
+    ),
+    linewidth = 1.1,
+    alpha = 0.95
+  ) +
+  scale_color_manual(
+    name = "Effect size",
+    values = col_vals,
+    drop = FALSE
+  ) +
+  facet_wrap(
+    ~ Selection,
+    nrow = 1
+  ) +
+  labs(
+    title = "A) Allele Frequency Dynamics",
+    x = "Generation",
+    y = "Allele Frequency"
+  ) +
+  mythemes
+
+###############################################################################
+# Save using the new descriptive filename
+###############################################################################
+
+output_dir <- "../OutputFigures.dir"
+
+dir.create(
+  output_dir,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+jpeg_device <- if (
+  requireNamespace(
+    "ragg",
+    quietly = TRUE
+  )
+) {
+  ragg::agg_jpeg
+} else {
+  "jpeg"
+}
+
+ggsave(
+  filename = file.path(
+    output_dir,
+    "AF_CSNS_model_comparison.jpg"
+  ),
+  plot = AF_CSNS_model_comparison,
+  device = jpeg_device,
+  dpi = 300,
+  width = 22,
+  height = 10,
+  units = "in",
+  bg = "white",
+  limitsize = FALSE
+)
+
+print(AF_CSNS_model_comparison)
+
+```
+
+### 2.2. Spectral Analysis Comparison
+
+```{r, warning=FALSE, fig.width=40, fig.height=10, dpi=1200, echo=FALSE, message=FALSE}
+#| label: Spectral_CSNS_model_comparison
+
+find_preferred_files <- function(
+    folder,
+    patterns,
+    selection_label
+) {
+
+  if (!dir.exists(folder)) {
+    stop(
+      "Directory does not exist: ",
+      folder
+    )
+  }
+
+  for (current_pattern in patterns) {
+
+    files <- list.files(
+      path = folder,
+      pattern = current_pattern,
+      full.names = TRUE
+    )
+
+    if (length(files) > 0) {
+
+      return(
+        tibble(
+          file_path = sort(files),
+          Selection = selection_label,
+          matched_pattern = current_pattern
+        )
+      )
+    }
+  }
+
+  stop(
+    "No files found for ",
+    selection_label,
+    " in ",
+    folder,
+    ". Patterns tried:\n",
+    paste(patterns, collapse = "\n")
+  )
+}
+
+###############################################################################
+# Define the three requested groups
+###############################################################################
+
+model_specs <- list(
+  list(
+    Selection = "Null model",
+    folder = "../../Output.dir/NS.dir",
+    patterns = c(
+      "^genome[0-9]+_n100_H0\\.1\\.csv$"
+    )
+  ),
+
+  list(
+    Selection = "Constant model low",
+    folder = "../../Output.dir/CS.dir",
+    patterns = c(
+      "^genome[0-9]+_n100_H0\\.1SD1Gen10\\.csv$",
+      "^genome[0-9]+_n100_H0\\.1SD1\\.csv$"
+    )
+  ),
+
+  list(
+    Selection = "Constant model high",
+    folder = "../../Output.dir/CS.dir",
+    patterns = c(
+      "^genome[0-9]+_n100_H0\\.8SD4Gen30\\.csv$",
+      "^genome[0-9]+_n100_H0\\.8SD4\\.csv$"
+    )
+  )
+)
+
+###############################################################################
+# Build the file table
+###############################################################################
+
+files_df <- bind_rows(
+  lapply(
+    model_specs,
+    function(model_spec) {
+
+      find_preferred_files(
+        folder = model_spec$folder,
+        patterns = model_spec$patterns,
+        selection_label = model_spec$Selection
+      )
+    }
+  )
+) %>%
+  mutate(
+    base_name = basename(file_path),
+
+    replicate = as.integer(
+      sub(
+        "^genome([0-9]+)_.*$",
+        "\\1",
+        base_name
+      )
+    )
+  )
+
+if (anyNA(files_df$replicate)) {
+  stop(
+    "Replicate numbers could not be extracted from all filenames."
+  )
+}
+
+duplicate_replicates <- files_df %>%
+  count(
+    Selection,
+    replicate,
+    name = "number_of_files"
+  ) %>%
+  filter(
+    number_of_files > 1
+  )
+
+if (nrow(duplicate_replicates) > 0) {
+  print(duplicate_replicates)
+
+  stop(
+    "More than one file was selected for at least one model/replicate."
+  )
+}
+
+###############################################################################
+# Calculate the spectrum for one replicate file
+###############################################################################
+
+calculate_file_spectrum <- function(
+    file_path,
+    selection_label,
+    replicate_value,
+    spectrum_span = 2,
+    max_period = 80
+) {
+
+  allele_data <- readr::read_csv(
+    file_path,
+    col_types = readr::cols_only(
+      Generation = readr::col_double(),
+      Frequency = readr::col_double()
+    ),
+    progress = FALSE,
+    show_col_types = FALSE
+  ) %>%
+    filter(
+      is.finite(Generation),
+      is.finite(Frequency)
+    )
+
+  if (nrow(allele_data) == 0) {
+    stop(
+      "No valid observations in: ",
+      basename(file_path)
+    )
+  }
+
+  mean_series <- allele_data %>%
+    group_by(
+      Generation
+    ) %>%
+    summarise(
+      mean_allele_frequency = mean(
+        Frequency,
+        na.rm = TRUE
+      ),
+      .groups = "drop"
+    ) %>%
+    arrange(
+      Generation
+    )
+
+  if (nrow(mean_series) < 4) {
+    stop(
+      "At least four generations are required in: ",
+      basename(file_path)
+    )
+  }
+
+  generation_steps <- diff(
+    mean_series$Generation
+  )
+
+  if (
+    length(generation_steps) == 0 ||
+    length(unique(generation_steps)) != 1
+  ) {
+    stop(
+      "Generation intervals are not regular in: ",
+      basename(file_path)
+    )
+  }
+
+  generation_interval <- unique(
+    generation_steps
+  )
+
+  spectrum_result <- stats::spectrum(
+    stats::ts(
+      mean_series$mean_allele_frequency,
+      frequency = 1
+    ),
+    spans = spectrum_span,
+    plot = FALSE
+  )
+
+  spectrum_table <- tibble(
+    Period =
+      (1 / spectrum_result$freq) *
+      generation_interval,
+
+    Spectrum = as.numeric(
+      spectrum_result$spec
+    ),
+
+    Selection = selection_label,
+    replicate = replicate_value
+  ) %>%
+    filter(
+      Period <= max_period
+    )
+
+  rm(
+    allele_data,
+    mean_series,
+    spectrum_result
+  )
+
+  invisible(gc())
+
+  spectrum_table
+}
+
+###############################################################################
+# Process each file sequentially, which I did intentionally here. It avoids loading the same large
+# CSV files into many parallel worker processes at the same time.
+###############################################################################
+
+plot_df <- bind_rows(
+  lapply(
+    seq_len(nrow(files_df)),
+    function(file_index) {
+
+      calculate_file_spectrum(
+        file_path =
+          files_df$file_path[file_index],
+
+        selection_label =
+          files_df$Selection[file_index],
+
+        replicate_value =
+          files_df$replicate[file_index],
+
+        spectrum_span = 2,
+        max_period = 80
+      )
+    }
+  )
+) %>%
+  mutate(
+    Selection = factor(
+      Selection,
+      levels = c(
+        "Null model",
+        "Constant model low",
+        "Constant model high"
+      )
+    ),
+
+    replicate = factor(
+      replicate
+    )
+  )
+
+###############################################################################
+# Spectral-density plot
+###############################################################################
+
+spec_plot <- ggplot(
+  plot_df,
+  aes(
+    x = Period,
+    y = Spectrum,
+    color = replicate,
+    group = replicate
+  )
+) +
+  geom_line(
+    linewidth = 1,
+    alpha = 0.9
+  ) +
+  scale_y_continuous(
+    labels = scales::scientific_format()
+  ) +
+  facet_wrap(
+    ~ Selection,
+    scales = "free_y",
+    ncol = 3
+  ) +
+  labs(
+    title = "B) Spectral Density",
+    x = "Period (Generations)",
+    y = "Spectral Density",
+    color = "Replicate"
+  ) +
+  mythemes
+
+###############################################################################
+# Save the standalone spectral plot
+###############################################################################
+
+output_dir <- "../OutputFigures.dir"
+
+dir.create(
+  output_dir,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+jpeg_device <- if (
+  requireNamespace(
+    "ragg",
+    quietly = TRUE
+  )
+) {
+  ragg::agg_jpeg
+} else {
+  "jpeg"
+}
+
+ggsave(
+  filename = file.path(
+    output_dir,
+    "Spectral_CSNS_model_comparison.jpg"
+  ),
+  plot = spec_plot,
+  device = jpeg_device,
+  dpi = 300,
+  width = 30,
+  height = 10,
+  units = "in",
+  bg = "white",
+  limitsize = FALSE
+)
+
+print(spec_plot)
+
+```
+
+
+### 2.3 Combined Models comparison
+
+```{r, warning=FALSE, fig.width=58, fig.height=40, dpi=1200, echo=FALSE, message=FALSE}
+#| label: AF_Spectral_CSNS_model_comparison
+
+###############################################################################
+# Prepare the upper allele-frequency panel
+###############################################################################
+
+af_panel <- AF_CSNS_model_comparison +
+  theme(
+    axis.title = element_blank(),
+
+    plot.margin = margin(
+      t = 1,
+      r = 2,
+      b = 1,
+      l = 1,
+      unit = "lines"
+    )
+  )
+
+###############################################################################
+# Prepare the lower spectral-density panel
+###############################################################################
+
+spectral_panel <- spec_plot +
+  theme(
+    axis.title = element_blank(),
+
+    plot.margin = margin(
+      t = 1,
+      r = 1,
+      b = 1,
+      l = 2,
+      unit = "lines"
+    )
+  )
+
+###############################################################################
+# Stack the two panels vertically
+###############################################################################
+
+AF_Spectral_CSNS_model_comparison <- cowplot::plot_grid(
+  af_panel,
+  spectral_panel,
+  ncol = 1,
+  rel_heights = c(
+    1,
+    1.2
+  ),
+  align = "v"
+)
+
+###############################################################################
+# Save the combined figure
+###############################################################################
+
+output_dir <- "../OutputFigures.dir"
+
+dir.create(
+  output_dir,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+# jpeg_device <- if (
+#   requireNamespace(
+#     "ragg",
+#     quietly = TRUE
+#   )
+# ) {
+#   ragg::agg_jpeg
+# } else {
+#   "jpeg"
+# }
+
+ggsave(
+  filename = file.path(
+    output_dir,
+    "Figure2.jpg" #"AF_Spectral_CSNS_model_comparison.jpg"
+  ),
+  plot = AF_Spectral_CSNS_model_comparison,
+  device = jpeg_device,
+  dpi = 300,
+  width = 58,
+  height = 36,
+  units = "in",
+  bg = "white",
+  limitsize = FALSE
+)
+
+print(AF_Spectral_CSNS_model_comparison)
+
+```
+
+
+## 3. Instantaneous Selection for Polygenic Traits
+
+### 3.1. Polygenic Instantaneous AF
+
+```{r, warning=FALSE, fig.width = 30, fig.height = 30, dpi = 300, echo=FALSE}
 ###############################################################################
 # Function to extract H, SD, and Gen values from filename
 ###############################################################################
@@ -628,13 +1229,13 @@ ggsave(
   path = "../OutputFigures.dir"
 )
 
-print(Freq_Instant_Poly)
+# print(Freq_Instant_Poly)
 
 ```
 
-### 2.2. Polygenic Instantaneous Phenotypes
+### 3.2. Polygenic Instantaneous Phenotypes
 
-```{r, warning=FALSE, fig.width = 25, fig.height = 20, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 25, fig.height = 20, dpi = 300, echo=FALSE}
 #| label: Instant_Poly_Pheno
 extract_params <- function(filename) {
   h_value <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", basename(filename)))
@@ -695,19 +1296,19 @@ Pheno_Instant_Poly <- combined_dataset %>%
 ggsave(
   filename = "Instant_Poly_Pheno.jpg",
   plot = Pheno_Instant_Poly,
-  dpi = 1200,
+  dpi = 300,
   width = 25, 
   height = 15, 
   units = "in", 
   path = "../OutputFigures.dir"
 )
 
-print(Pheno_Instant_Poly)
+# print(Pheno_Instant_Poly)
 ```
 
-### 2.3. Polygenic Instantaneous Spec Analysis
+### 3.3. Polygenic Instantaneous Spec Analysis
 
-```{r, warning=FALSE, fig.width = 20, fig.height = 15, echo=FALSE, dpi = 1200}
+```{r, warning=FALSE, fig.width = 20, fig.height = 15, echo=FALSE, dpi = 300}
 #| label: Instant_Poly_SpecAnalysis
 
 ###############################################################################
@@ -908,16 +1509,16 @@ final_plot <- run_fft_analysis(dirpath, my_pattern)
 
 ggsave("Instant_Poly_SpecAnalysis_Combined.jpg",
        plot = final_plot,
-       dpi = 1200, width = 25, height = 15, units = "in",
+       dpi = 300, width = 25, height = 15, units = "in",
        path = "../OutputFigures.dir")
 
 
-final_plot
+# final_plot
 ```
 
-### 2.4. Combined Polygenic Instantaneous for AF, Pheno, and Spec Analysis
+### 3.4. Combined Polygenic Instantaneous for AF, Pheno, and Spec Analysis
 
-```{r, warning=FALSE, fig.width = 30, fig.height = 20, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 55, fig.height = 40, dpi = 300, echo=FALSE}
 #| label: Instant_Poly_AF_Pheno_SpecAnalysis_comb
 
 top_row <- plot_grid(
@@ -935,23 +1536,24 @@ combined_plot <- plot_grid(
 )
 
 ggsave(
-  filename = "Figure2.jpg", #"Instant_Poly_AF_Pheno_SpecAnalysis.jpg",
-  plot     = combined_plot,
-  dpi      = 600,
-  width    = 49,
-  height   = 30,
-  units    = "in",
-  path     = "../OutputFigures.dir"
+  filename = "Figure3.jpg", 
+  plot = combined_plot,
+  dpi = 600,
+  width = 49,
+  height = 32,
+  units = "in",
+  path = "../OutputFigures.dir"
 )
 combined_plot  
 
 ```
 
-## 3. Genetic Architecture: Instantaneous models
 
-### 3.1. AF monogenic, oligogenic, and Polygenic
+## 4. Genetic Architecture: Instantaneous models
 
-```{r, warning=FALSE, fig.width = 25, fig.height = 22, dpi = 1200, echo=FALSE}
+### 4.1. AF monogenic, oligogenic, and Polygenic
+
+```{r, warning=FALSE, fig.width = 25, fig.height = 22, dpi = 300, echo=FALSE}
 #| label: AF_Mono_Ologo_Poly_Instant
 read_files <- function() {
   file_list <- list.files(path = "../../Output.dir/LinFS.dir/", pattern = "genome10_n(1|10)_H0\\.(1|5|8)(SD(1|2|4))?Gen(10|20|30)\\.csv$", full.names = TRUE)
@@ -1052,12 +1654,12 @@ ggsave(
   path     = "../OutputFigures.dir"
 )
 
- AF_Mono_Ologo_Poly_Instant
+# AF_Mono_Ologo_Poly_Instant
 ```
 
-### 3.2. Pheno monogenic, oligogenic, and Polygenic
+### 4.2. Pheno monogenic, oligogenic, and Polygenic
 
-```{r, warning=FALSE, fig.width = 25, fig.height = 20, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 25, fig.height = 20, dpi = 300, echo=FALSE}
 #| label: Pheno_Mono_Oligo_Poly_Instant
 
 dirpath <- "../../Output.dir/LinFS.dir/"
@@ -1150,13 +1752,13 @@ ggsave(
   path     = "../OutputFigures.dir"
 )
 
- Pheno_Mono_Oligo_Poly
+# Pheno_Mono_Oligo_Poly
 
 ```
 
-### 3.3. Spec_Analysis monogenic, oligogenic, and Polygenic
+### 4.3. Spec_Analysis monogenic, oligogenic, and Polygenic
 
-```{r, warning=FALSE, fig.width = 10, fig.height = 20, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 20, fig.height = 20, dpi = 300, echo=FALSE}
 #| label: Spec_Analysis_Mono_Oligo_Poly_Instant
 
 run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
@@ -1342,21 +1944,21 @@ Spec_Mono_Oligo_Poly <- run_fft_analysis(dirpath, pattern)
 
 ggsave(
   filename = "Spec_Mono_Oligo_Poly.jpg",
-  plot     = Spec_Mono_Oligo_Poly,
-  dpi      = 600,
-  width    = 20,
-  height   = 30,
-  units    = "in",
-  path     = "../OutputFigures.dir"
+  plot = Spec_Mono_Oligo_Poly,
+  dpi = 600,
+  width = 20,
+  height = 30,
+  units = "in",
+  path = "../OutputFigures.dir"
 )
 
-Spec_Mono_Oligo_Poly
+# Spec_Mono_Oligo_Poly
 
 ```
 
-### 3.4. Genome architecture all models Polygenic Instantaneous: AF, Pheno, and Spec Analysis
+### 4.4. Genome architecture all models Polygenic Instantaneous: AF, Pheno, and Spec Analysis
 
-```{r, warning=FALSE, fig.width = 22, fig.height = 20, dpi = 1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 44, fig.height = 40, dpi = 300, echo=FALSE}
 #| label: All_Instant_Mono_Oligo_Poly
 #| 
 top_plot     <- AF_Mono_Ologo_Poly_Instant + theme(plot.margin = margin(b = 20))
@@ -1369,7 +1971,7 @@ All_Mono_Oligo_Poly <- plot_grid(plot_grid(top_plot, bottom_left,
                                            rel_heights = c(2.4, 2)), 
                                  bottom_right, rel_widths = c(2, 1.2))
 
-ggsave("Figure3.jpg", #All_Instant_Mono_Oligo_Poly.jpg
+ggsave("Figure4.jpg", #All_Instant_Mono_Oligo_Poly.jpg 
        plot = All_Mono_Oligo_Poly, 
        dpi = 600, 
        width = 44, 
@@ -1381,3585 +1983,7 @@ All_Mono_Oligo_Poly
 
 ```
 
-### 3.5 Fixed percentages for each architecture
-
-```{r, fig.height=5, fig.width=10, echo=FALSE, dpi = 1200, message=FALSE}
-#| label: Fixation_Percentages
-#### Parameter combination as colors
-library(furrr)
-library(fs)
-#library(stringr)
-library(dplyr)
-
-path <- "../../Output.dir/LinFS.dir/"
-pattern <- "^genome\\d+_n\\d+_H0.(1|5|8)(SD[1|4])?Gen(10|30)?\\.csv$" 
-
-# List files using list.files (full paths, filtering by regex)
-files <- list.files(path, pattern, full.names = TRUE)
-
-if (length(files) == 0) {
-  stop("No files found matching the pattern in the specified path.")
-}
-
-available_cores <- parallel::detectCores()
-workers_to_use <- max(1, available_cores - 4)  
-plan(multicore, workers = workers_to_use)
-
-process_file <- function(file) {
-  filename <- path_file(file)
-  repl_val <- as.numeric(sub(".*genome(\\d+)_.*", "\\1", basename(filename)))
-  H_val <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", basename(filename)))
-  loci_val <- as.numeric(sub(".*_n(\\d+)_.*", "\\1", basename(filename)))
-  SD_val <- as.numeric(sub(".*SD(\\d+).*", "\\1", basename(filename)))
-  Gen_val <- as.numeric(sub(".*Gen(\\d+).*", "\\1", basename(filename)))
-  
-  df <- read.csv(file) %>%
-    dplyr::select(-any_of("Origin")) %>%
-    mutate(
-      Position = as_factor(Position),
-      repl = (repl_val),
-      H    = (H_val),
-      loci = (loci_val),
-      SD   = (SD_val),
-      Gen  = (Gen_val)
-    )
-  
-  required <- c("H", "loci", "SD", "Gen", "repl", "Position")
-  missing_cols <- setdiff(required, names(df))
-  if (length(missing_cols) > 0) {
-    warning("File ", filename, " is missing the following columns: ",
-            paste(missing_cols, collapse = ", "))
-  }
-  return(df)
-}
-
-combined_data <- future_map_dfr(files, process_file, .options = furrr_options(chunk_size = 100))
-
-data_with_fix <- combined_data %>%
-  group_by(H, loci, SD, Gen, repl, Position) %>%
-  filter(Frequency == 1 | (Frequency < 1 & Generation == max(Generation) & max(Generation) < 2000)) %>% 
-  distinct(H, loci, SD, Gen, repl, Position) %>% 
-  ungroup()
-
-replicate_summary <- data_with_fix %>%
-  group_by(H, loci, SD, Gen, repl) %>%
-  summarise(
-    fixed_count = n_distinct(Position),
-    total_count = 30 * loci,  # count of unique loci in this replicate
-    .groups = "drop"
-  ) %>% 
-  distinct()
-
-
-parameter_summary <- replicate_summary %>%
-  group_by(H, loci, SD, Gen, total_count) %>%
-  summarise(
-    total_fixed    = sum(fixed_count),
-    total_possible = total_count,
-    Perc_Loci      = total_fixed * 100 / total_possible,
-    .groups = "drop"
-  ) %>%
-  mutate(
-    Gen_SD  = paste0("Gen = ", Gen, " SD = ", SD),
-    H_label = paste0("H = ", H),
-    Combo   = paste0(H_label, ", ", Gen_SD)
-  ) %>% 
-  distinct()
-
-Fixation_Percentages <-
-  ggplot(
-    parameter_summary %>%
-      mutate(
-        H   = as_factor(H),
-        loci= as_factor(loci),
-        SD  = as_factor(SD),
-        Gen = as_factor(Gen)
-      ),
-    aes(
-      x = loci,
-      y = Perc_Loci,
-      color = H,
-      shape = SD,
-      linetype = Gen,
-      group = interaction(H, Gen, SD)
-    )
-  ) +
-  geom_line(linewidth = 3) +
-  geom_point(size = 7, stroke = 0) +
-  labs(
-    x = "Number of Loci",
-    y = "Percentage of Loci Fixed (%)",
-    color = "Heritability (h\u00B2)",
-    linetype = "Season Length (Gen)",
-    shape = "Distance to Optimum (Δ)"
-  ) +
-  scale_color_manual(values = c("darkblue", "gray50", "firebrick")) +
-  scale_linetype_manual(
-    values = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
-  ) +
-  theme_bw() +
-  theme(
-    text           = element_text(family = "sans"),
-    axis.text.x    = element_text(face = "bold", size = 30, angle = 15,
-                                  hjust = 1, margin = margin(t = 10)),
-    axis.text.y    = element_text(face = "bold", size = 30, angle = 15,
-                                  margin = margin(r = 10)),
-    axis.line      = element_line(linewidth = 1.2),
-    plot.title     = element_text(hjust = 0.01, face = "bold", size = 30),
-    axis.title.x   = element_text(size = 30, face = "bold",
-                                  margin = margin(t = 30)),
-    axis.title.y   = element_text(size = 30, face = "bold",
-                                  margin = margin(r = 35)),
-    strip.text     = element_text(size = 30, face = "bold"),
-    panel.spacing  = unit(5, "lines"),
-    panel.grid     = element_blank(),
-    legend.position= c(0.95, 0.95),
-    legend.justification = c("right", "top"),
-    legend.text    = element_text(size = 32, face = "bold"),
-    legend.title   = element_text(size = 34, face = "bold"),
-    legend.key.width = unit(2.5, "cm")  
-  ) +
-  guides(
-    color    = guide_legend(override.aes = list(shape = 16, size = 6), byrow = TRUE),
-    linetype = guide_legend(override.aes = list(linewidth = 2, color = "black"))
-  )
-
-ggsave("Figure4.jpg", #Fixation_Percentages.jpg
-       plot = Fixation_Percentages, 
-       dpi = 600, 
-       width = 40, 
-       height = 20, 
-       units = "in", 
-       path = "../OutputFigures.dir")
-
-print(Fixation_Percentages)
-
-```
-
-## 4. Beyond instantaneous selection: gradual selection models
-
-### 4.1. AF Freq All models by parameters
-
-```{r, warning=FALSE, fig.width = 22, fig.height = 10, dpi=1200, echo=FALSE}
-#| label: AF_FS_model_comparison
-mono1 <- read.csv("../../Output.dir/LinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
-mono2 <-  read.csv("../../Output.dir/SinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
-mono3 <- read.csv("../../Output.dir/SinFSGen.dir/genome10_n100_H0.8SD4.csv")
-
-
-# Add a column to distinguish the datasets
-geno_file <- mono1 %>% mutate(Selection = "Instantaneous")
-geno_file2 <- mono2 %>% mutate(Selection = "Simple Gradual")
-geno_file3 <- mono3 %>% mutate(Selection = "Complex Gradual I")
-
-Genome_dataset <- rbind(geno_file, 
-                        geno_file2, geno_file3) %>% 
-  mutate(Selection = fct_relevel(Selection, 
-                                 "Instantaneous", 
-                                 "Simple Gradual", 
-                                 "Complex Gradual I"))
-
-## Select 30 random positions
-  set.seed(12345)
-  selected_positions <- Genome_dataset %>%
-  distinct(Position) %>%
-  sample_n(size = min(30, n()), replace = FALSE) %>%
-  pull(Position)
-
- Genome_dataset <- Genome_dataset %>%
-      filter(Position %in% selected_positions)
-  
-AF_FS_model_comparison <- Genome_dataset %>% 
-  filter(Generation <= 1000) %>%
-  ggplot(aes(x = Generation, y = Frequency, group = factor(Position))) +
-  geom_line(
-    aes(
-      color = factor(Position == 323379), # Highlight the position 
-      size  = factor(Position == 323379)
-    ),
-    alpha = 0.8
-  ) +
-  scale_color_manual(values = c("TRUE" = "magenta", "FALSE" = "grey")) +
-  scale_size_manual(values  = c("TRUE" = 2, "FALSE" = 0.5)) +
-  facet_wrap(Selection ~ .) +
-  theme_bw() +
-  mythemes
-  
-ggsave(
-  filename = "Figure6.jpg", #AF_FS_model_comparison.jpg#
-  plot = AF_FS_model_comparison,
-  dpi = 600, width = 30, height = 15, units = "in",
-  path = "../OutputFigures.dir"
-)
-
-print(AF_FS_model_comparison)
-
-```
-
-### 4.2. FS model comparison by genomic architecture
-
-### 4.2.1. AF All models comparisons
-
-```{r,  warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
-# Load necessary libraries
-library(dplyr)
-library(ggplot2)
-library(forcats)
-library(cowplot)
-
-n_values <- c(1, 10, 100) # Loci to compare
-gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci")
-
-selections <- list(#"LinFS.dir" = "Instantaneous",
-  "SinFS.dir" = "Simple Gradual",
-  "SinFSGen.dir" = "Complex Gradual I"
-)
-
-dataset_list <- list()
-
-for (n in n_values) {
-  for (dir_name in names(selections)) {
-    selection_label <- selections[[dir_name]]
-    if (dir_name == "SinFSGen.dir") {
-      filename <- paste0("../../Output.dir/", dir_name, "/genome10_n", n, "_H0.5SD4.csv")
-    } else {
-      filename <- paste0("../../Output.dir/", dir_name, "/genome10_n", n, "_H0.5SD4Gen20.csv")
-    }
-    
-    if (file.exists(filename)) {
-      data <- read.csv(filename)
-      
-  data <- data %>%
-    mutate(Selection = selection_label,
-          Gene_Number = gene_number_labels[as.character(n)])
-      
-      dataset_list[[length(dataset_list) + 1]] <- data
-    } else {
-      warning(paste("File not found:", filename))
-    }
-  }
-}
-
-Genome_dataset <- bind_rows(dataset_list) %>%
-  mutate(
-    Selection = fct_relevel(Selection, "Simple Gradual", "Complex Gradual I"), #"Instantaneous", 
-    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
-  )
-
-monogenic_positions <- Genome_dataset %>%
-  filter(Gene_Number == "1 Locus") %>%
-  pull(Position) %>%
-  unique()
-monogenic_highlight <- ifelse(length(monogenic_positions) >= 1, monogenic_positions[1], NA)
-
-highlight_positions <- data.frame(
-  Gene_Number = c("1 Locus", "10 Loci", "100 Loci"),
-  Highlight_Position = c(monogenic_highlight, 427101, 323379) # 1037246, 201349
-)
-
-Genome_dataset <- Genome_dataset %>%
-  left_join(highlight_positions, by = "Gene_Number") %>%
-  mutate(Highlight = Position == Highlight_Position)
-
-
-# Get all positions for Polygenic
-Polygenic_positions <- Genome_dataset %>%
-  filter(Gene_Number == "100 Loci") %>%
-  pull(Position) %>%
-  unique()
-
-Polygenic_highlight <- highlight_positions %>%
-  filter(Gene_Number == "100 Loci") %>%
-  pull(Highlight_Position)
-
-# Remove the highlighted position from positions to sample 
-positions_to_sample <- setdiff(Polygenic_positions, Polygenic_highlight)
-
-# Randomly sample 29 positions (since we have 1 highlighted position)
-set.seed(123) 
-sampled_positions <- sample(positions_to_sample, 
-                            size = min(29, length(positions_to_sample)), 
-                            replace = FALSE)
-
-selected_Polygenic_positions <- c(sampled_positions, Polygenic_highlight)
-
-Genome_dataset_filtered <- Genome_dataset %>%
-  filter(
-    (Gene_Number != "100 Loci") | (Position %in% selected_Polygenic_positions)
-  )
-
-All_models_freq <- Genome_dataset_filtered %>% 
-  filter(Generation <= 1000) %>%
-  ggplot(aes(x = Generation, 
-             y = Frequency, 
-             group = factor(Position), 
-             color = as.factor(Highlight),
-             size = as.factor(Highlight))) +
-  geom_line(alpha = 0.8) +
-  scale_size_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
-  scale_color_manual(values = c("TRUE" = "magenta", "FALSE" = "grey")) +
-  labs(title = "A) Allele Frequency", x = "Generation", y = "Frequency") +
-  facet_grid(Selection ~ Gene_Number) +
-  theme_bw()+
-  mythemes
-  
-ggsave("All_models_freq.jpg", 
-       plot = All_models_freq, 
-       dpi = 600, width = 30, height = 20,
-       units = "in", path = "../OutputFigures.dir")
-
-print(All_models_freq)
-```
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
-library(dplyr)
-library(ggplot2)
-
-Instat <- read.csv("../../Output.dir/LinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
-GradII <-  read.csv("../../Output.dir/SinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
-GradIV_1 <- read.csv("../../Output.dir/SinFSGen.dir/genome10_n100_H0.8SD4.csv")
-GradIV_2 <- read.csv("../../Output.dir/FourSeasFourAmp.dir/genome10_n100_H0.8.csv")
-
-
-# Add a column to distinguish the datasets
-geno_file <- Instat %>% mutate(Selection = "Instantaneous")
-geno_file2 <- GradII %>% mutate(Selection = "Simple Gradual")
-geno_file3 <- GradIV_1 %>% mutate(Selection = "Complex Gradual I") #
-geno_file4 <- GradIV_2 %>% mutate(Selection = "Complex Gradual II")
-
-Genome_dataset <- rbind(geno_file, 
-                        geno_file2, geno_file3, geno_file4) %>% 
-  mutate(Selection = fct_relevel(Selection, 
-                                 "Instantaneous", 
-                                 "Simple Gradual",
-                                 "Complex Gradual I",
-                                 "Complex Gradual II"))
-
-## Select 30 random positions
-  set.seed(12345)
-  selected_positions <- Genome_dataset %>%
-  distinct(Position) %>%
-  sample_n(size = min(30, n()), replace = FALSE) %>%
-  pull(Position)
-
- Genome_dataset <- Genome_dataset %>%
-   filter(Position %in% selected_positions)
-# Effect sizes for highlighted positions
-pos_meta <- tibble::tribble(
-  ~Position, ~effect_size,
-    982341,   0.000008,
-   #1067762,   0.140653,
-    811499,   3.562828
-   # 323379,   2.431675
-) %>%
-  mutate(beta_lab = sprintf("\u03B2=%s", signif(effect_size, 3)))
-
-# Colors (Okabe–Ito palette)
-col_vals <- setNames(
-  c("#0072B2", "darkred"),#"#D55E00", "#009E73", "#CC79A7"
-  pos_meta$beta_lab
-)
-
-df <- Genome_dataset %>%
-  filter(Generation <= 1000) %>%
-  left_join(pos_meta, by = "Position") %>%
-  mutate(is_highlight = !is.na(effect_size))
-
-# Right-edge labels (effect only)
-lab_df <- df %>%
-  filter(is_highlight) %>%
-  group_by(Selection, Position, beta_lab) %>%
-  filter(Generation == max(Generation)) %>%
-  ungroup()
-
-AF_FS_model_comparison <-
-  ggplot(df, aes(Generation, Frequency, group = Position)) +
-  # Background
-  geom_line(data = dplyr::filter(df, !is_highlight),
-            color = "grey70", linewidth = 0.5, alpha = 0.6) +
-  # Highlights (legend keyed by β only)
-  geom_line(data = dplyr::filter(df, is_highlight),
-            aes(color = beta_lab), linewidth = 1.1, alpha = 0.95) +
-  # On-plot labels showing β only
-  # geom_text(data = lab_df,
-  #           aes(label = beta_lab, color = beta_lab),
-  #           hjust = 0, nudge_x = 12, size = 3.6, show.legend = FALSE) +
-  scale_color_manual(name = "Effect size", values = col_vals) +
- # scale_x_continuous(expand = expansion(mult = c(0.01, 0.10))) +
-  facet_wrap(Selection ~ .) +
-  labs(x = "Generation", y = "Allele Frequency") +
-  theme_bw() +
-  theme(legend.position = "bottom") +
-  mythemes
-
-ggsave("Figure5.jpg", 
-       plot = AF_FS_model_comparison, 
-       dpi = 800, width = 30, height = 22,
-       units = "in", bg = "white", path = "../OutputFigures.dir")
-
-print(AF_FS_model_comparison)
-
-```
-
-### 4.2.2. Phenotype All models comparisons
-
-```{r,  warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE, message=FALSE}
-#| label: All_models_Pheno
-
-n_values <- c(1, 10, 100)
-gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci")
-
-selections <- list(
-  #"LinFS.dir" = "Instantaneous",
-  "SinFS.dir" = "Simple Gradual",
-  "SinFSGen.dir" = "Complex Gradual I"
-)
-
-phenotype_list <- list()
-for (n in n_values) {
-  for (dir_name in names(selections)) {
-    selection_label <- selections[[dir_name]]
-    if (dir_name == "SinFSGen.dir") {
-      file_pattern <- paste0("MeanPhenotypes\\d+_n", n, "_H0\\.5SD4\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    } else {
-      file_pattern <- paste0("MeanPhenotypes\\d+_n", n, "_H0\\.5SD4Gen20\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    }
-    file_list <- list.files(
-      path = file_path,
-      pattern = file_pattern,
-      full.names = TRUE
-    )
-    
-    for (file in file_list) {
-      data <- read.csv(file)
-      replicate_value <- as.numeric( sub(".*MeanPhenotypes(\\d+)_.*", "\\1", basename(file)))
-      
-      data <- data %>%
-        mutate(
-          Selection = selection_label,
-          Gene_Number = gene_number_labels[as.character(n)],
-          Replicate = replicate_value
-        )
-      phenotype_list[[length(phenotype_list) + 1]] <- data
-    }
-  }
-}
-
-Phenotype_dataset <- bind_rows(phenotype_list) %>%
-  mutate(
-    Selection = fct_relevel(Selection, "Instantaneous", "Simple Gradual", "Complex Gradual I"),
-    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
-  )
-
-All_models_Pheno <- Phenotype_dataset %>% filter(Generation <= 1000) %>% 
-  ggplot(aes(x = Generation, y = Phenotype, group = Replicate)) +
-  #geom_boxplot() + # outlier.size = 0.5, width = 0.6, alpha = 0.7
-  geom_line(linewidth = 1, alpha = 0.7, color = "black") + # outlier.size = 0.5, width = 0.6, alpha = 0.7
-  stat_summary(fun = mean,                              
-               aes(group = 1), 
-               geom = "line", 
-               color = "red", 
-               alpha = 1, 
-               size = 3) +
-  facet_grid(Selection ~ Gene_Number) +
-  labs(title = "B) Phenotypes", x = "Generation", y = "Phenotype")+
-  theme_bw()+
-  mythemes
-
-ggsave("All_models_Pheno.jpg", plot = All_models_Pheno, dpi = 600, width = 30, height = 25, units = "in", path = "../OutputFigures.dir")
-
-print(All_models_Pheno)
-```
-
-### 4.2.3. Spectral All models comparisons
-
-```{r,  warning=FALSE, fig.width = 49, fig.height = 22, dpi=600, echo=FALSE, message=FALSE}
-#| label: All_models_Spec2
-n_values <- c(1, 10, 100)
-gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci")
-
-selections <- list(
-  #"LinFS.dir" = "Instantaneous",
-  "SinFS.dir" = "Simple Gradual",
-  "SinFSGen.dir" = "Complex Gradual I"
-)
-
-allele_freq_list <- list()
-for (n in n_values) {
-  for (dir_name in names(selections)) {
-    selection_label <- selections[[dir_name]]
-    if (dir_name == "SinFSGen.dir") {
-      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD4\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    } else {
-      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD4Gen20\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    }
-    
-    file_list <- list.files(
-      path = file_path,
-      pattern = file_pattern,
-      full.names = TRUE
-    )
-    
-    for (file in file_list) {
-      data <- read.csv(file)
-      replicate_value <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", basename(file)))
-      
-      data <- data %>%
-        mutate(
-          Selection = selection_label,
-          Gene_Number = gene_number_labels[as.character(n)],
-          Replicate = factor(replicate_value)
-        )
-      
-      allele_freq_list[[length(allele_freq_list) + 1]] <- data
-    }
-  }
-}
-
-AlleleFreq_dataset <- bind_rows(allele_freq_list) %>%
-  mutate(
-    Selection = fct_relevel(Selection, "Instantaneous", "Simple Gradual", "Complex Gradual I"),
-    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci")
-  )
-
-  num_cores_to_use <- min(detectCores() - 16, 32) # check the cores before
-  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- makeCluster(num_cores_to_use, type = cluster_type)
-  registerDoParallel(cl)
-
-grouped_data <- AlleleFreq_dataset %>%
-  group_by(Selection, Gene_Number, Replicate)
-
-unique_combinations <- grouped_data %>%
-  summarize() %>%
-  ungroup()
-
-spectral_results <- foreach(i = 1:nrow(unique_combinations), .packages = c("dplyr", "stats")) %dopar% {
-  sel <- unique_combinations$Selection[i]
-  gene_num <- unique_combinations$Gene_Number[i]
-  rep <- unique_combinations$Replicate[i]
-  
-  df <- AlleleFreq_dataset %>%
-    filter(Selection == sel, Gene_Number == gene_num, Replicate == rep) %>%
-    arrange(Generation)
-  
-  mean_freq_df <- df %>%
-    group_by(Generation) %>%
-    summarize(Mean_Frequency = mean(Frequency, na.rm = TRUE)) %>%
-    arrange(Generation)
-  
-ts_data <- ts(mean_freq_df$Mean_Frequency, 
-              start = min(mean_freq_df$Generation), frequency = 1)
-  
-spec_result <- spectrum(ts_data, spans = 2, plot = FALSE)
-period <- 1 / spec_result$freq
-  
-  data.frame(
-    Period = period,
-    Spectrum = spec_result$spec,
-    Selection = sel,
-    Gene_Number = gene_num,
-    Replicate = rep
-  )
-}
-
-# Stop cluster
-stopCluster(cl)
-
-spectral_data <- bind_rows(spectral_results)
-
-spectral_data <- spectral_data %>%
-  filter(Period < 80)
-
-All_models_Spec <- spectral_data %>%
-  mutate(
-    Facet_formula = factor(
-      paste0(Gene_Number, " ", Selection),
-      levels = c(
-        "1 Locus Instantaneous", "10 Loci Instantaneous", "100 Loci Instantaneous",
-        "1 Locus Simple Gradual", "10 Loci Simple Gradual", "100 Loci Simple Gradual",
-        "1 Locus Complex Gradual I", "10 Loci Complex Gradual I", "100 Loci Complex Gradual I"
-      )
-    )
-  ) %>% 
-  ggplot(aes(x = Period, y = Spectrum, group = Replicate, color = Replicate)) +
-  geom_line(alpha = 1, size = 2) +
-  scale_y_continuous(labels = scales::label_number())+
-  #facet_wrap( ~ Selection + Gene_Number, scales = "free", ncol = 3) +
-  facet_wrap( ~ Facet_formula, scales = "free", ncol = 3, dir = "h") +
-  #scale_color_viridis_d() +  # Use a discrete color palette
-  labs(
-    x = "Period (Generations)",
-    y = "Spectral Density",
-    color = "Replicate"
-  ) +
-  labs(title = "C) Spectral Density", x = "Period (Generations)",
-       y = "Spectral Density")+
-  theme_bw()+
-  mythemes
-    
-
-ggsave("All_models_Spec.jpg", plot = All_models_Spec, dpi = 600, width = 49, height = 30, units = "in", path = "../OutputFigures.dir")
-
-print(All_models_Spec)
-
-```
-
-```{r,  warning=FALSE, fig.width = 30, fig.height = 18, dpi=1600, echo=FALSE, message=FALSE}
-#| label: All_models_Spec
-n_values <- c(1, 10,100)#1, 
-gene_number_labels <- c("1" = "1 Locus", "10" = "10 Loci", "100" = "100 Loci", "300" = "300 Loci")
-
-selections <- list(
-#"LinFS.dir" = "Instantaneous",
-"SinFS.dir" = "Simple Gradual",
-"SinFSGen.dir" = "Complex Gradual I", 
-"FourSeasFourAmp.dir" = "Complex Gradual II"
-)
-
-allele_freq_list <- list()
-for (n in n_values) {
-  for (dir_name in names(selections)) {
-    selection_label <- selections[[dir_name]]
-    if (dir_name == "SinFSGen.dir") {
-      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD2\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    }else if (dir_name == "FourSeasFourAmp.dir") {
-      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    } else {
-      file_pattern <- paste0("genome\\d+_n", n, "_H0\\.5SD2Gen20\\.csv$")
-      file_path <- paste0("../../Output.dir/", dir_name)
-    }
-    
-    file_list <- list.files(
-      path = file_path,
-      pattern = file_pattern,
-      full.names = TRUE
-    )
-    
-    for (file in file_list) {
-      data <- read.csv(file) #%>% filter(Generation >=1800)
-      replicate_value <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", basename(file)))
-      
-      data <- data %>%
-        mutate(
-          Selection = selection_label,
-          Gene_Number = gene_number_labels[as.character(n)],
-          Replicate = factor(replicate_value)
-        )
-      
-      allele_freq_list[[length(allele_freq_list) + 1]] <- data
-    }
-  }
-}
-
-AlleleFreq_dataset <- bind_rows(allele_freq_list) %>%
-  mutate(
-    Selection = fct_relevel(Selection, "Instantaneous", "Simple Gradual", "Complex Gradual I", "Complex Gradual II"),
-    Gene_Number = fct_relevel(Gene_Number, "1 Locus", "10 Loci", "100 Loci", "300 Loci")
-  )
-
-  num_cores_to_use <- min(detectCores() - 16, 32) # check the cores before
-  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- makeCluster(num_cores_to_use, type = cluster_type)
-  registerDoParallel(cl)
-
-grouped_data <- AlleleFreq_dataset %>%
-  group_by(Selection, Gene_Number, Replicate)
-
-unique_combinations <- grouped_data %>%
-  summarize() %>%
-  ungroup()
-
-spectral_results <- foreach(i = 1:nrow(unique_combinations), .packages = c("dplyr", "stats")) %dopar% {
-  sel <- unique_combinations$Selection[i]
-  gene_num <- unique_combinations$Gene_Number[i]
-  rep <- unique_combinations$Replicate[i]
-  
-  df <- AlleleFreq_dataset %>%
-    filter(Selection == sel, Gene_Number == gene_num, Replicate == rep) %>%
-    arrange(Generation)
-  
-  mean_freq_df <- df %>%
-    group_by(Generation) %>%
-    summarize(Mean_Frequency = mean(Frequency, na.rm = TRUE)) %>%
-    arrange(Generation)
-  
-ts_data <- ts(mean_freq_df$Mean_Frequency, 
-              start = min(mean_freq_df$Generation), frequency = 1)
-  
-spec_result <- spectrum(ts_data, spans = 2, plot = FALSE)
-period <- 1 / spec_result$freq
-  
-  data.frame(
-    Period = period,
-    Spectrum = spec_result$spec,
-    Selection = sel,
-    Gene_Number = gene_num,
-    Replicate = rep
-  )
-}
-
-# Stop cluster
-stopCluster(cl)
-
-spectral_data <- bind_rows(spectral_results)
-
-spectral_data <- spectral_data %>%
-  filter(Period < 80)
-
-All_models_Spec <- spectral_data %>%
-  mutate(
-    Facet_formula = factor(
-      paste0(Gene_Number, " ", Selection),
-      levels = c(
-        "1 Locus Instantaneous", "10 Loci Instantaneous", "100 Loci Instantaneous",  "300 Loci Instantaneous",
-        "1 Locus Simple Gradual", "10 Loci Simple Gradual", "100 Loci Simple Gradual",  "300 Loci Simple Gradual",
-        "1 Locus Complex Gradual I", "10 Loci Complex Gradual I", "100 Loci Complex Gradual I" , "300 Loci Complex Gradual I" ,
-        "1 Locus Complex Gradual II", "10 Loci Complex Gradual II", "100 Loci Complex Gradual II", "300 Loci Complex Gradual II"
-      )
-    )
-  ) %>% 
-  ggplot(aes(x = Period, y = Spectrum, group = Replicate, color = Replicate)) +
-  geom_line(alpha = 1, size = 2) +
-  scale_y_continuous(labels = scales::label_number())+
-  #facet_wrap( ~ Selection + Gene_Number, scales = "free", ncol = 3) +
-  facet_wrap( ~ Facet_formula, scales = "free", ncol = 3, dir = "h") +
-  #scale_color_viridis_d() +  # Use a discrete color palette
-  labs(
-    x = "Period (Generations)",
-    y = "Spectral Density",
-    color = "Replicate"
-  ) +
-  labs(title = "Spectral Density", x = "Period (Generations)",
-       y = "Spectral Density")+
-  theme_bw()+
-  mythemes
-    
-# 
-# ggsave("All_models_Spec.jpg", plot = All_models_Spec, dpi = 600, width = 49, height = 30, units = "in", path = "../OutputFigures.dir")
-
-ggsave("Figure6.jpg",  plot = All_models_Spec, width = 70, height = 30, units = "in", path = "../OutputFigures.dir", limitsize = FALSE)
-
-print(All_models_Spec)
-```
-
-### 4.2.4. Combined gradual models, comparison on architecture
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 35, dpi = 600, echo=FALSE}
-#| label: Combined_gradual_models_architecture
-
-CGMA <- plot_grid(
-  All_models_freq,
-  All_models_Pheno,
-  All_models_Spec,
-  ncol = 1,
-  rel_heights = c(2.2, 2.2, 2.1)
-) +
-  theme(panel.spacing = unit(1, "lines"))
-
-#Combined_gradual_models_architecture.jpg
-
- ggsave("Combined_gradual_models_architecture.jpg",  plot = CGMA, width = 50, height = 70, units = "in", path = "../OutputFigures.dir", limitsize = FALSE)
-
-print(CGMA)
-```
-
-## 5. Differences between FS models and Null and constant selection models
-
-### 5.1. Spectral Null Polygenic
-
-```{r, warning=FALSE, fig.width = 12, fig.height = 8, dpi = 1200, echo=FALSE}
-library(cowplot)
-library(purrr)
-
-run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
-  theme_set(theme_cowplot())
- 
-  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
-
-  if (length(file_list) == 0) {
-    stop("No files found with the given pattern.")
-  }
-
-  files_df <- data.frame(file_name = file_list) %>%
-    mutate(
-      base_name = basename(file_name),
-      replicate <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", base_name)),
-      genome = ifelse(
-        grepl("genome\\d+", base_name),
-        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      n = ifelse(
-        grepl("_n\\d+", base_name),
-        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      H = ifelse(
-        grepl("_H[0-9]+\\.?[0-9]*", base_name),
-        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-        NA_real_),
-      SD = ifelse(
-        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-        NA_real_),
-      Gen = ifelse(
-        grepl("Gen\\d+", base_name),
-        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      Selection = case_when(
-        n == "1" ~ "1 Locus",
-        n == "10" ~ "10 Loci",
-        n == "100" ~ "100 Loci",
-        TRUE ~ "Unknown"
-      )
-    ) %>%
-    mutate(
-      param_combination = paste0("n_", n, "_H", H, 
-                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
-                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
-    )
-
-  num_cores_to_use <- min(detectCores() - 16, 64) # check the cores before
-  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- makeCluster(num_cores_to_use, type = cluster_type)
-  registerDoParallel(cl)
-
-  combined_data_list <- foreach(i = seq_along(files_df$file_name), 
-                                .packages = c("dplyr")) %dopar% {
-    file <- files_df$file_name[i]
-    params <- files_df[i, ]
-    df <- read.csv(file)
-    data <- df %>%
-      mutate(
-        allele_id = as.factor(Position),
-        generation = as.numeric(Generation),
-        allele_frequency = Frequency,
-        file = params$base_name,
-        genome = params$genome,
-        n = params$n,
-        H = params$H,
-        SD = params$SD,
-        Gen = params$Gen,
-        Selection = params$Selection,
-        param_combination = params$param_combination
-      ) %>%
-      dplyr::select(allele_id, generation, allele_frequency, genome, n, H, SD, Gen, Selection, param_combination)
-    data
-  }
-  combined_data <- bind_rows(combined_data_list)
-
-  filtered_data <- combined_data %>%
-    filter(
-      (H == 0.1 & (SD == 1 | is.na(SD)) & (Gen == 10 | is.na(Gen))) |
-      (H == 0.5 & (SD == 2 | is.na(SD)) & (Gen == 20 | is.na(Gen))) |
-      (H == 0.8 & (SD == 4 | is.na(SD)) & (Gen == 30 | is.na(Gen)))
-    )
-
-  # Calculate the mean allele frequency for each grouping
-  mean_allele_data <- filtered_data %>%
-    group_by(generation, n, genome, H, SD, Gen, Selection, param_combination) %>%
-    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
-
-  # Create time series objects
-  ts_data_list <- mean_allele_data %>%
-    group_by(n, genome, H, SD, Gen, Selection, param_combination) %>%
-    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
-
-  # Compute spectral density estimates
-  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
-    ts_data <- ts_data_list$ts_data[[i]]
-    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
-  }
-
-  plot_data_list <- foreach(i = seq_along(spec_results_list), 
-                            .packages = c("dplyr")) %dopar% {
-    spec_result <- spec_results_list[[i]]
-    params <- ts_data_list[i, ]
-    period <- 1 / spec_result$freq
-    data.frame(
-      Period = period,
-      Spectrum = spec_result$spec,
-      n = params$n,
-      genome = params$genome,
-      H = params$H,
-      SD = params$SD,
-      Gen = params$Gen,
-      Selection = params$Selection,
-      param_combination = params$param_combination
-    )
-  }
-
-  stopCluster(cl)
-  plot_data <- bind_rows(plot_data_list)
-
-  plot_data <- plot_data %>%
-    group_by(param_combination) %>%
-    mutate(threshold = case_when(
-      !is.na(Gen) & Gen == 10 ~ 40,
-      !is.na(Gen) & Gen == 20 ~ 50,
-      !is.na(Gen) & Gen == 30 ~ 80,
-      TRUE ~ 60
-    )) %>%
-    filter(Period < threshold) %>%
-    ungroup() %>%
-    mutate(
-      H_label = paste0("H = ", H),
-      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
-      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
-      n_label = paste0("n_", n)
-    )
-
-  fft_plots <- ggplot(plot_data, aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))) +
-    geom_line(linewidth = 1.1) +
-    scale_y_continuous(labels = scales::scientific_format())+
-    #scale_y_continuous(labels = scales::label_number())+
-    #facet_wrap(Selection ~ H_label + SD_label + Gen_label, scales = "free", ncol = 1) +
-    facet_wrap(Selection ~ ., scales = "free", ncol = 1) +
-    labs(title = "A) Null Model", x = NULL, y = NULL) +
-    mythemes
-
-  return(fft_plots)
-}
-
-dirpath <- "../../Output.dir/NS.dir/"
-
-pattern <- "^genome\\d+_n(100)_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$"#1|10|
-
-neut_spec_plots <- run_fft_analysis(dirpath, pattern)
-```
-
-### Constant Selection
-
-```{r, warning=FALSE, fig.width = 12, fig.height = 8, dpi = 1200, echo=FALSE}
-
-run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
-  
-  theme_set(theme_cowplot())
-  
-  
-  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
-
-  if (length(file_list) == 0) {
-    stop("No files found with the given pattern.")
-  }
-
-  files_df <- data.frame(file_name = file_list) %>%
-    mutate(
-      base_name = basename(file_name),
-      replicate <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", base_name)),
-      genome = ifelse(
-        grepl("genome\\d+", base_name),
-        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      n = ifelse(
-        grepl("_n\\d+", base_name),
-        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      H = ifelse(
-        grepl("_H[0-9]+\\.?[0-9]*", base_name),
-        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-        NA_real_),
-      SD = ifelse(
-        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-        NA_real_),
-      Gen = ifelse(
-        grepl("Gen\\d+", base_name),
-        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      Selection = case_when(
-        n == "1" ~ "1 Locus",
-        n == "10" ~ "10 Loci",
-        n == "100" ~ "100 Loci",
-        TRUE ~ "Unknown"
-      )
-    ) %>%
-    mutate(
-      param_combination = paste0("n_", n, "_H", H, 
-                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
-                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
-    )
-
-  num_cores_to_use <- min(detectCores() - 16, 64) # check the cores before
-  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- makeCluster(num_cores_to_use, type = cluster_type)
-  registerDoParallel(cl)
-
-  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr")) %dopar% {
-    file <- files_df$file_name[i]
-    params <- files_df[i, ]
-    df <- read.csv(file)
-    data <- df %>%
-      mutate(
-        allele_id = as.factor(Position),
-        generation = as.numeric(Generation),
-        allele_frequency = Frequency,
-        file = params$base_name,
-        genome = params$genome,
-        n = params$n,
-        H = params$H,
-        SD = params$SD,
-        Gen = params$Gen,
-        Selection = params$Selection,
-        param_combination = params$param_combination
-      ) %>%
-      dplyr::select(allele_id, generation, allele_frequency, genome, n, H, SD, Gen, Selection, param_combination)
-    data
-  }
-  combined_data <- bind_rows(combined_data_list)
-
-  filtered_data <- combined_data %>%
-    filter(
-      (H == 0.1 & (SD == 1 | is.na(SD)) & (Gen == 10 | is.na(Gen))) |
-      (H == 0.5 & (SD == 2 | is.na(SD)) & (Gen == 20 | is.na(Gen))) |
-      (H == 0.8 & (SD == 4 | is.na(SD)) & (Gen == 30 | is.na(Gen)))
-    )
-
-  mean_allele_data <- filtered_data %>%
-    group_by(generation, n, genome, H, SD, Gen, Selection, param_combination) %>%
-    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
-
-  # Create time series objects
-  ts_data_list <- mean_allele_data %>%
-    group_by(n, genome, H, SD, Gen, Selection, param_combination) %>%
-    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
-
-  # Compute spectral density estimates 
-  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
-    ts_data <- ts_data_list$ts_data[[i]]
-    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
-  }
-
-  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr")) %dopar% {
-    spec_result <- spec_results_list[[i]]
-    params <- ts_data_list[i, ]
-    period <- 1 / spec_result$freq
-    data.frame(
-      Period = period,
-      Spectrum = spec_result$spec,
-      n = params$n,
-      genome = params$genome,
-      H = params$H,
-      SD = params$SD,
-      Gen = params$Gen,
-      Selection = params$Selection,
-      param_combination = params$param_combination
-    )
-  }
-
-  stopCluster(cl)
-
-  # Combine all plot data
-  plot_data <- bind_rows(plot_data_list)
-
-  plot_data <- plot_data %>%
-    group_by(param_combination) %>%
-    mutate(threshold = case_when(
-      !is.na(Gen) & Gen == 10 ~ 40,
-      !is.na(Gen) & Gen == 20 ~ 50,
-      !is.na(Gen) & Gen == 30 ~ 80,
-      TRUE ~ 80
-    )) %>%
-    filter(Period < threshold) %>%
-    ungroup() %>%
-    mutate(
-      H_label = paste0("h\u00B2 = ", H),
-      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
-      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
-      n_label = paste0("n_", n)
-    )
-
-  fft_plots <- ggplot(
-  plot_data %>% mutate(FacetTerm = paste0(Selection)),
-  aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
-) +
-  geom_line(linewidth = 1.1) +
-  scale_y_continuous(labels = scales::scientific_format()) +
-  #scale_x_continuous(breaks = seq(0, 40, by = 2)) +  
-  facet_wrap(FacetTerm ~ ., scales = "free", ncol = 1) +
-  labs(title = "B) Constant Optima  model", x = NULL, y = NULL) +
-  mythemes
-
-  return(fft_plots)
-}
-
-dirpath <- "../../Output.dir/CS.dir/"
-#dirpath <- "../../Output.dir/FourSeasFourAmp.dir/"
-#pattern <- "^genome\\d+_n(1|10|100)_H0\\.(8)(SD(1))?(Gen(10|30))?\\.csv$"
-pattern <- "^genome\\d+_n(1|10|100)_H0\\.(1)(SD(1))?(Gen(10|30))?\\.csv$" #1|10|
-
-Const_spec_plots <- run_fft_analysis(dirpath, pattern)
-Const_spec_plots <- Const_spec_plots 
-Const_spec_plots
-```
-
-### 5.2. Spectral Gradual II Polygenic
-
-```{r, warning=FALSE, fig.width = 12, fig.height = 8, dpi = 1200, echo=FALSE}
-
-run_fft_analysis <- function(folder_path, pattern, spectrum_span = 2) {
-  
-  theme_set(theme_cowplot())
-  
-  
-  file_list <- list.files(path = folder_path, pattern = pattern, full.names = TRUE)
-
-  if (length(file_list) == 0) {
-    stop("No files found with the given pattern.")
-  }
-
-  files_df <- data.frame(file_name = file_list) %>%
-    mutate(
-      base_name = basename(file_name),
-      replicate <- as.numeric( sub(".*genome(\\d+)_.*", "\\1", base_name)),
-      genome = ifelse(
-        grepl("genome\\d+", base_name),
-        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      n = ifelse(
-        grepl("_n\\d+", base_name),
-        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      H = ifelse(
-        grepl("_H[0-9]+\\.?[0-9]*", base_name),
-        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-        NA_real_),
-      SD = ifelse(
-        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-        NA_real_),
-      Gen = ifelse(
-        grepl("Gen\\d+", base_name),
-        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-        NA_real_),
-      Selection = case_when(
-        n == "1" ~ "1 Locus",
-        n == "10" ~ "10 Loci",
-        n == "100" ~ "100 Loci",
-        TRUE ~ "Unknown"
-      )
-    ) %>%
-    mutate(
-      param_combination = paste0("n_", n, "_H", H, 
-                                 ifelse(!is.na(SD), paste0("_SD", SD), ""), 
-                                 ifelse(!is.na(Gen), paste0("_Gen", Gen), ""))
-    )
-
-  num_cores_to_use <- min(detectCores() - 16, 64) # check the cores before
-  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- makeCluster(num_cores_to_use, type = cluster_type)
-  registerDoParallel(cl)
-
-  combined_data_list <- foreach(i = seq_along(files_df$file_name), .packages = c("dplyr")) %dopar% {
-    file <- files_df$file_name[i]
-    params <- files_df[i, ]
-    df <- read.csv(file)
-    data <- df %>%
-      mutate(
-        allele_id = as.factor(Position),
-        generation = as.numeric(Generation),
-        allele_frequency = Frequency,
-        file = params$base_name,
-        genome = params$genome,
-        n = params$n,
-        H = params$H,
-        SD = params$SD,
-        Gen = params$Gen,
-        Selection = params$Selection,
-        param_combination = params$param_combination
-      ) %>%
-      dplyr::select(allele_id, generation, allele_frequency, genome, n, H, SD, Gen, Selection, param_combination)
-    data
-  }
-  combined_data <- bind_rows(combined_data_list)
-
-  filtered_data <- combined_data %>%
-    filter(
-      (H == 0.1 & (SD == 1 | is.na(SD)) & (Gen == 10 | is.na(Gen))) |
-      (H == 0.5 & (SD == 2 | is.na(SD)) & (Gen == 20 | is.na(Gen))) |
-      (H == 0.8 & (SD == 4 | is.na(SD)) & (Gen == 30 | is.na(Gen)))
-    )
-
-  mean_allele_data <- filtered_data %>%
-    group_by(generation, n, genome, H, SD, Gen, Selection, param_combination) %>%
-    summarize(mean_allele_frequency = mean(allele_frequency), .groups = "drop")
-
-  # Create time series objects
-  ts_data_list <- mean_allele_data %>%
-    group_by(n, genome, H, SD, Gen, Selection, param_combination) %>%
-    summarize(ts_data = list(ts(mean_allele_frequency, start = min(generation), frequency = 1)), .groups = 'drop')
-
-  # Compute spectral density estimates 
-  spec_results_list <- foreach(i = 1:nrow(ts_data_list), .packages = c("stats")) %dopar% {
-    ts_data <- ts_data_list$ts_data[[i]]
-    spectrum(ts_data, spans = spectrum_span, plot = FALSE)
-  }
-
-  plot_data_list <- foreach(i = seq_along(spec_results_list), .packages = c("dplyr")) %dopar% {
-    spec_result <- spec_results_list[[i]]
-    params <- ts_data_list[i, ]
-    period <- 1 / spec_result$freq
-    data.frame(
-      Period = period,
-      Spectrum = spec_result$spec,
-      n = params$n,
-      genome = params$genome,
-      H = params$H,
-      SD = params$SD,
-      Gen = params$Gen,
-      Selection = params$Selection,
-      param_combination = params$param_combination
-    )
-  }
-
-  stopCluster(cl)
-
-  # Combine all plot data
-  plot_data <- bind_rows(plot_data_list)
-
-  plot_data <- plot_data %>%
-    group_by(param_combination) %>%
-    mutate(threshold = case_when(
-      !is.na(Gen) & Gen == 10 ~ 40,
-      !is.na(Gen) & Gen == 20 ~ 50,
-      !is.na(Gen) & Gen == 30 ~ 80,
-      TRUE ~ 80
-    )) %>%
-    filter(Period < threshold) %>%
-    ungroup() %>%
-    mutate(
-      H_label = paste0("h\u00B2 = ", H),
-      SD_label = ifelse(!is.na(SD), paste0("SD = ", SD), "No SD"),
-      Gen_label = ifelse(!is.na(Gen), paste0("Gen = ", Gen), "No Gen"),
-      n_label = paste0("n_", n)
-    )
-
-  fft_plots <- ggplot(
-  plot_data %>% mutate(FacetTerm = paste0(Selection)),
-  aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
-) +
-  geom_line(linewidth = 1.1) +
-  scale_y_continuous(labels = scales::scientific_format()) +
-  #scale_x_continuous(breaks = seq(0, 40, by = 2)) +  
-  facet_wrap(FacetTerm ~ ., scales = "free", ncol = 1) +
-  labs(title = "C) Complex Gradual I", x = NULL, y = NULL) +
-  mythemes
-
-  return(fft_plots)
-}
-
-dirpath <- "../../Output.dir/SinFSGen.dir/"
-#dirpath <- "../../Output.dir/FourSeasFourAmp.dir/"
-#pattern <- "^genome\\d+_n(1|10|100)_H0\\.(8)(SD(1))?(Gen(10|30))?\\.csv$"
-pattern <- "^genome\\d+_n(100)_H0\\.(1)(SD(1))?(Gen(10|30))?\\.csv$" #1|10|
-
-gradII_spec_plots <- run_fft_analysis(dirpath, pattern)
-gradII_spec_plots <- gradII_spec_plots 
-```
-
-### 5.3 Spectral Null and Grad II Polygenic
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 20, dpi=1200, echo=FALSE}
-#| label: Spectral_Null_and_GradII_Polygenic
-library(cowplot)
-library(ggplot2)
-
-neut_spec_plots <- neut_spec_plots + 
-  theme(axis.title = element_blank())
-
-gradII_spec_plots <- gradII_spec_plots + 
-  theme(axis.title = element_blank())
-
-adjusted_neut_spec_plots <- neut_spec_plots +
-  theme(
-    plot.margin = margin(t = 1,  # top
-                         r = 2,  # right
-                         b = 1,  # bottom
-                         l = 1,  # left
-                         unit = "lines")
-  )
-
-
-adjusted_gradII_spec_plots <- gradII_spec_plots +
-  theme(
-    plot.margin = margin(t = 1,
-                         r = 1,
-                         b = 1,
-                         l = 2,
-                         unit = "lines")
-  )
-
-combined_plot <- plot_grid(
-  adjusted_neut_spec_plots,
-  adjusted_gradII_spec_plots,
-  ncol = 1,
-  rel_widths = c(1, 1)
-)
-
-Spectral_Null_and_GradII_Polygenic <- ggdraw() +
-  draw_plot(combined_plot, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
-  draw_label("Periodicity (Generations)", 
-             x = 0.5, y = 0.015, 
-             vjust = 0, size = 60, fontface = "bold") +
-  draw_label("Spectral Density", 
-             x = 0.015, y = 0.5, angle = 90, 
-             hjust = 0, size = 60, fontface = "bold")
-
-#Spectral_Null_and_GradII_Polygenic.jpg
-
-ggsave("Figure7.jpg", plot = Spectral_Null_and_GradII_Polygenic, width = 35, height = 20, bg = "white", path = "../OutputFigures.dir")
-
-
-print(Spectral_Null_and_GradII_Polygenic)
-
-```
-
-### 5.4 Allele Frequency Dynamics
-
-```{r, warning=FALSE, fig.width = 22, fig.height = 10, dpi=1200, echo=FALSE}
-#| label: AF_CSNSFS_model_comparison
-mono1 <- read.csv("../../Output.dir/NS.dir/genome10_n100_H0.1.csv")
-mono2 <-  read.csv("../../Output.dir/CS.dir/genome10_n100_H0.1SD1.csv")
-mono3 <- read.csv("../../Output.dir/SinFSGen.dir/genome10_n100_H0.1SD1.csv")
-
-
-# Add a column to distinguish the datasets
-geno_file <- mono1 %>% mutate(Selection = "Null model")
-geno_file2 <- mono2 %>% mutate(Selection = "Constant model")
-geno_file3 <- mono3 %>% mutate(Selection = "Complex Gradual I")
-
-Genome_dataset <- rbind(geno_file, 
-                        geno_file2, geno_file3) %>% 
-  mutate(Selection = fct_relevel(Selection, 
-                                 "Null model", 
-                                 "Constant model",
-                                 "Complex Gradual I"))
-
-## Select 30 random positions
-  set.seed(12345)
-  selected_positions <- Genome_dataset %>%
-  distinct(Position) %>%
-  sample_n(size = min(30, n()), replace = FALSE) %>%
-  pull(Position)
-
- Genome_dataset <- Genome_dataset %>%
-   filter(Position %in% selected_positions)
-# Effect sizes for highlighted positions
-pos_meta <- tibble::tribble(
-  ~Position, ~effect_size,
-    982341,   0.000008,
-   #1067762,   0.140653,
-    811499,   3.562828
-   # 323379,   2.431675
-) %>%
-  mutate(beta_lab = sprintf("\u03B2=%s", signif(effect_size, 3)))
-
-# Colors (Okabe–Ito palette)
-col_vals <- setNames(
-  c("#0072B2", "darkred"),#"#D55E00", "#009E73", "#CC79A7"
-  pos_meta$beta_lab
-)
-
-df <- Genome_dataset %>%
-  filter(Generation <= 1000) %>%
-  left_join(pos_meta, by = "Position") %>%
-  mutate(is_highlight = !is.na(effect_size))
-
-# Right-edge labels (effect only)
-lab_df <- df %>%
-  filter(is_highlight) %>%
-  group_by(Selection, Position, beta_lab) %>%
-  filter(Generation == max(Generation)) %>%
-  ungroup()
-
-AF_CSNSFS_model_comparison <-
-  ggplot(df, aes(Generation, Frequency, group = Position)) +
-  # Background
-  geom_line(data = dplyr::filter(df, !is_highlight),
-            color = "grey70", linewidth = 0.5, alpha = 0.6) +
-  geom_line(data = dplyr::filter(df, is_highlight),
-            aes(color = beta_lab), linewidth = 1.1, alpha = 0.95) +
-  scale_color_manual(name = "Effect size", values = col_vals) +
-  facet_wrap(Selection ~ .) +
-  labs(title = "Allele Frequency Dynamics", x = "Generation", y = "Allele Frequency") +
-  theme_bw() +
-  theme(legend.position = "bottom") +
-  mythemes
-
-ggsave("AF_CSNSFS_model_comparison.jpg", 
-       plot = AF_CSNSFS_model_comparison, 
-       dpi = 600, width = 30, height = 20,
-       units = "in", bg = "white", path = "../OutputFigures.dir")
-
-print(AF_CSNSFS_model_comparison)
-
-```
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 10, dpi=1200, echo=FALSE}
-run_fft_by_selection <- function(
-  folder_paths,                   
-  pattern,                        
-  selection_labels = NULL, 
-  spectrum_span = 2, 
-  max_period = NULL,
-  selection_levels = c("Null model", 
-                       "Constant model", 
-                       "Complex Gradual I")
-) {
-  suppressPackageStartupMessages({
-    library(dplyr)
-    library(stringr)
-    library(foreach)
-    library(doParallel)
-    library(readr)
-    library(ggplot2)
-  })
-  if (requireNamespace("cowplot", quietly = TRUE)) {
-    theme_set(cowplot::theme_cowplot())
-  } else {
-    theme_set(theme_bw())
-  }
-
-  # collect all files from all dirs
-  folder_paths <- as.character(folder_paths)
-  stopifnot(length(folder_paths) >= 1)
-
-  file_list <- unlist(lapply(folder_paths, function(p) {
-    list.files(path = p, pattern = pattern, full.names = TRUE)
-  }), use.names = FALSE)
-
-  if (length(file_list) == 0) {
-    stop("No files found across the provided directories with the given pattern.")
-  }
-
-  files_df <- tibble(file_path = file_list) %>%
-    mutate(
-      base_name = basename(file_path),
-      dir_base = basename(dirname(file_path)),
-      # replicate: prefer _repl#, else genome#
-      replicate = coalesce(str_extract(base_name, "(?<=_repl)\\d+") %>% as.integer(),
-                      str_extract(base_name, "(?<=genome)\\d+") %>% as.integer()),
-      n = str_extract(base_name, "(?<=_n)\\d+") %>% as.integer(),
-      H = str_extract(base_name, "(?<=_H)\\d+(?:\\.\\d+)?") %>% as.numeric(),
-      SD = str_extract(base_name, "(?<=SD)\\d+(?:\\.\\d+)?") %>% as.numeric(),  # optional
-      Gen = str_extract(base_name, "(?<=Gen)\\d+") %>% as.integer() # optional
-    )
-
-  map_selection <- function(d) {
-    if (!is.null(selection_labels) && !is.na(selection_labels[d])) {
-      return(selection_labels[d])
-    }
-    if (grepl("^NS", d, ignore.case = TRUE)) return("Null model")
-    if (grepl("^CS", d, ignore.case = TRUE)) return("Constant model")
-    if (grepl("SinFSGen|FourSeas|Grad", d, ignore.case = TRUE))
-      return("Complex Gradual I")
-    d
-  }
-  files_df <- files_df %>% mutate(Selection = vapply(dir_base, map_selection, character(1)))
-
-  num_cores_to_use <- min(detectCores() - 16, 64) # check the cores before
-  cluster_type   <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- makeCluster(num_cores_to_use, type = cluster_type)
-  registerDoParallel(cl)
-
-  # read each file, mean across positions per generation (replicate-level series)
-  per_file_means <- foreach(i = seq_len(nrow(files_df)), .packages = c("dplyr", "readr")) %dopar% {
-    f <- files_df[i, ]
-    dat <- readr::read_csv(f$file_path, show_col_types = FALSE)
-
-    # Expect: Position, Generation, Frequency
-    # Aggregate across positions per generation
-    dat %>%
-      transmute(
-        generation = as.integer(Generation),
-        allele_frequency = as.numeric(Frequency)
-      ) %>%
-      group_by(generation) %>%
-      summarise(mean_allele_frequency = mean(allele_frequency, na.rm = TRUE), .groups = "drop") %>%
-      mutate(
-        Selection = f$Selection,
-        replicate = ifelse(is.na(f$replicate), i, f$replicate),
-        base_name = f$base_name,
-        n = f$n,
-        H = f$H,
-        SD = f$SD,  
-        Gen = f$Gen 
-      )
-  }
-  series_df <- bind_rows(per_file_means)
-
-  # build time series per Selection and replicate
-  ts_df <- series_df %>%
-    arrange(Selection, replicate, generation) %>%
-    group_by(Selection, replicate, n, H, SD, Gen) %>%
-    summarise(
-      ts_data = list(ts(mean_allele_frequency,
-                        start = min(generation, na.rm = TRUE),
-                        frequency = 1)),
-      .groups = "drop"
-    )
-
-  # spectra
-  spec_list <- foreach(i = seq_len(nrow(ts_df)), .packages = "stats") %dopar% {
-    spectrum(ts_df$ts_data[[i]], spans = spectrum_span, plot = FALSE)
-  }
-
-  # assemble plot data
-  plot_df <- bind_rows(lapply(seq_along(spec_list), function(i) {
-    s <- spec_list[[i]]
-    p <- ts_df[i, ]
-    tibble(
-      Period    = 1 / s$freq,
-      Spectrum  = s$spec,
-      Selection = p$Selection,
-      replicate = p$replicate,
-      n  = p$n, H = p$H, SD = p$SD, Gen = p$Gen
-    )
-  }))
-
-  if (!is.null(max_period)) {
-    plot_df <- plot_df %>% filter(Period <= max_period)%>%
-    mutate(
-      Selection = stringr::str_trim(Selection),
-      Selection = factor(Selection, levels = selection_levels)
-    )
-  }
- closeAllConnections()
-  ggplot(plot_df, aes(Period, Spectrum, color = factor(replicate), 
-                      group = factor(replicate))) +
-    geom_line(linewidth = 1.0, alpha = 0.9) +
-    scale_y_continuous(labels = scales::scientific_format()) +
-    labs(
-      title = "Spectral Density",
-      x = "Period (Generations)", y = "Spectrum Density", color = "Replicate"
-    ) +
-    facet_wrap(~ Selection, scales = "free_y", ncol = 3)+
-    mythemes
-}
-
-dirs <- c(
-  "../../Output.dir/NS.dir",
-  "../../Output.dir/CS.dir",
-  "../../Output.dir/SinFSGen.dir"
-)
-
-sel_map <- c(
-  "NS.dir" = "Null model",
-  "CS.dir" = "Constant model",
-  "SinFSGen.dir" = "Complex Gradual I"
-)
-
-pattern <- "^genome\\d+_n(100)_H0\\.(1)(SD(1))?(Gen(10))?\\.csv$"
-
-spec_plot <- run_fft_by_selection(
-  folder_paths     = dirs,
-  pattern          = pattern,
-  selection_labels = sel_map,
-  spectrum_span    = 2,  
-  max_period       = 80
-)
-
-spec_plot
-```
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 20, dpi=1200, echo=FALSE}
-#| label: Spectral_Null_Constant_and_GradII_Polygenic
-library(cowplot)
-library(ggplot2)
-
-neut_spec_plots <- AF_CSNSFS_model_comparison + 
-  theme(axis.title = element_blank())
-
-gradII_spec_plots <- spec_plot + 
-  theme(axis.title = element_blank())
-
-adjusted_neut_spec_plots <- neut_spec_plots +
-  theme(
-    plot.margin = margin(t = 1,  # top
-                         r = 2,  # right
-                         b = 1,  # bottom
-                         l = 1,  # left
-                         unit = "lines")
-  )
-
-
-adjusted_gradII_spec_plots <- gradII_spec_plots +
-  theme(
-    plot.margin = margin(t = 1,
-                         r = 1,
-                         b = 1,
-                         l = 2,
-                         unit = "lines")
-  )
-
-Spectral_Null_Constant_and_GradII_Polygenic <- plot_grid(
-  adjusted_neut_spec_plots,
-  adjusted_gradII_spec_plots,
-  ncol = 1,
-  rel_widths = c(1, 1.2)
-)
-
-
-#Spectral_Null_Constant_and_GradII_Polygenic.jpg
-# 
- ggsave("Figure7.jpg", plot = Spectral_Null_Constant_and_GradII_Polygenic, width = 35, height = 20, bg = "white", path = "../OutputFigures.dir")
-
-
-print(Spectral_Null_Constant_and_GradII_Polygenic)
-
-```
-
-## Extra Code, not for published paper. This is to consider spectal analysis for some generations, not all 2000.
-
-## 6. Sampled Generations Spectral Analysis
-
-### 6.1 Spectral Instantaneous sampled Generations: End vs End_Mid Samples
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 15, echo=FALSE, dpi = 1200}
-#| label: Instant_Poly_SpecAnalysis_Sampled
-
-library(doParallel)
-library(foreach)
-library(dplyr)
-library(ggplot2)
-
-run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(2, 2),
-                             sampling_scheme = c("end", "mid_end")) {
-
-  sampling_scheme <- match.arg(sampling_scheme)
-
-  last_dir <- basename(normalizePath(folder_path))
-
-  file_list <- list.files(
-    path = folder_path,
-    pattern = pattern,
-    full.names = TRUE
-  )
-
-  if (length(file_list) == 0) {
-    stop("No files are found")
-  } else {
-    cat("The number of files is ", length(file_list), "\n")
-  }
-
-  files_df <- data.frame(file_name = file_list) %>%
-    dplyr::mutate(
-      base_name = basename(file_name),
-      genome = ifelse(
-        grepl("genome\\d+", base_name),
-        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-        NA_real_
-      ),
-      n = ifelse(
-        grepl("_n\\d+", base_name),
-        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-        NA_real_
-      ),
-      H = ifelse(
-        grepl("_H[0-9]+\\.?[0-9]*", base_name),
-        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-        NA_real_
-      ),
-      SD = ifelse(
-        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-        NA_real_
-      ),
-      Gen = ifelse(
-        grepl("Gen\\d+", base_name),
-        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-        NA_real_
-      )
-    ) %>%
-    dplyr::mutate(
-      param_combination = paste0(
-        "n_", n, "_H", H,
-        ifelse(!is.na(SD),  paste0("_SD", SD),  ""),
-        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
-      )
-    )
-
-  # Use Hihj and Low coombinations only
-  files_df <- files_df %>%
-    dplyr::filter(
-      (H == 0.1 & SD == 1 & Gen == 10) |
-      (H == 0.8 & SD == 4 & Gen == 30)
-    )
-
-
-  cores_available <- parallel::detectCores(logical = TRUE)
-  num_cores_to_use <- max(1, min(cores_available - 2, 32))
-  cluster_type <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- parallel::makeCluster(num_cores_to_use, type = cluster_type)
-  on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
-  doParallel::registerDoParallel(cl)
-
-  combined_data_list <- foreach::foreach(
-    i = seq_along(files_df$file_name),
-    .packages = c("dplyr"),
-    .export   = "sampling_scheme"
-  ) %dopar% {
-    file   <- files_df$file_name[i]
-    params <- files_df[i, ]
-
-    full_df <- utils::read.csv(file, stringsAsFactors = FALSE)
-
-    out <- full_df %>%
-      dplyr::mutate(
-        allele_id = as.factor(Position),
-        generation  = as.numeric(Generation),
-        allele_frequency = Frequency,
-        sample_size = 10000,
-        file = params$base_name,
-        genome = params$genome,
-        n = params$n,
-        H = params$H,
-        SD = params$SD,
-        Gen = params$Gen,
-        param_combination = params$param_combination
-      ) %>%
-      dplyr::select(
-        allele_id, generation, allele_frequency, sample_size, file,
-        genome, n, H, SD, Gen, param_combination
-      ) %>%
-      dplyr::group_by(allele_id)
-
-    if (sampling_scheme == "end") {
-      out <- out %>%
-        dplyr::filter(generation == min(generation) |
-                      generation %% Gen == 0)
-    } else {
-      out <- out %>%
-        dplyr::filter(generation == min(generation) |
-                      generation %% (Gen / 2) == 0)
-    }
-
-    out %>% dplyr::ungroup()
-  }
-
-  combined_data <- dplyr::bind_rows(combined_data_list)
-
-
-  mean_allele_data <- combined_data %>%
-    dplyr::group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
-    dplyr::summarize(
-      mean_allele_frequency = mean(allele_frequency),
-      .groups = "drop"
-    ) %>%
-    dplyr::arrange(n, genome, H, SD, Gen, param_combination, generation)
-
-  ts_data_list <- mean_allele_data %>%
-    dplyr::group_by(n, genome, H, SD, Gen, param_combination) %>%
-    dplyr::summarize(
-      ts_data = list(stats::ts(mean_allele_frequency,
-                               start = min(generation),
-                               frequency = 1)),
-      .groups = "drop"
-    )
-
-  spec_results_list <- lapply(ts_data_list$ts_data, function(ts_data) {
-    spans_use <- if (length(ts_data) >= 8) spectrum_span else NULL
-    stats::spectrum(ts_data, spans = spans_use, plot = FALSE)
-  })
-
-  plot_data_list <- vector("list", length(spec_results_list))
-  for (i in seq_along(spec_results_list)) {
-    spec_result = spec_results_list[[i]]
-    params  = ts_data_list[i, ]
-
-    # Rescale period from sample-steps to generations
-    interval <- if (sampling_scheme == "end") params$Gen else params$Gen / 2
-    period_samples <- 1 / spec_result$freq
-
-    df_spec = data.frame(
-      Period_samples = period_samples,
-      Period = period_samples * interval,
-      Spectrum = spec_result$spec,
-      n = params$n,
-      genome = params$genome,
-      H = params$H,
-      SD = params$SD,
-      Gen = params$Gen,
-      param_combination = params$param_combination
-    )
-    plot_data_list[[i]] = df_spec
-  }
-
-  plot_data = dplyr::bind_rows(plot_data_list)
-
-  plot_data <- plot_data %>%
-    dplyr::group_by(param_combination) %>%
-    dplyr::mutate(
-      threshold = dplyr::case_when(
-        Gen == 10 ~ 40,
-        Gen == 30 ~ 80,
-        TRUE ~ max(Period)
-      )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(
-      Period < threshold &
-        (
-          (H == 0.1 & SD == 1 & Gen == 10) |
-          (H == 0.8 & SD == 4 & Gen == 30)
-        )
-    ) %>%
-    dplyr::mutate(
-      H_SD_Gen = paste0("h\u00B2 = ", H, " \u0394 = ", SD, " Gen=", Gen)
-    )
-
-  scheme_title <- if (sampling_scheme == "end") {
-    "A) Spectral Density: Sampling at the end of each season"
-  } else {
-    "B) Spectral Density: Sampling at the middle & end of each season"
-  }
-
-  spec_plot_comb1 = ggplot2::ggplot(
-    plot_data,
-    ggplot2::aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
-  ) +
-    ggplot2::geom_line(linewidth = 3) +
-    ggplot2::facet_wrap(~ H_SD_Gen, scales = "free", ncol = 2) +
-    ggplot2::scale_y_continuous(labels = scales::label_number()) +
-    ggplot2::labs(
-      title = scheme_title, x = "Period (Generations)", y = "Spectral Density"
-    ) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(text = ggplot2::element_text(family = "sans"),
-        legend.position = "none",
-        axis.text = ggplot2::element_text(size = 20, face = "bold"),
-        axis.line = ggplot2::element_line(size = 3),
-        strip.text = ggplot2::element_text(size = 17, face = "bold"),
-        plot.title = ggplot2::element_text(hjust = 0.01, face = "bold", size = 40),
-        axis.title.x = ggplot2::element_text(margin = ggplot2::margin(t = 20), size = 20, face = "bold"),
-        axis.title.y = ggplot2::element_text(margin = ggplot2::margin(r = 25), size = 20, face = "bold"),
-        panel.spacing = ggplot2::unit(4, "lines"))
-
-  return(spec_plot_comb1)
-}
-
-###############################################################################
-################## Running The Function for Spectral Analysis ####################
-###############################################################################
-
-dirpath    <- "../../Output.dir/LinFS.dir/"
-my_pattern <- "^genome\\d+_n100_H0\\.(1SD1Gen10|8SD4Gen30)\\.csv$"
-
-library(patchwork)
-
-plot_end     <- run_fft_analysis(dirpath, my_pattern, sampling_scheme = "end")
-plot_mid_end <- run_fft_analysis(dirpath, my_pattern, sampling_scheme = "mid_end")
-
-combined_plot <- plot_end / plot_mid_end
-
-jpeg_device <- if (requireNamespace("ragg", quietly = TRUE)) ragg::agg_jpeg else "jpeg"
-
-ggsave("Seasonal_Instant_Poly_SpecAnalysis_Combined_2000.jpg",
-       plot = combined_plot,
-       device = jpeg_device,
-       dpi = 300, width = 25, height = 30, units = "in",
-       path = "../OutputFigures.dir/SpectralDensity.dir")
-
-combined_plot
-
-```
-
-#### Only first 500 Generations
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 15, echo=FALSE, dpi = 1200}
-
-library(doParallel)
-library(foreach)
-library(dplyr)
-library(ggplot2)
-
-run_fft_analysis <- function(folder_path, pattern, spectrum_span = c(2, 2),
-                             sampling_scheme = c("end", "mid_end"),
-                             max_generation = 500) {
-
-  sampling_scheme <- match.arg(sampling_scheme)
-
-  last_dir <- basename(normalizePath(folder_path))
-
-  file_list <- list.files(
-    path = folder_path,
-    pattern = pattern,
-    full.names = TRUE
-  )
-
-
-  files_df <- data.frame(file_name = file_list) %>%
-    dplyr::mutate(
-      base_name = basename(file_name),
-      genome = ifelse(
-        grepl("genome\\d+", base_name),
-        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-        NA_real_
-      ),
-      n = ifelse(
-        grepl("_n\\d+", base_name),
-        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-        NA_real_
-      ),
-      H = ifelse(
-        grepl("_H[0-9]+\\.?[0-9]*", base_name),
-        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-        NA_real_
-      ),
-      SD = ifelse(
-        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-        NA_real_
-      ),
-      Gen = ifelse(
-        grepl("Gen\\d+", base_name),
-        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-        NA_real_
-      )
-    ) %>%
-    dplyr::mutate(
-      param_combination = paste0(
-        "n_", n, "_H", H,
-        ifelse(!is.na(SD),  paste0("_SD", SD),  ""),
-        ifelse(!is.na(Gen), paste0("_Gen", Gen), "")
-      )
-    )
-
-  # Keep only the high (0.8/4/30) and low (0.1/1/10) combinations
-  files_df <- files_df %>%
-    dplyr::filter(
-      (H == 0.1 & SD == 1 & Gen == 10) |
-      (H == 0.8 & SD == 4 & Gen == 30)
-    )
-
-
-  cores_available <- parallel::detectCores(logical = TRUE)
-  num_cores_to_use <- max(1, min(cores_available - 2, 32))
-  cluster_type <- if (.Platform$OS.type == "windows") "PSOCK" else "FORK"
-  cl <- parallel::makeCluster(num_cores_to_use, type = cluster_type)
-  on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
-  doParallel::registerDoParallel(cl)
-
-  combined_data_list <- foreach::foreach(
-    i = seq_along(files_df$file_name),
-    .packages = c("dplyr"),
-    .export   = c("sampling_scheme", "max_generation")
-  ) %dopar% {
-    file   <- files_df$file_name[i]
-    params <- files_df[i, ]
-
-    full_df <- utils::read.csv(file, stringsAsFactors = FALSE)
-
-    out <- full_df %>%
-      dplyr::mutate(
-        allele_id = as.factor(Position),
-        generation  = as.numeric(Generation),
-        allele_frequency = Frequency,
-        sample_size = 10000,
-        file = params$base_name,
-        genome = params$genome,
-        n = params$n,
-        H = params$H,
-        SD = params$SD,
-        Gen = params$Gen,
-        param_combination = params$param_combination
-      ) %>%
-      dplyr::select(
-        allele_id, generation, allele_frequency, sample_size, file,
-        genome, n, H, SD, Gen, param_combination
-      ) %>%
-      dplyr::filter(generation <= max_generation) %>%   # first 500 generations only
-      dplyr::group_by(allele_id)
-
-    if (sampling_scheme == "end") {
-      out <- out %>%
-        dplyr::filter(generation == min(generation) |
-                      generation %% Gen == 0)
-    } else {
-      out <- out %>%
-        dplyr::filter(generation == min(generation) |
-                      generation %% (Gen / 2) == 0)
-    }
-
-    out %>% dplyr::ungroup()
-  }
-
-  combined_data <- dplyr::bind_rows(combined_data_list)
-
-  mean_allele_data <- combined_data %>%
-    dplyr::group_by(generation, n, genome, H, SD, Gen, param_combination) %>%
-    dplyr::summarize(
-      mean_allele_frequency = mean(allele_frequency),
-      .groups = "drop"
-    ) %>%
-    dplyr::arrange(n, genome, H, SD, Gen, param_combination, generation)
-
-  ts_data_list <- mean_allele_data %>%
-    dplyr::group_by(n, genome, H, SD, Gen, param_combination) %>%
-    dplyr::summarize(
-      ts_data = list(stats::ts(mean_allele_frequency,
-                               start = min(generation),
-                               frequency = 1)),
-      .groups = "drop"
-    )
-
-  spec_results_list <- lapply(ts_data_list$ts_data, function(ts_data) {
-    spans_use <- if (length(ts_data) >= 8) spectrum_span else NULL
-    stats::spectrum(ts_data, spans = spans_use, plot = FALSE)
-  })
-
-  plot_data_list <- vector("list", length(spec_results_list))
-  for (i in seq_along(spec_results_list)) {
-    spec_result = spec_results_list[[i]]
-    params  = ts_data_list[i, ]
-
-    # Rescale period from sample-steps to generations
-    interval <- if (sampling_scheme == "end") params$Gen else params$Gen / 2
-    period_samples <- 1 / spec_result$freq
-
-    df_spec = data.frame(
-      Period_samples = period_samples,
-      Period = period_samples * interval,
-      Spectrum = spec_result$spec,
-      n = params$n,
-      genome = params$genome,
-      H = params$H,
-      SD = params$SD,
-      Gen = params$Gen,
-      param_combination = params$param_combination
-    )
-    plot_data_list[[i]] = df_spec
-  }
-
-  plot_data = dplyr::bind_rows(plot_data_list)
-
-
-  plot_data <- plot_data %>%
-    dplyr::group_by(param_combination) %>%
-    dplyr::mutate(
-      threshold = dplyr::case_when(
-        Gen == 10 ~ 60,
-        Gen == 30 ~ 150,
-        TRUE ~ max(Period)
-      )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(
-      Period < threshold &
-        (
-          (H == 0.1 & SD == 1 & Gen == 10) |
-          (H == 0.8 & SD == 4 & Gen == 30)
-        )
-    ) %>%
-    dplyr::mutate(
-      H_SD_Gen = paste0("h\u00B2 = ", H, " \u0394 = ", SD, " Gen=", Gen)
-    )
-
-  scheme_title <- if (sampling_scheme == "end") {
-    "A) Spectral Density: Sampling at the end of each season"
-  } else {
-    "B) Spectral Density: Sampling at the middle & end of each season"
-  }
-
-  spec_plot_comb1 = ggplot2::ggplot(
-    plot_data,
-    ggplot2::aes(x = Period, y = Spectrum, color = factor(genome), group = factor(genome))
-  ) +
-    ggplot2::geom_line(linewidth = 3) +
-    ggplot2::facet_wrap(~ H_SD_Gen, scales = "free", ncol = 2) +
-    ggplot2::scale_y_continuous(labels = scales::label_number()) +
-    ggplot2::labs(
-      title = scheme_title, x = "Period (Generations)", y = "Spectral Density"
-    ) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(text = ggplot2::element_text(family = "sans"),
-        legend.position = "none",
-        axis.text = ggplot2::element_text(size = 20, face = "bold"),
-        axis.line = ggplot2::element_line(size = 3),
-        strip.text = ggplot2::element_text(size = 17, face = "bold"),
-        plot.title = ggplot2::element_text(hjust = 0.01, face = "bold", size = 40),
-        axis.title.x = ggplot2::element_text(margin = ggplot2::margin(t = 20), size = 20, face = "bold"),
-        axis.title.y = ggplot2::element_text(margin = ggplot2::margin(r = 25), size = 20, face = "bold"),
-        panel.spacing = ggplot2::unit(4, "lines"))
-
-  return(spec_plot_comb1)
-}
-
-###############################################################################
-################## Run The Function for Spectral Analysis ####################
-###############################################################################
-
-dirpath    <- "../../Output.dir/LinFS.dir/"
-my_pattern <- "^genome\\d+_n100_H0\\.(1SD1Gen10|8SD4Gen30)\\.csv$"
-
-library(patchwork)
-
-plot_end     <- run_fft_analysis(dirpath, my_pattern, sampling_scheme = "end")
-plot_mid_end <- run_fft_analysis(dirpath, my_pattern, sampling_scheme = "mid_end")
-
-combined_plot <- plot_end / plot_mid_end
-
-jpeg_device <- if (requireNamespace("ragg", quietly = TRUE)) ragg::agg_jpeg else "jpeg"
-
-ggsave("Seasonal_Instant_Poly_SpecAnalysis_Combined_500.jpg",
-       plot = combined_plot,
-       device = jpeg_device,
-       dpi = 300, width = 25, height = 30, units = "in",
-       path = "../OutputFigures.dir/SpectralDensity.dir")
-
-combined_plot
-```
-
-#### Ten Samples Only
-
-```{r, warning=FALSE, fig.width = 30, fig.height = 15, echo=FALSE, dpi = 1200}
-
-library(dplyr)
-library(ggplot2)
-library(purrr)
-library(tibble)
-library(tidyr)
-library(scales)
-library(patchwork)
-
-
-###############################################################################
-#################### Defining files, number of sequency, and the spans#######
-###############################################################################
-
-dirpath <- "../../Output.dir/LinFS.dir/"
-my_pattern <- "^genome\\d+_n100_H0\\.(1|8)SD(1|4)Gen(10|30)\\.csv$"
-
-# Number of sampled time points after the first generation
-nseq <- 10
-
-# Spectral smoothing span
-spectrum_span <- 2
-
-###############################################################################
-########################## Extracting parameters ##############################
-###############################################################################
-
-parse_simulation_files <- function(dirpath, pattern) {
-  
-  file_list <- list.files(
-    path = dirpath,
-    pattern = pattern,
-    full.names = TRUE
-  )
-  
-
-  files_df <- tibble(file_name = file_list) %>%
-    mutate(
-      base_name = basename(file_name),
-      
-      replicate = ifelse(
-        grepl("genome\\d+", base_name),
-        as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-        NA_real_
-      ),
-      
-      n = ifelse(
-        grepl("_n\\d+", base_name),
-        as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-        NA_real_
-      ),
-      
-      H = ifelse(
-        grepl("_H[0-9]+\\.?[0-9]*", base_name),
-        as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-        NA_real_
-      ),
-      
-      SD = ifelse(
-        grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-        as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-        NA_real_
-      ),
-      
-      Gen = ifelse(
-        grepl("Gen\\d+", base_name),
-        as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-        NA_real_
-      )
-    ) %>%
-    mutate(
-      parameter_label = case_when(
-        H == 0.1 & SD == 1 & Gen == 10 ~ "h² = 0.1 Δ = 1 Gen=10",
-        H == 0.8 & SD == 4 & Gen == 30 ~ "h² = 0.8 Δ = 4 Gen=30",
-        TRUE ~ paste0("h² = ", H, " Δ = ", SD, " Gen=", Gen)
-      )
-    )
-  
-  files_df
-}
-
-###############################################################################
-########################## Function for spectral analysis######################
-###############################################################################
-
-run_fft_one_file <- function(
-    file_name,
-    replicate,
-    H,
-    SD,
-    Gen,
-    parameter_label,
-    nseq = 10,
-    spectrum_span = 2
-) {
-  
-  full_df <- utils::read.csv(file_name, stringsAsFactors = FALSE)
-  
-  interval <- Gen
-  
-  #first_generation <- min(full_df$Generation, na.rm = TRUE)
-  
-  #########################################################################
-  #### Sampling 1: first generation + first nseq end samples ########
-  #########################################################################
-  
-  end_generations <- c(
-    #first_generation,
-    seq(
-      from = interval,
-      by = interval,
-      length.out = nseq
-    )
-  ) %>%
-    unique() %>%
-    sort()
-  
-  gens_end <- full_df %>%
-    filter(Generation %in% end_generations) %>%
-    mutate(
-      allele_id = as.factor(Position),
-      sampling_scheme = "End",
-      sampling_interval = interval
-    )
-  
-  #########################################################################
-  #### Sampling 2: first generation + first nseq mid/end samples ####
-  #########################################################################
-  
-  mid_end_generations <- c(
-   # first_generation,
-    seq(
-      from = interval / 2,
-      by = interval / 2,
-      length.out = nseq
-    )
-  ) %>%
-    unique() %>%
-    sort()
-  
-  gens_mid_end <- full_df %>%
-    filter(Generation %in% mid_end_generations) %>%
-    mutate(
-      allele_id = as.factor(Position),
-      sampling_scheme = "Mid & End",
-      sampling_interval = interval / 2
-    )
-  
-  #########################################################################
-  #### Combine sampled data ###############################################
-  #########################################################################
-  
-  sampled_data <- bind_rows(
-    gens_end,
-    gens_mid_end
-  )
-  
-  
-  #########################################################################
-  #### Mean allele frequency per sampled generation #######################
-  #########################################################################
-  
-  mean_allele_data <- sampled_data %>%
-    group_by(sampling_scheme, sampling_interval, Generation) %>%
-    summarize(
-      mean_allele_frequency = mean(Frequency, na.rm = TRUE),
-      .groups = "drop"
-    ) %>%
-    arrange(sampling_scheme, Generation)
-  
-  #########################################################################
-  #### Computing the spectral density ######################################
-  #########################################################################
-  
-  spectrum_data <- mean_allele_data %>%
-    group_by(sampling_scheme, sampling_interval) %>%
-    summarize(
-      n_timepoints = n(),
-      sampled_generations = list(Generation),
-      ts_data = list(stats::ts(mean_allele_frequency, frequency = 1)),
-      .groups = "drop"
-    ) %>%
-    filter(n_timepoints >= 4) %>%
-    mutate(
-      spec_result = map(
-        ts_data,
-        ~ stats::spectrum(
-          .x,
-          spans = spectrum_span,
-          plot = FALSE
-        )
-      )
-    ) %>%
-    mutate(
-      spectrum_tbl = map2(
-        spec_result,
-        sampling_interval,
-        ~ tibble(
-          Period_sample_units = 1 / .x$freq,
-          
-          # Convert period from sampled observations to real generations
-          Period = (1 / .x$freq) * .y,
-          
-          Spectrum = as.numeric(.x$spec)
-        )
-      )
-    ) %>%
-    select(
-      sampling_scheme,
-      sampling_interval,
-      n_timepoints,
-      sampled_generations,
-      spectrum_tbl
-    ) %>%
-    tidyr::unnest(spectrum_tbl) %>%
-    mutate(
-      replicate = replicate,
-      H = H,
-      SD = SD,
-      Gen = Gen,
-      parameter_label = parameter_label,
-      file = basename(file_name)
-    )
-  
-  spectrum_data
-}
-
-###############################################################################
-########################## Low/High Multiple-File FFT ####################
-###############################################################################
-
-run_fft_low_high_multiple_files <- function(
-    dirpath,
-    pattern,
-    nseq = 10,
-    spectrum_span = 2,
-    show_legend = FALSE
-) {
-  
-  files_df <- parse_simulation_files(
-    dirpath = dirpath,
-    pattern = pattern
-  )
-  
-  #########################################################################
-  #### Keep only high and low combinations #############################
-  #########################################################################
-  
-  files_df <- files_df %>%
-    filter(
-      (H == 0.1 & SD == 1 & Gen == 10) |
-        (H == 0.8 & SD == 4 & Gen == 30)
-    ) %>%
-    mutate(
-      parameter_label = case_when(
-        H == 0.1 & SD == 1 & Gen == 10 ~ "h² = 0.1 Δ = 1 Gen=10",
-        H == 0.8 & SD == 4 & Gen == 30 ~ "h² = 0.8 Δ = 4 Gen=30"
-      ),
-      parameter_label = factor(
-        parameter_label,
-        levels = c(
-          "h² = 0.1 Δ = 1 Gen=10",
-          "h² = 0.8 Δ = 4 Gen=30"
-        )
-      )
-    )
-  
-  
-  #########################################################################
-  #### Apply FFT to each replicate/file ###################################
-  #########################################################################
-  
-  plot_data <- pmap_dfr(
-    list(
-      file_name = files_df$file_name,
-      replicate = files_df$replicate,
-      H = files_df$H,
-      SD = files_df$SD,
-      Gen = files_df$Gen,
-      parameter_label = files_df$parameter_label
-    ),
-    function(file_name, replicate, H, SD, Gen, parameter_label) {
-      run_fft_one_file(
-        file_name = file_name,
-        replicate = replicate,
-        H = H,
-        SD = SD,
-        Gen = Gen,
-        parameter_label = parameter_label,
-        nseq = nseq,
-        spectrum_span = spectrum_span
-      )
-    }
-  )
-  
-  
-  #########################################################################
-  #### Clean labels and enforce order #####################################
-  #########################################################################
-  
-  plot_data <- plot_data %>%
-    mutate(
-      replicate = factor(replicate),
-      sampling_scheme = factor(
-        sampling_scheme,
-        levels = c("End", "Mid & End")
-      ),
-      parameter_label = factor(
-        parameter_label,
-        levels = c(
-          "h² = 0.1 Δ = 1 Gen=10",
-          "h² = 0.8 Δ = 4 Gen=30"
-        )
-      )
-    )
-  
-  #########################################################################
-  #### The sa,pling includes the very first generation #############################
-  #########################################################################
-  # With the first generation included, the time series has one extra point,
-  # but the regular sampling interval used for period conversion remains:
-  #
-  # End:       Gen
-  # Mid & End: Gen / 2
-  
-  plot_data <- plot_data %>%
-    mutate(
-      period_min = case_when(
-        sampling_scheme == "End" ~ 1, #2 * Gen,
-        sampling_scheme == "Mid & End" ~ 1, #~ Gen,
-        TRUE ~ NA_real_
-      ),
-      period_max = case_when(
-        sampling_scheme == "End" ~ 5 * Gen,
-        sampling_scheme == "Mid & End" ~ 5 * Gen,
-        TRUE ~ NA_real_
-      )
-    ) %>%
-    filter(
-      Period >= period_min,
-      Period <= period_max
-    )
-
-  #########################################################################
-  #### Split into End and Mid & End #######################################
-  #########################################################################
-  
-  plot_data_end <- plot_data %>%
-    filter(sampling_scheme == "End")
-  
-  plot_data_mid_end <- plot_data %>%
-    filter(sampling_scheme == "Mid & End")
-  
-  #########################################################################
-  #### Common theme #######################################################
-  #########################################################################
-  
-  theme_spectral <- theme_classic() +
-    theme(
-      text = element_text(family = "sans"),
-      
-      legend.position = ifelse(show_legend, "right", "none"),
-      
-      axis.text = element_text(
-        size = 18,
-        face = "bold"
-      ),
-      
-      axis.title.x = element_text(
-        margin = margin(t = 16),
-        size = 20,
-        face = "bold"
-      ),
-      
-      axis.title.y = element_text(
-        margin = margin(r = 18),
-        size = 20,
-        face = "bold"
-      ),
-      
-      axis.line = element_line(
-        linewidth = 2.2
-      ),
-      
-      strip.text = element_text(
-        size = 15,
-        face = "bold"
-      ),
-      
-      plot.title = element_text(
-        hjust = 0.01,
-        face = "bold",
-        size = 34
-      ),
-      
-      legend.title = element_text(
-        size = 14,
-        face = "bold"
-      ),
-      
-      legend.text = element_text(
-        size = 12
-      ),
-      
-      panel.spacing = grid::unit(2.2, "lines")
-    )
-  
-  #########################################################################
-  #### A) End plot ########################################################
-  #########################################################################
-  
-  p_end <- ggplot(
-    plot_data_end,
-    aes(
-      x = Period,
-      y = Spectrum,
-      color = replicate,
-      group = replicate
-    )
-  ) +
-    geom_line(linewidth = 1.6, alpha = 0.85) +
-   # geom_point()+
-    facet_wrap(
-      ~ parameter_label,
-      scales = "free",
-      nrow = 1
-    ) +
-    scale_x_continuous(
-      breaks = scales::pretty_breaks(n = 5)
-    ) +
-    scale_y_continuous(
-      labels = scales::label_number()
-    ) +
-    labs(
-      title = "A) Spectral Density: Sampling at the end of each season",
-      x = "Period (Generations)",
-      y = "Spectral Density",
-      color = "Replicate"
-    ) +
-    theme_spectral
-  
-  #########################################################################
-  #### B) Mid & End plot ##################################################
-  #########################################################################
-  
-  p_mid_end <- ggplot(
-    plot_data_mid_end,
-    aes(
-      x = Period,
-      y = Spectrum,
-      color = replicate,
-      group = replicate
-    )
-  ) +
-    geom_line(linewidth = 1.6, alpha = 0.85) +
-     #geom_point()+ 
-    facet_wrap(
-      ~ parameter_label,
-      scales = "free",
-      nrow = 1
-    ) +
-    scale_x_continuous(
-      breaks = scales::pretty_breaks(n = 5)
-    ) +
-    scale_y_continuous(
-      labels = scales::label_number()
-    ) +
-    labs(
-      title = "B) Spectral Density: Sampling at the middle & end of each season",
-      x = "Period (Generations)",
-      y = "Spectral Density",
-      color = "Replicate"
-    ) +
-    theme_spectral
-  
-  #########################################################################
-  #### Combine with patchwork #############################################
-  #########################################################################
-  
-  final_plot <- p_end / p_mid_end
-  
-  #return(final_plot)
-  
-  return(list(plot_data_end =plot_data_end, plot_data_mid_end = plot_data_mid_end, final_plot = final_plot))
-}
-
-###############################################################################
-########################## Run: Exact Low and High Combos ######################
-###############################################################################
-
-final_plot_low_high <- run_fft_low_high_multiple_files(
-  dirpath = dirpath,
-  pattern = my_pattern,
-  nseq = nseq,
-  spectrum_span = spectrum_span,
-  show_legend = FALSE
-)
-
-final_plot_low_high$final_plot
-
-# ###############################################################################
-# ########################## Save plot ###########################################
-# ###############################################################################
-# 
-# out_dir <- "../OutputFigures.dir"
-# 
-# if (!dir.exists(out_dir)) {
-#   dir.create(out_dir, recursive = TRUE)
-# }
-# 
-# ggsave(
-#   filename = file.path(
-#     out_dir,
-#     "SpectralDensity_End_vs_MidEnd_FirstGeneration_First10Samples_ExactLowHigh_ByReplicate.pdf"
-#   ),
-#   plot = final_plot_low_high,
-#   width = 24,
-#   height = 12,
-#   units = "in",
-#   device = "pdf",
-#   limitsize = FALSE
-# )
-# 
-# ggsave(
-#   filename = file.path(
-#     out_dir,
-#     "SpectralDensity_End_vs_MidEnd_FirstGeneration_First10Samples_ExactLowHigh_ByReplicate.jpg"
-#   ),
-#   plot = final_plot_low_high,
-#   width = 24,
-#   height = 12,
-#   units = "in",
-#   dpi = 300,
-#   device = "jpeg",
-#   limitsize = FALSE
-# )
-endt <- final_plot_low_high$plot_data_end
-endt_f<- endt %>% filter(Gen == 10, SD == 1, H == 0.1, replicate==10)
-head(endt_f)
-nrow(endt_f)
-```
-
-#### Plots for constant Selection
-
-```{r, warning=FALSE, fig.width = 20, fig.height = 10, echo=FALSE, dpi = 1200}
-library(dplyr)
-library(ggplot2)
-library(purrr)
-library(tibble)
-library(tidyr)
-library(scales)
-library(patchwork)
-
-###############################################################################
-########################## Main reusable function ##############################
-###############################################################################
-
-run_fft_sampling_analysis <- function(
-    dirpath,
-    dataset_name = basename(normalizePath(dirpath)),
-    pattern = "^genome\\d+_n100_H0\\.(1|8)(SD(1|4))?(Gen(10|30))?\\.csv$",
-    nseq = 10,
-    spectrum_span = 2,
-    show_legend = FALSE,
-    save_plot = FALSE,
-    out_dir = "../OutputFigures.dir",
-    output_prefix = NULL
-) {
-  
-  #########################################################################
-  #### Parse simulation files #############################################
-  #########################################################################
-  
-  parse_simulation_files <- function(dirpath, pattern, dataset_name) {
-    
-    file_list <- list.files(
-      path = dirpath,
-      pattern = pattern,
-      full.names = TRUE
-    )
-    
-    if (length(file_list) == 0) {
-      stop("No files found in: ", dirpath)
-    }
-    
-    files_df <- tibble(
-      file_name = file_list,
-      dataset = dataset_name
-    ) %>%
-      mutate(
-        base_name = basename(file_name),
-        
-        replicate = ifelse(
-          grepl("genome\\d+", base_name),
-          as.numeric(sub(".*genome(\\d+).*", "\\1", base_name)),
-          NA_real_
-        ),
-        
-        n = ifelse(
-          grepl("_n\\d+", base_name),
-          as.numeric(sub(".*_n(\\d+).*", "\\1", base_name)),
-          NA_real_
-        ),
-        
-        H = ifelse(
-          grepl("_H[0-9]+\\.?[0-9]*", base_name),
-          as.numeric(sub(".*_H([0-9]+\\.?[0-9]*).*", "\\1", base_name)),
-          NA_real_
-        ),
-        
-        SD = ifelse(
-          grepl("SD[0-9]+(\\.[0-9]+)?", base_name),
-          as.numeric(sub(".*SD([0-9]+(?:\\.[0-9]+)?).*", "\\1", base_name)),
-          NA_real_
-        ),
-        
-        Gen = ifelse(
-          grepl("Gen\\d+", base_name),
-          as.numeric(sub(".*Gen(\\d+).*", "\\1", base_name)),
-          NA_real_
-        )
-      ) %>%
-      mutate(
-        selection_type = case_when(
-          !is.na(Gen) ~ "Seasonal",
-          is.na(Gen) & !is.na(SD) ~ "Constant",
-          is.na(Gen) & is.na(SD) ~ "Null",
-          TRUE ~ NA_character_
-        ),
-        
-        ###################################################################
-        #### Keep matched parameter combinations ##########################
-        ###################################################################
-        # Matched low combination:
-        #   H = 0.1, SD = 1, Gen = 10
-        #
-        # Matched high combination:
-        #   H = 0.8, SD = 4, Gen = 30
-        #
-        # If Gen is absent:
-        #   H = 0.1, SD = 1 gets assumed Gen = 10
-        #   H = 0.8, SD = 4 gets assumed Gen = 30
-        #
-        # If SD and Gen are absent:
-        #   H = 0.1 gets assumed Gen = 10
-        #   H = 0.8 gets assumed Gen = 30
-        
-        combo_type = case_when(
-          H == 0.1 & SD == 1 & Gen == 10 ~ "low",
-          H == 0.8 & SD == 4 & Gen == 30 ~ "high",
-          
-          H == 0.1 & SD == 1 & is.na(Gen) ~ "low",
-          H == 0.8 & SD == 4 & is.na(Gen) ~ "high",
-          
-          H == 0.1 & is.na(SD) & is.na(Gen) ~ "low",
-          H == 0.8 & is.na(SD) & is.na(Gen) ~ "high",
-          
-          TRUE ~ NA_character_
-        ),
-        
-        Gen_for_sampling = case_when(
-          combo_type == "low" ~ 10,
-          combo_type == "high" ~ 30,
-          TRUE ~ NA_real_
-        ),
-        
-        parameter_label = case_when(
-          selection_type == "Seasonal" & combo_type == "low" ~
-            "Seasonal: h² = 0.1, Δ = 1, Gen = 10",
-          
-          selection_type == "Seasonal" & combo_type == "high" ~
-            "Seasonal: h² = 0.8, Δ = 4, Gen = 30",
-          
-          selection_type == "Constant" & combo_type == "low" ~
-            "Constant: h² = 0.1, Δ = 1, assumed Gen = 10",
-          
-          selection_type == "Constant" & combo_type == "high" ~
-            "Constant: h² = 0.8, Δ = 4, assumed Gen = 30",
-          
-          selection_type == "Null" & combo_type == "low" ~
-            "Null: h² = 0.1, assumed Gen = 10",
-          
-          selection_type == "Null" & combo_type == "high" ~
-            "Null: h² = 0.8, assumed Gen = 30",
-          
-          TRUE ~ NA_character_
-        )
-      )
-    
-    files_df
-  }
-  
-  #########################################################################
-  #### One-file spectral analysis #########################################
-  #########################################################################
-  
-  run_fft_one_file <- function(
-      file_name,
-      dataset,
-      replicate,
-      H,
-      SD,
-      Gen,
-      Gen_for_sampling,
-      selection_type,
-      combo_type,
-      parameter_label,
-      nseq = 10,
-      spectrum_span = 2
-  ) {
-    
-    full_df <- utils::read.csv(file_name, stringsAsFactors = FALSE)
-    
-    full_df <- full_df %>%
-      mutate(
-        Generation = as.numeric(Generation)
-      ) %>%
-      arrange(Generation)
-    
-    interval <- Gen_for_sampling
-    
-    if (is.na(interval)) {
-      warning("No valid Gen_for_sampling for file: ", basename(file_name))
-      return(NULL)
-    }
-    
-    #######################################################################
-    #### End sampling #####################################################
-    #######################################################################
-    
-    end_generations <- seq(
-      from = interval,
-      by = interval,
-      length.out = nseq
-    )
-    
-    gens_end <- full_df %>%
-      filter(Generation %in% end_generations) %>%
-      mutate(
-        allele_id = as.factor(Position),
-        sampling_scheme = "End",
-        sampling_interval = interval
-      )
-    
-    #######################################################################
-    #### Mid & End sampling ###############################################
-    #######################################################################
-    
-    mid_end_generations <- seq(
-      from = interval / 2,
-      by = interval / 2,
-      length.out = nseq
-    )
-    
-    gens_mid_end <- full_df %>%
-      filter(Generation %in% mid_end_generations) %>%
-      mutate(
-        allele_id = as.factor(Position),
-        sampling_scheme = "Mid & End",
-        sampling_interval = interval / 2
-      )
-    
-    sampled_data <- bind_rows(
-      gens_end,
-      gens_mid_end
-    )
-    
-    if (nrow(sampled_data) == 0) {
-      warning("No sampled generations found for file: ", basename(file_name))
-      return(NULL)
-    }
-    
-    #######################################################################
-    #### Mean allele frequency per sampled generation #####################
-    #######################################################################
-    
-    mean_allele_data <- sampled_data %>%
-      group_by(sampling_scheme, sampling_interval, Generation) %>%
-      summarize(
-        mean_allele_frequency = mean(Frequency, na.rm = TRUE),
-        .groups = "drop"
-      ) %>%
-      arrange(sampling_scheme, Generation)
-    
-    #######################################################################
-    #### Spectral density #################################################
-    #######################################################################
-    
-    spectrum_data <- mean_allele_data %>%
-      group_by(sampling_scheme, sampling_interval) %>%
-      summarize(
-        n_timepoints = n(),
-        sampled_generations = list(Generation),
-        ts_data = list(stats::ts(mean_allele_frequency, frequency = 1)),
-        .groups = "drop"
-      ) %>%
-      filter(n_timepoints >= 4) %>%
-      mutate(
-        spec_result = map(
-          ts_data,
-          ~ stats::spectrum(
-            .x,
-            spans = spectrum_span,
-            plot = FALSE
-          )
-        )
-      ) %>%
-      mutate(
-        spectrum_tbl = map2(
-          spec_result,
-          sampling_interval,
-          ~ tibble(
-            Period_sample_units = 1 / .x$freq,
-            
-            ###############################################################
-            #### Convert period back to real generations #################
-            ###############################################################
-            
-            Period = (1 / .x$freq) * .y,
-            
-            Spectrum = as.numeric(.x$spec)
-          )
-        )
-      ) %>%
-      select(
-        sampling_scheme,
-        sampling_interval,
-        n_timepoints,
-        sampled_generations,
-        spectrum_tbl
-      ) %>%
-      tidyr::unnest(spectrum_tbl) %>%
-      mutate(
-        dataset = dataset,
-        replicate = replicate,
-        H = H,
-        SD = SD,
-        Gen = Gen,
-        Gen_for_sampling = Gen_for_sampling,
-        selection_type = selection_type,
-        combo_type = combo_type,
-        parameter_label = parameter_label,
-        file = basename(file_name)
-      )
-    
-    spectrum_data
-  }
-  
-  #########################################################################
-  #### Parse and filter files #############################################
-  #########################################################################
-  
-  files_df <- parse_simulation_files(
-    dirpath = dirpath,
-    pattern = pattern,
-    dataset_name = dataset_name
-  )
-  
-  files_df <- files_df %>%
-    filter(
-      !is.na(combo_type),
-      !is.na(Gen_for_sampling),
-      !is.na(parameter_label)
-    )
-  
-  if (nrow(files_df) == 0) {
-    stop("No files remain after matched parameter filtering in: ", dirpath)
-  }
-  
-  cat(dataset_name, ": number of files used = ", nrow(files_df), "\n")
-  
-  #########################################################################
-  #### Apply FFT ##########################################################
-  #########################################################################
-  
-  plot_data <- pmap_dfr(
-    list(
-      file_name = files_df$file_name,
-      dataset = files_df$dataset,
-      replicate = files_df$replicate,
-      H = files_df$H,
-      SD = files_df$SD,
-      Gen = files_df$Gen,
-      Gen_for_sampling = files_df$Gen_for_sampling,
-      selection_type = files_df$selection_type,
-      combo_type = files_df$combo_type,
-      parameter_label = files_df$parameter_label
-    ),
-    function(
-      file_name,
-      dataset,
-      replicate,
-      H,
-      SD,
-      Gen,
-      Gen_for_sampling,
-      selection_type,
-      combo_type,
-      parameter_label
-    ) {
-      run_fft_one_file(
-        file_name = file_name,
-        dataset = dataset,
-        replicate = replicate,
-        H = H,
-        SD = SD,
-        Gen = Gen,
-        Gen_for_sampling = Gen_for_sampling,
-        selection_type = selection_type,
-        combo_type = combo_type,
-        parameter_label = parameter_label,
-        nseq = nseq,
-        spectrum_span = spectrum_span
-      )
-    }
-  )
-  
-  if (nrow(plot_data) == 0) {
-    stop("No spectrum data produced for: ", dirpath)
-  }
-  
-  #########################################################################
-  #### Clean labels #######################################################
-  #########################################################################
-  
-  plot_data <- plot_data %>%
-    mutate(
-      replicate = factor(replicate),
-      
-      sampling_scheme = factor(
-        sampling_scheme,
-        levels = c("End", "Mid & End")
-      ),
-      
-      selection_type = factor(
-        selection_type,
-        levels = c("Seasonal", "Constant", "Null")
-      ),
-      
-      combo_type = factor(
-        combo_type,
-        levels = c("low", "high")
-      ),
-      
-      parameter_label = factor(
-        parameter_label,
-        levels = c(
-          "Seasonal: h² = 0.1, Δ = 1, Gen = 10",
-          "Seasonal: h² = 0.8, Δ = 4, Gen = 30",
-          "Constant: h² = 0.1, Δ = 1, assumed Gen = 10",
-          "Constant: h² = 0.8, Δ = 4, assumed Gen = 30",
-          "Null: h² = 0.1, assumed Gen = 10",
-          "Null: h² = 0.8, assumed Gen = 30"
-        )
-      )
-    )
-  
-  #########################################################################
-  #### Period min/max filter ##############################################
-  #########################################################################
-  
-  plot_data <- plot_data %>%
-    mutate(
-      period_min = 1,
-      period_max = 5 * Gen_for_sampling
-    ) %>%
-    filter(
-      Period >= period_min,
-      Period <= period_max
-    )
-  
-  if (nrow(plot_data) == 0) {
-    stop("No data remain after period filtering for: ", dirpath)
-  }
-  
-  #########################################################################
-  #### Split data #########################################################
-  #########################################################################
-  
-  plot_data_end <- plot_data %>%
-    filter(sampling_scheme == "End")
-  
-  plot_data_mid_end <- plot_data %>%
-    filter(sampling_scheme == "Mid & End")
-  
-  #########################################################################
-  #### Theme ##############################################################
-  #########################################################################
-  
-  theme_spectral <- theme_classic() +
-    theme(
-      text = element_text(family = "sans"),
-      legend.position = ifelse(show_legend, "right", "none"),
-      
-      axis.text = element_text(
-        size = 18,
-        face = "bold"
-      ),
-      
-      axis.title.x = element_text(
-        margin = margin(t = 16),
-        size = 20,
-        face = "bold"
-      ),
-      
-      axis.title.y = element_text(
-        margin = margin(r = 18),
-        size = 20,
-        face = "bold"
-      ),
-      
-      axis.line = element_line(
-        linewidth = 2.2
-      ),
-      
-      strip.text = element_text(
-        size = 13,
-        face = "bold"
-      ),
-      
-      plot.title = element_text(
-        hjust = 0.01,
-        face = "bold",
-        size = 30
-      ),
-      
-      legend.title = element_text(
-        size = 14,
-        face = "bold"
-      ),
-      
-      legend.text = element_text(
-        size = 12
-      ),
-      
-      panel.spacing = grid::unit(2.0, "lines")
-    )
-  
-  #########################################################################
-  #### End plot ###########################################################
-  #########################################################################
-  
-  p_end <- ggplot(
-    plot_data_end,
-    aes(
-      x = Period,
-      y = Spectrum,
-      color = replicate,
-      group = replicate
-    )
-  ) +
-    geom_line(linewidth = 1.4, alpha = 0.85) +
-    facet_wrap(
-      ~ parameter_label,
-      scales = "free",
-      nrow = 1
-    ) +
-    scale_x_continuous(
-      breaks = scales::pretty_breaks(n = 5)
-    ) +
-    scale_y_continuous(
-      labels = scales::label_number()
-    ) +
-    labs(
-      #title = paste0(dataset_name, ": Spectral Density — End"),
-      title = paste0("A) End of Season Sampling "),
-      x = "Period (Generations)",
-      y = "Spectral Density",
-      color = "Replicate"
-    ) +
-    theme_spectral
-  
-  #########################################################################
-  #### Mid & End plot #####################################################
-  #########################################################################
-  
-  p_mid_end <- ggplot(
-    plot_data_mid_end,
-    aes(
-      x = Period,
-      y = Spectrum,
-      color = replicate,
-      group = replicate
-    )
-  ) +
-    geom_line(linewidth = 1.4, alpha = 0.85) +
-    facet_wrap(
-      ~ parameter_label,
-      scales = "free",
-      nrow = 1
-    ) +
-    scale_x_continuous(
-      breaks = scales::pretty_breaks(n = 5)
-    ) +
-    scale_y_continuous(
-      labels = scales::label_number()
-    ) +
-    labs(
-     # title = paste0(dataset_name, ": Spectral Density — Mid & End"),
-      title = paste0("B) Mid & End of Season Sampling"),
-      x = "Period (Generations)",
-      y = "Spectral Density",
-      color = "Replicate"
-    ) +
-    theme_spectral
-  
-  final_plot <- p_end / p_mid_end
-  
-  #########################################################################
-  #### Optional save ######################################################
-  #########################################################################
-  
-  if (save_plot) {
-    
-    if (is.null(output_prefix)) {
-      output_prefix <- paste0(dataset_name, "_SpectralDensity")
-    }
-    
-    if (!dir.exists(out_dir)) {
-      dir.create(out_dir, recursive = TRUE)
-    }
-    
-    ggsave(
-      filename = file.path(out_dir, paste0(output_prefix, ".pdf")),
-      plot = final_plot,
-      width = 24,
-      height = 12,
-      units = "in",
-      device = "pdf",
-      limitsize = FALSE
-    )
-    
-    ggsave(
-      filename = file.path(out_dir, paste0(output_prefix, ".jpg")),
-      plot = final_plot,
-      width = 24,
-      height = 12,
-      units = "in",
-      dpi = 300,
-      device = "jpeg",
-      limitsize = FALSE
-    )
-  }
-  
-  #########################################################################
-  #### Return #############################################################
-  #########################################################################
-  
-  return(
-    list(
-      dataset = dataset_name,
-      files_used = files_df,
-      plot_data = plot_data,
-      plot_data_end = plot_data_end,
-      plot_data_mid_end = plot_data_mid_end,
-      final_plot = final_plot
-    )
-  )
-}
-
-###############################################################################
-########################## Run one directory ###################################
-###############################################################################
-
-cs_results <- run_fft_sampling_analysis(
-  dirpath = "../../Output.dir/CS.dir/",
-  dataset_name = "CS",
-  nseq = 10,
-  spectrum_span = 2,
-  show_legend = FALSE,
-  save_plot = FALSE
-)
-
-cs_results$final_plot
-
-ns_results <- run_fft_sampling_analysis(
-  dirpath = "../../Output.dir/NS.dir/",
-  dataset_name = "NS",
-  nseq = 10,
-  spectrum_span = 2,
-  show_legend = FALSE,
-  save_plot = FALSE
-)
-
-ns_results$final_plot
-
-linfs_results <- run_fft_sampling_analysis(
-  dirpath = "../../Output.dir/LinFS.dir/",
-  dataset_name = "LinFS",
-  nseq = 10,
-  spectrum_span = 2,
-  show_legend = FALSE,
-  save_plot = FALSE
-)
-
-linfs_results$final_plot
-
-```
-
-##### Save all the plots
-
-```{r}
-###############################################################################
-############ Save the plots into their own directory  #########################
-###############################################################################
-
-out_dir <- "../OutputFigures.dir/SpectralDensity.dir"
-
-if (!dir.exists(out_dir)) {
-  dir.create(out_dir, recursive = TRUE)
-}
-
-###############################################################################
-########################## Save CS plot ########################################
-###############################################################################
-
-ggsave(
-  filename = file.path(out_dir, "CS_SpectralDensity_End_vs_MidEnd.pdf"),
-  plot = cs_results$final_plot,
-  width = 24,
-  height = 12,
-  units = "in",
-  device = "pdf",
-  limitsize = FALSE
-)
-
-ggsave(
-  filename = file.path(out_dir, "CS_SpectralDensity_End_vs_MidEnd.jpg"),
-  plot = cs_results$final_plot,
-  width = 24,
-  height = 12,
-  units = "in",
-  dpi = 300,
-  device = "jpeg",
-  limitsize = FALSE
-)
-
-###############################################################################
-########################## Save NS plot ########################################
-###############################################################################
-
-ggsave(
-  filename = file.path(out_dir, "NS_SpectralDensity_End_vs_MidEnd.pdf"),
-  plot = ns_results$final_plot,
-  width = 24,
-  height = 12,
-  units = "in",
-  device = "pdf",
-  limitsize = FALSE
-)
-
-ggsave(
-  filename = file.path(out_dir, "NS_SpectralDensity_End_vs_MidEnd.jpg"),
-  plot = ns_results$final_plot,
-  width = 24,
-  height = 12,
-  units = "in",
-  dpi = 300,
-  device = "jpeg",
-  limitsize = FALSE
-)
-
-###############################################################################
-########################## Save LinFS plot #####################################
-###############################################################################
-
-ggsave(
-  filename = file.path(out_dir, "LinFS_SpectralDensity_End_vs_MidEnd.pdf"),
-  plot = linfs_results$final_plot,
-  width = 24,
-  height = 12,
-  units = "in",
-  device = "pdf",
-  limitsize = FALSE
-)
-
-ggsave(
-  filename = file.path(out_dir, "LinFS_SpectralDensity_End_vs_MidEnd.jpg"),
-  plot = linfs_results$final_plot,
-  width = 24,
-  height = 12,
-  units = "in",
-  dpi = 300,
-  device = "jpeg",
-  limitsize = FALSE
-)
-```
-
-#### Seasonal and Null Selection Plots
-
-```{r, fig.width = 20, fig.height=10}
-###############################################################################
-############ Combined Seasonal vs Null plot: High only ######################
-###############################################################################
-
-combined_high_seasonal_Null <- bind_rows(
-  linfs_results$plot_data,
-  ns_results$plot_data
-) %>%
-  filter(
-    combo_type == "high",
-    selection_type %in% c("Seasonal", "Null")
-  ) %>%
-  mutate(
-    selection_type = factor(
-      selection_type,
-      levels = c("Seasonal", "Null")
-    ),
-    sampling_scheme = factor(
-      sampling_scheme,
-      levels = c("End", "Mid & End")
-    ),
-    comparison_label = case_when(
-      selection_type == "Seasonal" ~ "Seasonal: h² = 0.8, Δ = 4, Gen = 30",
-      selection_type == "Null"  ~ "Null: h² = 0.8, assumed Gen = 30"
-    ),
-    comparison_label = factor(
-      comparison_label,
-      levels = c(
-        "Seasonal: h² = 0.8, Δ = 4, Gen = 30",
-        "Null: h² = 0.8, assumed Gen = 30"
-      )
-    )
-  )
-
-###############################################################################
-########################## Theme ###############################################
-###############################################################################
-
-theme_spectral_compare <- theme_classic() +
-  theme(
-    text = element_text(family = "sans"),
-    legend.position = "none",
-    
-    axis.text = element_text(
-      size = 18,
-      face = "bold"
-    ),
-    
-    axis.title.x = element_text(
-      margin = margin(t = 16),
-      size = 20,
-      face = "bold"
-    ),
-    
-    axis.title.y = element_text(
-      margin = margin(r = 18),
-      size = 20,
-      face = "bold"
-    ),
-    
-    axis.line = element_line(
-      linewidth = 2.2
-    ),
-    
-    strip.text = element_text(
-      size = 15,
-      face = "bold"
-    ),
-    
-    plot.title = element_text(
-      hjust = 0.01,
-      face = "bold",
-      size = 32
-    ),
-    
-    panel.spacing = grid::unit(2.0, "lines")
-  )
-
-###############################################################################
-########################## Combined plot #######################################
-###############################################################################
-
-p_high_seasonal_Null <- ggplot(
-  combined_high_seasonal_Null,
-  aes(
-    x = Period,
-    y = Spectrum,
-    color = replicate,
-    group = replicate
-  )
-) +
-  geom_line(linewidth = 1.4, alpha = 0.85) +
-  facet_wrap(
-     ~ paste0(sampling_scheme, " of season | ",comparison_label),
-    scales = "free"
-  ) +
-  scale_x_continuous(
-    breaks = scales::pretty_breaks(n = 5)
-  ) +
-  scale_y_continuous(
-    labels = scales::label_number()
-  ) +
-  labs(
-    title = "Spectral Density: Seasonal vs Null, High Parameter Combination",
-    x = "Period (Generations)",
-    y = "Spectral Density",
-    color = "Replicate"
-  ) +
-  theme_spectral_compare
-
-p_high_seasonal_Null
-
-###############################################################################
-########################## Save combined comparison ############################
-###############################################################################
-
-out_dir <- "../OutputFigures.dir/SpectralDensity.dir"
-
-if (!dir.exists(out_dir)) {
-  dir.create(out_dir, recursive = TRUE)
-}
-
-ggsave(
-  filename = file.path(
-    out_dir,
-    "HighParam_Seasonal_vs_Null_SpectralDensity_End_vs_MidEnd.pdf"
-  ),
-  plot = p_high_seasonal_Null,
-  width = 22,
-  height = 12,
-  units = "in",
-  device = "pdf",
-  limitsize = FALSE
-)
-
-ggsave(
-  filename = file.path(
-    out_dir,
-    "HighParam_Seasonal_vs_Null_SpectralDensity_End_vs_MidEnd.jpg"
-  ),
-  plot = p_high_seasonal_Null,
-  width = 22,
-  height = 12,
-  units = "in",
-  dpi = 300,
-  device = "jpeg",
-  limitsize = FALSE
-)
-```
-
-### 6.2. Amplitude Calculation for Selection selection models
+## 5. Amplitude Calculation for Selection selection models
 
 ```{r, fig.width=30, fig.height=15}
 library(dplyr)
@@ -4976,7 +2000,7 @@ library(RColorBrewer)
 ###############################################################################
 
 folder_path <- "~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/LinFS.dir"
-plot_dir <- "../OutputFigures.dir/Amplitudes_plt.dir"
+plot_dir <- "../OutputFigures.dir"
 
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -5174,7 +2198,7 @@ calculate_amplitude_FewerGen_model <- function(
 amp_all_FewerGen <- future_pmap_dfr(
   param_table_FewerGen,
   calculate_amplitude_FewerGen_model,
-  .progress = FALSE,
+  .progress = TRUE,
   .options = furrr_options(
     seed = TRUE,
     packages = c("dplyr", "stringr", "tidyr")
@@ -5206,10 +2230,39 @@ amp_rep_FewerGen <- amp_all_FewerGen %>%
     .groups = "drop"
   )
 
+###############################################################################
+########################## Parameter summaries #################################
+###############################################################################
+
+amp_param_FewerGen <- amp_rep_FewerGen %>% 
+  group_by(
+    n,
+    H,
+    SD,
+    Gen,
+    parameter_combo
+  ) %>% 
+  summarize(
+    n_replicates = n(),
+    mean_amplitude = mean(mean_rep_amplitude, na.rm = TRUE),
+    median_amplitude = median(mean_rep_amplitude, na.rm = TRUE),
+    sd_amplitude = sd(mean_rep_amplitude, na.rm = TRUE),
+    se_amplitude = sd(mean_rep_amplitude, na.rm = TRUE) / sqrt(n()),
+    min_amplitude = min(mean_rep_amplitude, na.rm = TRUE),
+    max_amplitude = max(mean_rep_amplitude, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(n, H, SD, Gen) %>%
+  mutate(
+    mean_amplitude_scaled = mean_amplitude,
+    se_amplitude_scaled = se_amplitude
+  )
+
+
 plan(sequential)
 ```
 
-```{r, fig.width=20, fig.height=10}
+```{r, fig.width=20, fig.height=10, echo=FALSE, warning=FALSE}
 
 ###############################################################################
 ########################## Scatter summary plot ################################
@@ -5260,26 +2313,595 @@ pp_FewerGen_ranked
 
 
 ggsave(
-  filename = file.path(plot_dir, "FewerGen_model_H_SD_Gen_n_scatter_mean_amplitude.png"),
+  filename = file.path(plot_dir, "Figure5.jpg"),#FewerGen_model_H_SD_Gen_n_scatter_mean_amplitude.jpg
   plot = pp_FewerGen_ranked,
   width = 25,
   height = 15,
   dpi = 300
 )
 
-ggsave(
-  filename = file.path(plot_dir, "FewerGen_model_H_SD_Gen_n_scatter_mean_amplitude.pdf"),
-  plot = pp_FewerGen_ranked,
-  width = 25,
-  height = 15,
-  device = cairo_pdf
-)
 ```
 
-## 7. Fluctuating Population size and selection
 
-```{r, fig.width=20, fig.height=20}
+## 6. Sampled Generations Spectral Analysis to imitate empirical studies
+
+```{r, warning=FALSE, fig.width=20, fig.height=10, echo=FALSE, dpi=300, message=FALSE}
+#| label: HighParam_Seasonal_vs_Null_SpectralDensity
+
+library(dplyr)
+library(ggplot2)
+
+###############################################################################
+# Calculate 10-sample spectral densities for one model
+###############################################################################
+
+calculate_sampled_spectra <- function(
+    folder,
+    pattern,
+    selection_type,
+    sampling_generation = 30,
+    n_samples = 10,
+    spectrum_span = 2
+) {
+
+  files <- list.files(
+    path = folder,
+    pattern = pattern,
+    full.names = TRUE
+  )
+
+  if (length(files) == 0) {
+    stop(
+      "No files matched the pattern:\n",
+      pattern,
+      "\nin directory:\n",
+      normalizePath(folder, mustWork = FALSE)
+    )
+  }
+
+  file_information <- data.frame(
+    file = files,
+    replicate = as.integer(
+      sub(
+        "^genome([0-9]+)_.*$",
+        "\\1",
+        basename(files)
+      )
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  if (anyNA(file_information$replicate)) {
+    stop(
+      "Replicate numbers could not be extracted from all filenames in: ",
+      folder
+    )
+  }
+
+  if (anyDuplicated(file_information$replicate)) {
+    stop(
+      "More than one matching file was found for at least one replicate in: ",
+      folder
+    )
+  }
+
+  file_information <- file_information[
+    order(file_information$replicate),
+    ,
+    drop = FALSE
+  ]
+
+  sampling_plan <- data.frame(
+    sampling_scheme = c(
+      "End",
+      "Mid & End"
+    ),
+    sampling_interval = c(
+      sampling_generation,
+      sampling_generation / 2
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  spectra_by_file <- lapply(
+    seq_len(nrow(file_information)),
+    function(file_index) {
+
+      current_file <- file_information$file[file_index]
+      replicate_value <- file_information$replicate[file_index]
+
+      #########################################################################
+      # Read only the columns needed for this figure
+      #########################################################################
+
+      simulation_data <- readr::read_csv(
+        current_file,
+        col_types = readr::cols_only(
+          Generation = readr::col_double(),
+          Frequency = readr::col_double()
+        ),
+        progress = FALSE,
+        show_col_types = FALSE
+      ) %>%
+        filter(
+          is.finite(Generation),
+          is.finite(Frequency)
+        )
+
+      if (nrow(simulation_data) == 0) {
+        stop(
+          "No valid Generation/Frequency observations in: ",
+          basename(current_file)
+        )
+      }
+
+      #########################################################################
+      # Calculate End and Mid & End spectra
+      #########################################################################
+
+      spectra_by_scheme <- lapply(
+        seq_len(nrow(sampling_plan)),
+        function(scheme_index) {
+
+          sampling_scheme <-
+            sampling_plan$sampling_scheme[scheme_index]
+
+          sampling_interval <-
+            sampling_plan$sampling_interval[scheme_index]
+
+          sampled_generations <- seq(
+            from = sampling_interval,
+            by = sampling_interval,
+            length.out = n_samples
+          )
+
+          mean_frequency <- simulation_data %>%
+            filter(
+              Generation %in% sampled_generations
+            ) %>%
+            group_by(Generation) %>%
+            summarise(
+              mean_allele_frequency = mean(
+                Frequency,
+                na.rm = TRUE
+              ),
+              .groups = "drop"
+            ) %>%
+            arrange(Generation)
+
+          missing_generations <- setdiff(
+            sampled_generations,
+            mean_frequency$Generation
+          )
+
+          if (length(missing_generations) > 0) {
+            stop(
+              "File ",
+              basename(current_file),
+              " is missing sampled generation(s): ",
+              paste(
+                missing_generations,
+                collapse = ", "
+              )
+            )
+          }
+
+          if (any(
+            !is.finite(
+              mean_frequency$mean_allele_frequency
+            )
+          )) {
+            stop(
+              "Non-finite mean allele frequencies were calculated for: ",
+              basename(current_file)
+            )
+          }
+
+          if (nrow(mean_frequency) < 4) {
+            stop(
+              "At least four sampled time points are required for: ",
+              basename(current_file)
+            )
+          }
+
+          spectrum_result <- stats::spectrum(
+            stats::ts(
+              mean_frequency$mean_allele_frequency,
+              frequency = 1
+            ),
+            spans = spectrum_span,
+            plot = FALSE
+          )
+
+          data.frame(
+            Period =
+              (1 / spectrum_result$freq) *
+              sampling_interval,
+
+            Spectrum = as.numeric(
+              spectrum_result$spec
+            ),
+
+            replicate = replicate_value,
+            selection_type = selection_type,
+            sampling_scheme = sampling_scheme,
+
+            stringsAsFactors = FALSE
+          )
+        }
+      )
+
+      #########################################################################
+      # Release the raw allele-frequency data before reading the next file
+      #########################################################################
+
+      rm(simulation_data)
+      invisible(gc())
+
+      bind_rows(spectra_by_scheme)
+    }
+  )
+
+  bind_rows(spectra_by_file) %>%
+    filter(
+      Period >= 1,
+      Period <= 5 * sampling_generation
+    )
+}
+
+###############################################################################
+# High-parameter seasonal model
+#
+# h² = 0.8
+# Δ  = 4
+# Gen = 30
+###############################################################################
+
+seasonal_spectra <- calculate_sampled_spectra(
+  folder = "../../Output.dir/LinFS.dir/",
+  pattern =
+    "^genome[0-9]+_n100_H0\\.8SD4Gen30\\.csv$",
+  selection_type = "Seasonal",
+  sampling_generation = 30,
+  n_samples = 10,
+  spectrum_span = 2
+)
+
+###############################################################################
+# High-heritability null model
+#
+# The null model has no true season length.
+# Gen = 30 is used only to define matched sampling generations.
+###############################################################################
+
+null_spectra <- calculate_sampled_spectra(
+  folder = "../../Output.dir/NS.dir/",
+  pattern =
+    "^genome[0-9]+_n100_H0\\.8\\.csv$",
+  selection_type = "Null",
+  sampling_generation = 30,
+  n_samples = 10,
+  spectrum_span = 2
+)
+
+###############################################################################
+# Combine seasonal and null spectral-density results
+###############################################################################
+
+combined_high_seasonal_Null <- bind_rows(
+  seasonal_spectra,
+  null_spectra
+) %>%
+  mutate(
+    replicate = factor(replicate),
+
+    selection_type = factor(
+      selection_type,
+      levels = c(
+        "Seasonal",
+        "Null"
+      )
+    ),
+
+    sampling_scheme = factor(
+      sampling_scheme,
+      levels = c(
+        "End",
+        "Mid & End"
+      )
+    ),
+
+    comparison_label = case_when(
+      selection_type == "Seasonal" ~
+        "Seasonal: h² = 0.8, Δ = 4, Gen = 30",
+
+      selection_type == "Null" ~
+        "Null: h² = 0.8, assumed Gen = 30"
+    ),
+
+    comparison_label = factor(
+      comparison_label,
+      levels = c(
+        "Seasonal: h² = 0.8, Δ = 4, Gen = 30",
+        "Null: h² = 0.8, assumed Gen = 30"
+      )
+    )
+  )
+
+###############################################################################
+# Remove model-specific intermediate tables
+###############################################################################
+
+rm(
+  seasonal_spectra,
+  null_spectra
+)
+
+invisible(gc())
+
+###############################################################################
+# Original comparison theme
+###############################################################################
+
+theme_spectral_compare <- theme_classic() +
+  theme(
+    text = element_text(
+      family = "sans"
+    ),
+
+    legend.position = "none",
+
+    axis.text = element_text(
+      size = 18,
+      face = "bold"
+    ),
+
+    axis.title.x = element_text(
+      margin = margin(t = 16),
+      size = 20,
+      face = "bold"
+    ),
+
+    axis.title.y = element_text(
+      margin = margin(r = 18),
+      size = 20,
+      face = "bold"
+    ),
+
+    axis.line = element_line(
+      linewidth = 2.2
+    ),
+
+    strip.text = element_text(
+      size = 15,
+      face = "bold"
+    ),
+
+    plot.title = element_text(
+      hjust = 0.01,
+      face = "bold",
+      size = 32
+    ),
+
+    panel.spacing = grid::unit(
+      2,
+      "lines"
+    )
+  )
+
+###############################################################################
+# Create only the requested plot
+#
+# The original facet expression is retained exactly:
+#   - no ncol
+#   - no nrow
+#   - no custom panel-order variable
+###############################################################################
+
+p_high_seasonal_Null <- ggplot(
+  combined_high_seasonal_Null,
+  aes(
+    x = Period,
+    y = Spectrum,
+    color = replicate,
+    group = replicate
+  )
+) +
+  geom_line(
+    linewidth = 1.4,
+    alpha = 0.85
+  ) +
+  facet_wrap(
+    ~ paste0(
+      sampling_scheme,
+      " of season | ",
+      comparison_label
+    ),
+    scales = "free"
+  ) +
+  scale_x_continuous(
+    breaks = scales::pretty_breaks(
+      n = 5
+    )
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number()
+  ) +
+  labs(
+    title =
+      "Spectral Density: Seasonal vs Null, High Parameter Combination",
+
+    x = "Period (Generations)",
+    y = "Spectral Density",
+    color = "Replicate"
+  ) +
+  theme_spectral_compare
+
+###############################################################################
+# Display the plot in the rendered QMD
+###############################################################################
+
+print(p_high_seasonal_Null)
+
+###############################################################################
+# Save using the original directory and original filenames
+###############################################################################
+
+out_dir <- "../OutputFigures.dir"
+
+dir.create(
+  out_dir,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+ggsave(
+  filename = file.path(
+    out_dir,
+    "HighParam_Seasonal_vs_Null_SpectralDensity_End_vs_MidEnd.pdf"
+  ),
+  plot = p_high_seasonal_Null,
+  width = 22,
+  height = 12,
+  units = "in",
+  device = "pdf",
+  limitsize = FALSE
+)
+
+ggsave(
+  filename = file.path(
+    out_dir,
+    "Figure6.jpg" # "HighParam_Seasonal_vs_Null_SpectralDensity_End_vs_MidEnd.jpg"
+  ),
+  plot = p_high_seasonal_Null,
+  width = 22,
+  height = 12,
+  units = "in",
+  dpi = 300,
+  device = "jpeg",
+  limitsize = FALSE
+)
+
+###############################################################################
+# Remove objects no longer needed
+#
+# p_high_seasonal_Null is deliberately retained as the final plot object.
+###############################################################################
+
+rm(
+  combined_high_seasonal_Null,
+  theme_spectral_compare,
+  calculate_sampled_spectra,
+  out_dir
+)
+
+invisible(gc(full = TRUE))
+```
+
+
+
+## 7. Beyond instantaneous selection: gradual selection models
+
+
+### 7.1. FS model comparison by genomic architecture
+
+
+```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+
+Instat <- read.csv("../../Output.dir/LinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
+GradII <-  read.csv("../../Output.dir/SinFS.dir/genome10_n100_H0.8SD4Gen30.csv")
+GradIV_1 <- read.csv("../../Output.dir/SinFSGen.dir/genome10_n100_H0.8SD4.csv")
+GradIV_2 <- read.csv("../../Output.dir/FourSeasFourAmp.dir/genome10_n100_H0.8.csv")
+
+
+# Add a column to distinguish the datasets
+geno_file <- Instat %>% mutate(Selection = "Instantaneous")
+geno_file2 <- GradII %>% mutate(Selection = "Simple Gradual")
+geno_file3 <- GradIV_1 %>% mutate(Selection = "Complex Gradual I") #
+geno_file4 <- GradIV_2 %>% mutate(Selection = "Complex Gradual II")
+
+Genome_dataset <- rbind(geno_file, 
+                        geno_file2, geno_file3, geno_file4) %>% 
+  mutate(Selection = fct_relevel(Selection, 
+                                 "Instantaneous", 
+                                 "Simple Gradual",
+                                 "Complex Gradual I",
+                                 "Complex Gradual II"))
+
+## Select 30 random positions
+  set.seed(12345)
+  selected_positions <- Genome_dataset %>%
+  distinct(Position) %>%
+  sample_n(size = min(30, n()), replace = FALSE) %>%
+  pull(Position)
+
+ Genome_dataset <- Genome_dataset %>%
+   filter(Position %in% selected_positions)
+# Effect sizes for highlighted positions
+pos_meta <- tibble::tribble(
+  ~Position, ~effect_size,
+    982341,   0.000008,
+   #1067762,   0.140653,
+    811499,   3.562828
+   # 323379,   2.431675
+) %>%
+  mutate(beta_lab = sprintf("\u03B2=%s", signif(effect_size, 3)))
+
+# Colors (Okabe–Ito palette)
+col_vals <- setNames(
+  c("#0072B2", "darkred"),#"#D55E00", "#009E73", "#CC79A7"
+  pos_meta$beta_lab
+)
+
+df <- Genome_dataset %>%
+  filter(Generation <= 1000) %>%
+  left_join(pos_meta, by = "Position") %>%
+  mutate(is_highlight = !is.na(effect_size))
+
+# Right-edge labels (effect only)
+lab_df <- df %>%
+  filter(is_highlight) %>%
+  group_by(Selection, Position, beta_lab) %>%
+  filter(Generation == max(Generation)) %>%
+  ungroup()
+
+AF_FS_model_comparison <-
+  ggplot(df, aes(Generation, Frequency, group = Position)) +
+  # Background
+  geom_line(data = dplyr::filter(df, !is_highlight),
+            color = "grey70", linewidth = 0.5, alpha = 0.6) +
+  # Highlights (legend keyed by β only)
+  geom_line(data = dplyr::filter(df, is_highlight),
+            aes(color = beta_lab), linewidth = 1.1, alpha = 0.95) +
+  # On-plot labels showing β only
+  # geom_text(data = lab_df,
+  #           aes(label = beta_lab, color = beta_lab),
+  #           hjust = 0, nudge_x = 12, size = 3.6, show.legend = FALSE) +
+  scale_color_manual(name = "Effect size", values = col_vals) +
+ # scale_x_continuous(expand = expansion(mult = c(0.01, 0.10))) +
+  facet_wrap(Selection ~ .) +
+  labs(x = "Generation", y = "Allele Frequency") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  mythemes
+
+ggsave("Figure7.jpg", 
+       plot = AF_FS_model_comparison, 
+       dpi = 800, width = 30, height = 22,
+       units = "in", bg = "white", path = "../OutputFigures.dir") 
+
+print(AF_FS_model_comparison)
+
+```
+
+
+## 8. Fluctuating Population size and selection
+
+```{r, fig.width=20, fig.height=10}
 rm(list = ls())
+
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -5294,7 +2916,7 @@ library(scales)
 ########################## Settings ############################################
 ###############################################################################
 
-plot_dir <- "/home/etb68/Mylab/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/OutputFigures.dir/Amplitudes_plt.dir/PopModels"
+plot_dir <- "../OutputFigures.dir"
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
 target_n <- c(300)
@@ -5321,17 +2943,13 @@ spectral_parameter_regime <- tibble(
 target_n_dynamics <- target_n
 target_replicate_for_dynamics <- 5
 
-
-default_Gen_if_missing <- 30
-
 last_n_generations <- 1000
 n_positions_for_dynamics <- 30
 
 spectrum_span <- 2
 
-# spectrum() smoothing
 if (length(spectrum_span) == 1 && spectrum_span %% 2 == 0) {
-  spectrum_span <- spectrum_span + 1
+  spectrum_span <- 2
 }
 
 n_workers <- 32
@@ -5341,31 +2959,27 @@ n_workers_used <- min(n_workers, available_workers)
 future::plan(multisession, workers = n_workers_used)
 
 ###############################################################################
-############## Model to compare and their respective directoties ##############
+############## Models to compare and their respective directories ##############
 ###############################################################################
 
 model_sources <- tibble(
   Model = c(
     "Constant_Selection Instantaneous_Population",
-    "Null_Selection Instantaneous_Population",
     "Instantaneous_Selection Constant_Population",
     "Instantaneous_Selection Instantaneous_Population"
   ),
   Selection = c(
     "Constant_Selection",
-    "Null_Selection",
     "Instantaneous_Selection",
     "Instantaneous_Selection"
   ),
   Population = c(
-    "Instantaneous_Population",
     "Instantaneous_Population",
     "Constant_Population",
     "Instantaneous_Population"
   ),
   folder_path = c(
     "~/Mylab/EvoGenFP.sims/FluctPopulationModels.dir/Output.dir/ConstSelInstatPop",
-    "~/Mylab/EvoGenFP.sims/FluctPopulationModels.dir/Output.dir/NeutrSelInstatPop",
     "~/Mylab/evogen-sims/FluctSelectionModels.dir/Output.dir/LinFS.dir",
     "~/Mylab/EvoGenFP.sims/FluctPopulationModels.dir/Output.dir/InstSelInstatPop"
   )
@@ -5382,7 +2996,7 @@ theme_amp <- theme_bw() +
   theme(
     text = element_text(family = "sans"),
     legend.position = "right",
-    
+
     axis.text.x = element_text(
       face = "bold",
       size = 20,
@@ -5396,18 +3010,18 @@ theme_amp <- theme_bw() +
       angle = 0,
       margin = margin(r = 10)
     ),
-    
+
     axis.line = element_line(linewidth = 1.5),
-    
+
     plot.title = element_text(
       hjust = 0.01,
       face = "bold",
       size = 28,
       margin = margin(b = 0.5, unit = "lines")
     ),
-    
+
     plot.margin = unit(c(1, 1, 1, 1), "lines"),
-    
+
     axis.title.x = element_text(
       size = 22,
       face = "bold",
@@ -5418,7 +3032,7 @@ theme_amp <- theme_bw() +
       face = "bold",
       margin = margin(r = 20)
     ),
-    
+
     strip.text = element_text(size = 16, face = "bold"),
     legend.title = element_text(size = 18, face = "bold"),
     legend.text = element_text(size = 16),
@@ -5455,7 +3069,6 @@ make_factor_columns <- function(df) {
       Selection = factor(
         Selection,
         levels = c(
-          "Null_Selection",
           "Constant_Selection",
           "Instantaneous_Selection"
         )
@@ -5498,12 +3111,11 @@ extract_params_any_model <- function(
     file,
     Model,
     Selection,
-    Population,
-    default_Gen_if_missing = 30
+    Population
 ) {
-  
+
   file_name <- basename(file)
-  
+
   # Pattern A:
   # genome5_n300_H0.8SD4Gen30.csv
   replicate_a <- str_match(file_name, "^genome([0-9]+)_")[, 2]
@@ -5511,7 +3123,7 @@ extract_params_any_model <- function(
   H_a <- str_match(file_name, "H([0-9]+(?:\\.[0-9]+)?)SD")[, 2]
   SD_a <- str_match(file_name, "SD([0-9]+(?:\\.[0-9]+)?)(?:Gen|\\.csv)")[, 2]
   Gen_a <- str_match(file_name, "Gen([0-9]+)")[, 2]
-  
+
   # Pattern B:
   # genome_repl5_loci300_h0.8_Gen30_SD4.csv
   replicate_b <- str_match(file_name, "genome_repl([0-9]+)_")[, 2]
@@ -5519,7 +3131,7 @@ extract_params_any_model <- function(
   H_b <- str_match(file_name, "_h([0-9]+(?:\\.[0-9]+)?)")[, 2]
   Gen_b <- str_match(file_name, "_Gen([0-9]+)")[, 2]
   SD_b <- str_match(file_name, "_SD([0-9]+(?:\\.[0-9]+)?)")[, 2]
-  
+
   # Pattern C:
   # repl5_loci300_h0.8_Gen30_SD4.csv
   replicate_c <- str_match(file_name, "^repl([0-9]+)_")[, 2]
@@ -5527,37 +3139,37 @@ extract_params_any_model <- function(
   H_c <- str_match(file_name, "_h([0-9]+(?:\\.[0-9]+)?)")[, 2]
   Gen_c <- str_match(file_name, "_Gen([0-9]+)")[, 2]
   SD_c <- str_match(file_name, "_SD([0-9]+(?:\\.[0-9]+)?)")[, 2]
-  
+
   replicate <- coalesce(
     safe_num(replicate_a),
     safe_num(replicate_b),
     safe_num(replicate_c)
   )
-  
+
   n <- coalesce(
     safe_num(n_a),
     safe_num(n_b),
     safe_num(n_c)
   )
-  
+
   H <- coalesce(
     safe_num(H_a),
     safe_num(H_b),
     safe_num(H_c)
   )
-  
+
   SD <- coalesce(
     safe_num(SD_a),
     safe_num(SD_b),
     safe_num(SD_c)
   )
-  
+
   Gen <- coalesce(
     safe_num(Gen_a),
     safe_num(Gen_b),
     safe_num(Gen_c)
   )
-  
+
   tibble(
     Model = as.character(Model),
     Selection = as.character(Selection),
@@ -5600,8 +3212,7 @@ if (nrow(files_by_model) == 0) {
 
 param_table_raw <- pmap_dfr(
   files_by_model,
-  extract_params_any_model,
-  default_Gen_if_missing = default_Gen_if_missing
+  extract_params_any_model
 ) %>%
   filter(
     !is.na(replicate),
@@ -5637,115 +3248,25 @@ param_parse_check <- param_table_raw %>%
 
 print(param_parse_check)
 
-bad_non_null_files <- param_table_raw %>%
+bad_parameter_files <- param_table_raw %>%
   filter(
-    Selection != "Null_Selection",
     is.na(H) | is.na(SD) | is.na(Gen)
   ) %>%
   select(Model, Selection, Population, file_name, replicate, n, H, SD, Gen)
 
-if (nrow(bad_non_null_files) > 0) {
-  print(bad_non_null_files)
+if (nrow(bad_parameter_files) > 0) {
+  print(bad_parameter_files)
   stop(
-    "Some non-null selection files are missing H, SD, or Gen. ",
+    "Some files are missing H, SD, or Gen. ",
     "This likely means the filename parser is failing."
   )
 }
 
 ###############################################################################
-########################## Expand null-selection rows if needed ################
-###############################################################################
-# Important:
-# Null_Selection Instantaneous_Population is your null-selection +
-# fluctuating/instantaneous population-size model.
-#
-# H and SD can be expanded for Null_Selection because selection is absent.
-# Gen should ideally be parsed from the filename. If Gen is missing, this code
-# uses default_Gen_if_missing rather than expanding the same file across both
-# Gen = 10 and Gen = 30.
+########################## Final parameter table ###############################
 ###############################################################################
 
-expand_null_or_keep_row <- function(
-    Model,
-    Selection,
-    Population,
-    file,
-    file_name,
-    replicate,
-    n,
-    H,
-    SD,
-    Gen
-) {
-  
-  if (Selection == "Null_Selection") {
-    
-    H_values <- if (is.na(H)) {
-      target_H_amplitude
-    } else {
-      H
-    }
-    
-    SD_values <- if (is.na(SD)) {
-      target_SD_amplitude
-    } else {
-      SD
-    }
-    
-    Gen_values <- if (is.na(Gen)) {
-      default_Gen_if_missing
-    } else {
-      Gen
-    }
-    
-    expand_grid(
-      H = H_values,
-      SD = SD_values,
-      Gen = Gen_values
-    ) %>%
-      mutate(
-        Model = Model,
-        Selection = Selection,
-        Population = Population,
-        file = file,
-        file_name = file_name,
-        replicate = replicate,
-        n = n
-      ) %>%
-      select(
-        Model,
-        Selection,
-        Population,
-        file,
-        file_name,
-        replicate,
-        n,
-        H,
-        SD,
-        Gen
-      )
-    
-  } else {
-    
-    tibble(
-      Model = Model,
-      Selection = Selection,
-      Population = Population,
-      file = file,
-      file_name = file_name,
-      replicate = replicate,
-      n = n,
-      H = H,
-      SD = SD,
-      Gen = Gen
-    )
-  }
-}
-
-param_table_FewerGen <- pmap_dfr(
-  param_table_raw,
-  expand_null_or_keep_row
-) %>%
+param_table_FewerGen <- param_table_raw %>%
   filter(
     !is.na(H),
     !is.na(SD),
@@ -5809,67 +3330,13 @@ file_parameter_reuse_check <- param_table_FewerGen %>%
   ) %>%
   filter(n_parameter_labels > 1)
 
-if (nrow(file_parameter_reuse_check) > 0) {
-  print(file_parameter_reuse_check)
-  message(
-    "Some files are used under multiple parameter labels. ",
-    "This is expected only for Null_Selection files expanded across H/SD."
-  )
-}
-
-bad_gen_reuse <- file_parameter_reuse_check %>%
-  filter(
-    Selection == "Null_Selection",
-    n_Gen_labels > 1
-  )
-
-if (nrow(bad_gen_reuse) > 0) {
-  print(bad_gen_reuse)
-  stop(
-    "A Null_Selection file is being reused across multiple Gen labels. ",
-    "This would mix Gen = 10 and Gen = 30 and should not happen."
-  )
-}
-
-bad_non_null_reuse <- file_parameter_reuse_check %>%
-  filter(
-    Selection != "Null_Selection"
-  )
-
-if (nrow(bad_non_null_reuse) > 0) {
-  print(bad_non_null_reuse)
-  stop(
-    "A non-null file is being reused across multiple parameter labels. ",
-    "This is parameter mixing and should not happen."
-  )
-}
-
-###############################################################################
-########################## Optional diagnostics ################################
-###############################################################################
-
-missing_parameter_report <- param_table_raw %>%
-  filter(
-    Selection == "Null_Selection",
-    is.na(H) | is.na(SD) | is.na(Gen)
-  ) %>%
-  distinct(
-    Model,
-    Selection,
-    Population,
-    file_name,
-    H,
-    SD,
-    Gen
-  )
-
-if (nrow(missing_parameter_report) > 0) {
-  message(
-    "Some Null_Selection files did not encode H, SD, or Gen. ",
-    "H/SD were expanded for plotting. Missing Gen was assigned default_Gen_if_missing."
-  )
-  print(missing_parameter_report)
-}
+# if (nrow(file_parameter_reuse_check) > 0) {
+#   print(file_parameter_reuse_check)
+#   stop(
+#     "Some files are being reused across multiple parameter labels. ",
+#     "This is parameter mixing and should not happen."
+#   )
+# }
 
 ###############################################################################
 ########################## Replicate check #####################################
@@ -5951,19 +3418,19 @@ sample_single_replicate_dynamics <- function(
     n_positions = 30,
     seed = 5463456
 ) {
-  
+
   if (replicate != target_replicate_for_dynamics) {
     return(NULL)
   }
-  
+
   fl <- read.csv(file)
-  
+
   required_cols <- c("Generation", "Frequency", "Position")
-  
+
   if (!all(required_cols %in% names(fl))) {
     return(NULL)
   }
-  
+
   fl <- fl %>%
     mutate(
       Generation = safe_num(Generation),
@@ -5975,13 +3442,11 @@ sample_single_replicate_dynamics <- function(
       !is.na(Frequency),
       !is.na(Position)
     )
-  
+
   if (nrow(fl) == 0) {
     return(NULL)
   }
-  
-  fl_sampled_time <- fl
-  
+
   set.seed(
     seed +
       as.integer(n) +
@@ -5989,14 +3454,14 @@ sample_single_replicate_dynamics <- function(
       as.integer(Gen) +
       as.integer(H * 100)
   )
-  
+
   sampled_positions <- sample(
-    unique(fl_sampled_time$Position),
-    min(n_positions, length(unique(fl_sampled_time$Position))),
+    unique(fl$Position),
+    min(n_positions, length(unique(fl$Position))),
     replace = FALSE
   )
-  
-  fl_sampled_time %>%
+
+  fl %>%
     filter(Position %in% sampled_positions) %>%
     mutate(
       Model = as.character(Model),
@@ -6086,7 +3551,7 @@ p_single_rep_dynamics_high_by_model <- ggplot(
     panel.spacing = unit(1.2, "lines")
   )
 
-p_single_rep_dynamics_high_by_model
+#p_single_rep_dynamics_high_by_model
 
 ###############################################################################
 ########################## Spectral analysis ###################################
@@ -6133,15 +3598,15 @@ calculate_spectrum_model <- function(
     Model_Label = NULL,
     spectrum_span = 2
 ) {
-  
+
   fl <- read.csv(file)
-  
+
   required_cols <- c("Generation", "Frequency")
-  
+
   if (!all(required_cols %in% names(fl))) {
     return(NULL)
   }
-  
+
   fl <- fl %>%
     mutate(
       Generation = safe_num(Generation),
@@ -6153,11 +3618,11 @@ calculate_spectrum_model <- function(
       is.finite(Generation),
       is.finite(Frequency)
     )
-  
+
   if (nrow(fl) == 0) {
     return(NULL)
   }
-  
+
   mean_allele_data <- fl %>%
     group_by(Generation) %>%
     summarize(
@@ -6165,22 +3630,22 @@ calculate_spectrum_model <- function(
       .groups = "drop"
     ) %>%
     arrange(Generation)
-  
+
   if (nrow(mean_allele_data) < 8) {
     return(NULL)
   }
-  
+
   series <- as.numeric(mean_allele_data$mean_allele_frequency)
   series <- series[is.finite(series)]
-  
+
   if (length(series) < 8) {
     return(NULL)
   }
-  
+
   if (sd(series, na.rm = TRUE) == 0) {
     return(NULL)
   }
-  
+
   spec_result <- tryCatch(
     stats::spectrum(
       series,
@@ -6189,19 +3654,19 @@ calculate_spectrum_model <- function(
     ),
     error = function(e) NULL
   )
-  
+
   if (is.null(spec_result)) {
     return(NULL)
   }
-  
+
   ok_spec <- is.finite(spec_result$freq) &
     spec_result$freq > 0 &
     is.finite(spec_result$spec)
-  
+
   if (!any(ok_spec)) {
     return(NULL)
   }
-  
+
   tibble(
     Period = 1 / spec_result$freq[ok_spec],
     Spectrum = as.numeric(spec_result$spec[ok_spec]),
@@ -6313,7 +3778,7 @@ p_spectral_by_model <- ggplot(
   ) +
   facet_wrap(
     vars(Regime, Model_Label),
-    ncol = 2,
+    ncol = 2, dir = "v",
     scales = "free"
   ) +
   labs(
@@ -6343,7 +3808,7 @@ p_spectral_by_model <- ggplot(
     panel.spacing = unit(1.2, "lines")
   )
 
-p_spectral_by_model
+#p_spectral_by_model
 
 ###############################################################################
 ########################## Combined plot #######################################
@@ -6366,11 +3831,11 @@ combined_dynamics_spectral
 ggsave(
   filename = file.path(
     plot_dir,
-    "combined_dynamics_spectral_population_models_with_null_instantaneous_population.pdf"
+    "Figure8.pdf"
   ),
   plot = combined_dynamics_spectral,
   width = 20,
-  height = 20,
+  height = 13,
   units = "in",
   device = cairo_pdf
 )
@@ -6378,11 +3843,11 @@ ggsave(
 ggsave(
   filename = file.path(
     plot_dir,
-    "combined_dynamics_spectral_population_models_with_null_instantaneous_population.png"
+    "Figure8.jpg" #"combined_dynamics_spectral_population_models.jpg"
   ),
   plot = combined_dynamics_spectral,
   width = 20,
-  height = 20,
+  height = 13,
   units = "in",
   device = "png"
 )
