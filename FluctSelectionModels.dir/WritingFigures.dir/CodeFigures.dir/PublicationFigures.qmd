@@ -25,9 +25,31 @@ editor: visual
 
 # setwd("/mnt/pixstor/kingeg-lab/etb68/evogen-sims/FluctSelectionModels.dir/WritingFigures.dir/CodeFigures.dir")
 
-file_path <- rstudioapi::getActiveDocumentContext()$path
-setwd(dirname(file_path))
+#| label: setup
 
+#| include: false
+
+# Setting the directory containing the document to be the home directory and destination 
+
+document_dir <- Sys.getenv("QUARTO_DOCUMENT_PATH", unset = "")
+
+if (!nzchar(document_dir)) {
+
+  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    active_file <- rstudioapi::getActiveDocumentContext()$path
+    document_dir <- if (nzchar(active_file)) {
+      dirname(active_file)
+      } else {
+        getwd()
+        }
+    } else {
+      document_dir <- getwd()
+    }
+  }
+
+document_dir <- normalizePath(
+  document_dir, winslash = "/", mustWork = TRUE
+)
 library(forcats)
 library(stringi)
 library(tidyr)
@@ -344,7 +366,7 @@ mythemes <- theme_bw() +
 
 ### 2.1. Allele Frequency
 
-```{r, warning=FALSE, fig.width=40, fig.height=20, dpi=1200, echo=FALSE, message=FALSE}
+```{r, warning=FALSE, fig.width=40, fig.height=20, dpi=300, echo=FALSE, message=FALSE}
 #| label: AF_CSNS_model_comparison
 
 first_existing_file <- function(candidates, model_name) {
@@ -674,7 +696,7 @@ print(AF_CSNS_model_comparison)
 
 ### 2.2. Spectral Analysis Comparison
 
-```{r, warning=FALSE, fig.width=40, fig.height=10, dpi=1200, echo=FALSE, message=FALSE}
+```{r, warning=FALSE, fig.width=40, fig.height=10, dpi=600, echo=FALSE, message=FALSE}
 #| label: Spectral_CSNS_model_comparison
 
 find_preferred_files <- function(
@@ -1033,7 +1055,7 @@ print(spec_plot)
 
 ### 2.3 Combined Models comparison
 
-```{r, warning=FALSE, fig.width=58, fig.height=40, dpi=1200, echo=FALSE, message=FALSE}
+```{r, warning=FALSE, fig.width=58, fig.height=40, dpi=300, echo=FALSE, message=FALSE}
 #| label: AF_Spectral_CSNS_model_comparison
 
 ###############################################################################
@@ -2806,7 +2828,7 @@ invisible(gc(full = TRUE))
 ### 7.1. FS model comparison by genomic architecture
 
 
-```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=1200, echo=FALSE}
+```{r, warning=FALSE, fig.width = 30, fig.height = 22, dpi=600, echo=FALSE}
 library(dplyr)
 library(ggplot2)
 
