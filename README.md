@@ -14,11 +14,11 @@ Each directory and its child directories are described below:
 
 │   ├── Code.dir: This subdirectory with child directories simulates different scenarios of selection and constant population size as described below 
 
-> Note that each child folder has a bash file with required parameters and their combinations, and it takes a slim file to run simulations.
-The slim file takes each parameter combination, runs the evolutionary simulation and writes the output files to the corresponding folder.
-Therefore, the user must first ensure that the output folders are created.
-> Furthermore, they should make sure that they have requested enough resources before running some of these simulations, especially those that require extended generations.
-> Although we run our simulations using bash files, one can also use Slurm
+- Note that each child folder has a bash file with required parameters and their combinations, and it takes a slim file to run simulations.
+- The slim file takes each parameter combination, runs the evolutionary simulation and writes the output files to the corresponding folder.
+- Therefore, the user must first ensure that the output folders are created.
+- Furthermore, they should make sure that they have requested enough resources before running some of these simulations, especially those that require extended generations.
+- Although we run our simulations using bash files, one can also use Slurm
 
 │   ├── Code.dir
 
