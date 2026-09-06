@@ -219,7 +219,7 @@ sampledreplc_AF <- sampled_data %>%
 #| 
 sampledreplc_AF
 
-ggsave(filename = "SI_5.1.sampledreplc_AF.jpg", sampledreplc_AF, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 20, height = 5, units = "in", dpi = 300, limitsize = FALSE)
+ggsave(filename = "SI_1.1.sampledreplc_AF.jpg", sampledreplc_AF, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 20, height = 5, units = "in", dpi = 300, limitsize = FALSE)
 ```
 
 ## 1.2. Null selection phenotypes
@@ -296,7 +296,7 @@ result <- pheno_processing(dirpath, pattern)
 Ns_Pheno_All_architectures <- result$plot
 Ns_Pheno_All_architectures
 
-ggsave(filename = "SI_5.2.NS_Pheno_All_architectures.jpg", Ns_Pheno_All_architectures, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 40, height = 15, units = "in", dpi = 300, limitsize = FALSE)
+ggsave(filename = "SI_1.2.NS_Pheno_All_architectures.jpg", Ns_Pheno_All_architectures, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 40, height = 15, units = "in", dpi = 300, limitsize = FALSE)
 ```
 
 ## 1.3. Null selection spectral analysis
@@ -1584,7 +1584,7 @@ instantplots_AF <- result$plots
 
 ### 4.1.1. Monogenic
 
-```{r, warning=FALSE, fig.width = 20, fig.height = 30, echo=FALSE, message=FALSE}
+```{r, warning=FALSE, fig.width = 60, fig.height = 60, echo=FALSE, message=FALSE, dpi=300}
 #| label: Single_Locus_AllReplicates
 #| fig-cap: "SI 4.1.1. Single locus (30 replicates) allele frequency dynamics for instantaneous selection, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation across replicates."
 #| fig-pos: "H"
@@ -1688,7 +1688,7 @@ SingleLocusAF <- combined_data %>%
 
 SingleLocusAF
 
-ggsave(filename = "SI_4.1.1.SingleLocusAF.jpg", SingleLocusAF, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 70, height = 60, units = "in", dpi = 300, limitsize = FALSE)
+ggsave(filename = "SI_4.1.1.SingleLocusAF.jpg", SingleLocusAF, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 60, height = 60, units = "in", dpi = 300, limitsize = FALSE)
 ```
 
 ### 4.1.2. Oligogenic
@@ -2347,161 +2347,390 @@ ggsave(filename = "SI_4.2.4.3.Inst_Spect_Loci300Gen30.jpg", Inst_Spect_Loci300Ge
 
 # 5. Fixed percentages for each architecture
 
-```{r, fig.height=5, fig.width=10, echo=FALSE, dpi = 1200, message=FALSE}
+```{r, fig.height=20, fig.width=40, echo=FALSE, dpi = 300, message=FALSE}
+
 #| label: Fixation_Percentages
 #| fig-cap: "SI 5. Percentage of fixed loci across different genetic architectures based on parameter interactions from instantaneous selection model. The single locus trait exhibits the highest percentage of fixed loci among the 30 replicates, followed by the 10 loci model, while 70 loci or more shows a consistent fixation rate."
 #| fig-pos: "H"
-#### Parameter combination as colors
-library(furrr)
-library(fs)
-#library(stringr)
+
 library(dplyr)
+library(forcats)
+library(fs)
+library(furrr)
+library(future)
+library(ggplot2)
 
 path <- "../../Output.dir/LinFS.dir/"
-pattern <- "^genome\\d+_n\\d+_H0.(1|5|8)(SD[1|4])?Gen(10|30)?\\.csv$" 
 
-# List files using list.files (full paths, filtering by regex)
-files <- list.files(path, pattern, full.names = TRUE)
+pattern <- "^genome\\d+_n\\d+_H0.(1|5|8)(SD[1|4])?Gen(10|30)?\\.csv$"
+
+# List files using list.files.
+files <- list.files(
+  path = path,
+  pattern = pattern,
+  full.names = TRUE
+)
 
 if (length(files) == 0) {
-  stop("No files found matching the pattern in the specified path.")
+  stop(
+    "No files found matching the pattern in the specified path."
+  )
 }
 
 available_cores <- parallel::detectCores()
-workers_to_use <- max(1, available_cores - 4)  
-plan(multicore, workers = workers_to_use)
+
+workers_to_use <- max(
+  1,
+  available_cores - 4
+)
+
+future::plan(
+  future::multicore,
+  workers = workers_to_use
+)
 
 process_file <- function(file) {
-  filename <- path_file(file)
-  repl_val <- as.numeric(sub(".*genome(\\d+)_.*", "\\1", basename(filename)))
-  H_val <- as.numeric(sub(".*_H(0\\.\\d+).*", "\\1", basename(filename)))
-  loci_val <- as.numeric(sub(".*_n(\\d+)_.*", "\\1", basename(filename)))
-  SD_val <- as.numeric(sub(".*SD(\\d+).*", "\\1", basename(filename)))
-  Gen_val <- as.numeric(sub(".*Gen(\\d+).*", "\\1", basename(filename)))
-  
-  df <- read.csv(file) %>%
-    dplyr::select(-any_of("Origin")) %>%
-    mutate(
-      Position = as_factor(Position),
-      repl = (repl_val),
-      H    = (H_val),
-      loci = (loci_val),
-      SD   = (SD_val),
-      Gen  = (Gen_val)
+
+  filename <- fs::path_file(file)
+
+  repl_val <- as.numeric(
+    sub(
+      ".*genome(\\d+)_.*",
+      "\\1",
+      basename(filename)
     )
-  
-  required <- c("H", "loci", "SD", "Gen", "repl", "Position")
-  missing_cols <- setdiff(required, names(df))
+  )
+
+  H_val <- as.numeric(
+    sub(
+      ".*_H(0\\.\\d+).*",
+      "\\1",
+      basename(filename)
+    )
+  )
+
+  loci_val <- as.numeric(
+    sub(
+      ".*_n(\\d+)_.*",
+      "\\1",
+      basename(filename)
+    )
+  )
+
+  SD_val <- as.numeric(
+    sub(
+      ".*SD(\\d+).*",
+      "\\1",
+      basename(filename)
+    )
+  )
+
+  Gen_val <- as.numeric(
+    sub(
+      ".*Gen(\\d+).*",
+      "\\1",
+      basename(filename)
+    )
+  )
+
+  df <- read.csv(file) %>%
+    dplyr::select(
+      -dplyr::any_of("Origin")
+    ) %>%
+    dplyr::mutate(
+      Position = forcats::as_factor(Position),
+      repl = repl_val,
+      H = H_val,
+      loci = loci_val,
+      SD = SD_val,
+      Gen = Gen_val
+    )
+
+  required <- c(
+    "H",
+    "loci",
+    "SD",
+    "Gen",
+    "repl",
+    "Position"
+  )
+
+  missing_cols <- setdiff(
+    required,
+    names(df)
+  )
+
   if (length(missing_cols) > 0) {
-    warning("File ", filename, " is missing the following columns: ",
-            paste(missing_cols, collapse = ", "))
+    warning(
+      "File ",
+      filename,
+      " is missing the following columns: ",
+      paste(
+        missing_cols,
+        collapse = ", "
+      )
+    )
   }
+
   return(df)
 }
 
-combined_data <- future_map_dfr(files, process_file, .options = furrr_options(chunk_size = 100))
+combined_data <- furrr::future_map_dfr(
+  files,
+  process_file,
+  .options = furrr::furrr_options(
+    chunk_size = 100
+  )
+)
 
 data_with_fix <- combined_data %>%
-  group_by(H, loci, SD, Gen, repl, Position) %>%
-  filter(Frequency == 1 | (Frequency < 1 & Generation == max(Generation) & max(Generation) < 2000)) %>% 
-  distinct(H, loci, SD, Gen, repl, Position) %>% 
-  ungroup()
+  dplyr::group_by(
+    H,
+    loci,
+    SD,
+    Gen,
+    repl,
+    Position
+  ) %>%
+  dplyr::filter(
+    Frequency == 1 |
+      (
+        Frequency < 1 &
+          Generation == max(Generation) &
+          max(Generation) < 2000
+      )
+  ) %>%
+  dplyr::distinct(
+    H,
+    loci,
+    SD,
+    Gen,
+    repl,
+    Position
+  ) %>%
+  dplyr::ungroup()
 
 replicate_summary <- data_with_fix %>%
-  group_by(H, loci, SD, Gen, repl) %>%
-  summarise(
-    fixed_count = n_distinct(Position),
-    total_count = 30 * loci,  # count of unique loci in this replicate
-    .groups = "drop"
-  ) %>% 
-  distinct()
+  dplyr::group_by(
+    H,
+    loci,
+    SD,
+    Gen,
+    repl
+  ) %>%
+  dplyr::summarise(
+    fixed_count = dplyr::n_distinct(Position),
 
+    # first() returns one value for each replicate group.
+    total_count = 30 *
+      dplyr::first(.data$loci),
 
-parameter_summary <- replicate_summary %>%
-  group_by(H, loci, SD, Gen, total_count) %>%
-  summarise(
-    total_fixed    = sum(fixed_count),
-    total_possible = total_count,
-    Perc_Loci      = total_fixed * 100 / total_possible,
     .groups = "drop"
   ) %>%
-  mutate(
-    Gen_SD  = paste0("Gen = ", Gen, " SD = ", SD),
-    H_label = paste0("H = ", H),
-    Combo   = paste0(H_label, ", ", Gen_SD)
-  ) %>% 
-  distinct()
+  dplyr::distinct()
 
-Fixation_Percentages <-
-  ggplot(
-    parameter_summary %>%
-      mutate(
-        H   = as_factor(H),
-        loci= as_factor(loci),
-        SD  = as_factor(SD),
-        Gen = as_factor(Gen)
-      ),
-    aes(
-      x = loci,
-      y = Perc_Loci,
-      color = H,
-      shape = SD,
-      linetype = Gen,
-      group = interaction(H, Gen, SD)
+parameter_summary <- replicate_summary %>%
+  dplyr::group_by(
+    H,
+    loci,
+    SD,
+    Gen,
+    total_count
+  ) %>%
+  dplyr::summarise(
+    total_fixed = sum(fixed_count),
+
+    # first() returns one value for each parameter group.
+    total_possible =
+      dplyr::first(.data$total_count),
+
+    Perc_Loci =
+      total_fixed * 100 / total_possible,
+
+    .groups = "drop"
+  ) %>%
+  dplyr::mutate(
+    Gen_SD = paste0(
+      "Gen = ",
+      Gen,
+      " SD = ",
+      SD
+    ),
+
+    H_label = paste0(
+      "H = ",
+      H
+    ),
+
+    Combo = paste0(
+      H_label,
+      ", ",
+      Gen_SD
     )
+  ) %>%
+  dplyr::distinct()
+
+Fixation_Percentages <- ggplot(
+  parameter_summary %>%
+    dplyr::mutate(
+      H = forcats::as_factor(H),
+      loci = forcats::as_factor(loci),
+      SD = forcats::as_factor(SD),
+      Gen = forcats::as_factor(Gen)
+    ),
+  aes(
+    x = loci,
+    y = Perc_Loci,
+    color = H,
+    shape = SD,
+    linetype = Gen,
+    group = interaction(
+      H,
+      Gen,
+      SD
+    )
+  )
+) +
+  geom_line(
+    linewidth = 3
   ) +
-  geom_line(linewidth = 3) +
-  geom_point(size = 7, stroke = 0) +
+  geom_point(
+    size = 7,
+    stroke = 0
+  ) +
   labs(
     x = "Number of Loci",
     y = "Percentage of Loci Fixed (%)",
-    color = "Heritability (h\u00B2)",
+    color = "Heritability (h²)",
     linetype = "Season Length (Gen)",
     shape = "Distance to Optimum (Δ)"
   ) +
-  scale_color_manual(values = c("darkblue", "gray50", "firebrick")) +
+  scale_color_manual(
+    values = c(
+      "darkblue",
+      "gray50",
+      "firebrick"
+    )
+  ) +
   scale_linetype_manual(
-    values = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+    values = c(
+      "solid",
+      "dashed",
+      "dotted",
+      "dotdash",
+      "longdash",
+      "twodash"
+    )
   ) +
   theme_bw() +
   theme(
-    text           = element_text(family = "sans"),
-    axis.text.x    = element_text(face = "bold", size = 30, angle = 15,
-                                  hjust = 1, margin = margin(t = 10)),
-    axis.text.y    = element_text(face = "bold", size = 30, angle = 15,
-                                  margin = margin(r = 10)),
-    axis.line      = element_line(linewidth = 1.2),
-    plot.title     = element_text(hjust = 0.01, face = "bold", size = 30),
-    axis.title.x   = element_text(size = 30, face = "bold",
-                                  margin = margin(t = 30)),
-    axis.title.y   = element_text(size = 30, face = "bold",
-                                  margin = margin(r = 35)),
-    strip.text     = element_text(size = 30, face = "bold"),
-    panel.spacing  = unit(5, "lines"),
-    panel.grid     = element_blank(),
-    legend.position= c(0.95, 0.95),
-    legend.justification = c("right", "top"),
-    legend.text    = element_text(size = 32, face = "bold"),
-    legend.title   = element_text(size = 34, face = "bold"),
-    legend.key.width = unit(2.5, "cm")  
+    text = element_text(
+      family = "sans"
+    ),
+
+    axis.text.x = element_text(
+      face = "bold",
+      size = 30,
+      angle = 15,
+      hjust = 1,
+      margin = margin(t = 10)
+    ),
+
+    axis.text.y = element_text(
+      face = "bold",
+      size = 30,
+      angle = 15,
+      margin = margin(r = 10)
+    ),
+
+    axis.line = element_line(
+      linewidth = 1.2
+    ),
+
+    plot.title = element_text(
+      hjust = 0.01,
+      face = "bold",
+      size = 30
+    ),
+
+    axis.title.x = element_text(
+      size = 30,
+      face = "bold",
+      margin = margin(t = 30)
+    ),
+
+    axis.title.y = element_text(
+      size = 30,
+      face = "bold",
+      margin = margin(r = 35)
+    ),
+
+    strip.text = element_text(
+      size = 30,
+      face = "bold"
+    ),
+
+    panel.spacing = grid::unit(
+      5,
+      "lines"
+    ),
+
+    panel.grid = element_blank(),
+
+    legend.position = c(
+      0.95,
+      0.95
+    ),
+
+    legend.justification = c(
+      "right",
+      "top"
+    ),
+
+    legend.text = element_text(
+      size = 32,
+      face = "bold"
+    ),
+
+    legend.title = element_text(
+      size = 34,
+      face = "bold"
+    ),
+
+    legend.key.width = grid::unit(
+      2.5,
+      "cm"
+    )
   ) +
   guides(
-    color    = guide_legend(override.aes = list(shape = 16, size = 6), byrow = TRUE),
-    linetype = guide_legend(override.aes = list(linewidth = 2, color = "black"))
-  )
+    color = guide_legend(
+      override.aes = list(
+        shape = 16,
+        size = 6
+      ),
+      byrow = TRUE
+    ),
 
-# ggsave("Fixation_Percentages.jpg",
-#        plot = Fixation_Percentages, 
-#        dpi = 600, 
-#        width = 40, 
-#        height = 20, 
-#        units = "in", 
-#        path = "../OutputFigures.dir/SupplementalFigures.dir")
+    linetype = guide_legend(
+      override.aes = list(
+        linewidth = 2,
+        color = "black"
+      )
+    )
+  )
 
 print(Fixation_Percentages)
 
-
-ggsave(filename = "SI_5.Fixation_Percentages.jpg", Fixation_Percentages, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 40, height = 20, units = "in", dpi = 300, limitsize = FALSE)
+ggsave(
+  filename = "SI_5.Fixation_Percentages.jpg",
+  plot = Fixation_Percentages,
+  path = "../OutputFigures.dir/SupplementalFigures.dir",
+  width = 40,
+  height = 20,
+  units = "in",
+  dpi = 300,
+  limitsize = FALSE
+)
 
 ```
 
@@ -3072,7 +3301,7 @@ gradIplots_AF <- result$plots
 
 ### 7.1.1. Monogenic
 
-```{r, warning=FALSE, fig.width = 40, fig.height = 55, echo=FALSE, message=FALSE}
+```{r, warning=FALSE, fig.width = 40, fig.height = 55, echo=FALSE, dpi=300, message=FALSE}
 #| label: GradI_Single_Locus_AllReplicates
 #| fig-cap: "SI 7.1.1. Single locus 30 replicates allele frequency dynamics for gradual two equal seasons selection model, showing all parameter interactions. The highlighted line indicates the mean allele frequency for each generation."
 #| fig-pos: "H"
@@ -3245,7 +3474,7 @@ ggsave(filename = "SI_7.1.2.3.GradualI_AF_Loci10Gen30.jpg", GradualI_AF_Loci10Ge
 
 ### 7.1.3. Polygenic 70 loci
 
-```{r, fig.height = 40, fig.width = 50, echo=FALSE}
+```{r, fig.height = 40, fig.width = 50, echo=FALSE, dpi=300}
 #| label: GradualI_AF_Loci70Gen10
 #| fig-cap: "SI 7.1.3.1. Allele frequency dynamics for all parameter combinations with selection length of 10 generations from a single replicate, gradual two equal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (70 loci)."
 #| fig-pos: "H"
@@ -3286,7 +3515,7 @@ print(GradualI_AF_Loci70Gen20)
 ggsave(filename = "SI_7.1.3.2.GradualI_AF_Loci70Gen20.jpg", GradualI_AF_Loci70Gen20, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 50, height = 40, units = "in", dpi = 300, limitsize = FALSE)
 ```
 
-```{r, fig.height = 40, fig.width = 50, echo=FALSE}
+```{r, fig.height = 40, fig.width = 50, echo=FALSE, dpi=300}
 #| label: GradualI_AF_Loci70Gen30
 #| fig-cap: "SI 7.1.3.3. Allele frequency dynamics for all parameter combinations with selection length of 30 generations from a single replicate, gradual two equal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (70 loci)."
 #| fig-pos: "H"
@@ -3308,7 +3537,7 @@ ggsave(filename = "SI_7.1.3.3.GradualI_AF_Loci70Gen30.jpg", GradualI_AF_Loci70Ge
 
 ### 7.1.4. Polygenic 300 loci
 
-```{r, fig.height = 40, fig.width = 50, echo=FALSE}
+```{r, fig.height = 40, fig.width = 50, echo=FALSE, dpi=300}
 #| label: GradualI_AF_Loci300Gen10
 #| fig-cap: "SI 7.1.4.1. Allele frequency dynamics for all parameter combinations with selection length of 10 generations from a single replicate, gradual two equal seasons selection model. Each line  represents the frequency trajectory for a locus from polygenic trait (300 loci)."
 #| fig-pos: "H"
@@ -3329,6 +3558,7 @@ print(GradualI_AF_Loci300Gen10)
 
 ggsave(filename = "SI_7.1.4.1.GradualI_AF_Loci300Gen10.jpg", GradualI_AF_Loci300Gen10, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 50, height = 40, units = "in", dpi = 300, limitsize = FALSE)
 ```
+
 
 ```{r, fig.height = 40, fig.width = 50, echo=FALSE}
 #| label: GradualI_AF_Loci300Gen20
@@ -4279,7 +4509,7 @@ GradII_GradII_Poly_300_SA <- result[[5]] +
 print(GradII_GradII_Poly_300_SA)
 
 
-ggsave(filename = "SI_8.2.2.GradII_Poly_300_SA.jpg", GradII_Poly_300_SA, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 50, height = 40, units = "in", dpi = 300, limitsize = FALSE)
+ggsave(filename = "SI_8.2.2.GradII_Poly_300_SA.jpg", GradII_GradII_Poly_300_SA, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 50, height = 40, units = "in", dpi = 300, limitsize = FALSE)
 ```
 
 # 9. Complex model II
@@ -4713,7 +4943,7 @@ GradII_GradII_UnequalD_Poly_300_SA <- result[[5]] +
 print(GradII_GradII_UnequalD_Poly_300_SA)
 
 
-ggsave(filename = "SI_9.2.2.GradII_UnequalD_Poly_300_SA.jpg", GradII_UnequalD_Poly_300_SA, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 40, height = 25, units = "in", dpi = 300, limitsize = FALSE)
+ggsave(filename = "SI_9.2.2.GradII_UnequalD_Poly_300_SA.jpg", GradII_GradII_UnequalD_Poly_300_SA, path = "../OutputFigures.dir/SupplementalFigures.dir", width = 40, height = 25, units = "in", dpi = 300, limitsize = FALSE)
 ```
 
 
@@ -5325,4 +5555,6 @@ ggsave(filename = "SI_11.Fixation_Percentages_Model_WithPop.jpg", Fixation_Perce
 #   units = "in"
 # )
 ```
+
+
 
