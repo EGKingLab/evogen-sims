@@ -1,6 +1,6 @@
 # evogen-sims
 
-This is a repository for "Dissecting fluctuating selection: A unified population and quantitative genetics" project.
+This is a repository for the "Dissecting fluctuating selection: A unified population and quantitative genetics" project, as published in Genome Biology and Evolution: https://doi.org/10.1093/gbe/evag225.
 
 The major folders are:
 1. FluctSelectionModels.dir - For models of selection and constant population size
