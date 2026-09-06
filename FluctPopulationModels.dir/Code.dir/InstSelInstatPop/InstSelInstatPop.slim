@@ -1,0 +1,197 @@
+
+initialize() {
+	// reproducibility & pedigree tracking
+	setSeed(seed);
+	initializeSLiMOptions(keepPedigrees=T);
+	
+	initializeSex("A");
+	initializeMutationRate(0);
+	
+	// neutral mutation type
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeGenomicElementType("g1", m1, 1.0);
+	
+	// QTL mutation type with exponential effect sizes
+	scriptForQTLs = "rexp(1);";
+	initializeMutationType("m2", 0.5, "s", scriptForQTLs);
+	initializeGenomicElementType("g2", m2, 1.0);
+	
+	// genetic parameters
+	defineConstant("nloci", loci);
+	defineConstant("nneutral", region);
+	defineConstant("h2", h);
+	
+	// ecological parameters
+	defineConstant("stdv", SD);
+	defineConstant("gener", gen);
+	defineConstant("ranges", rang);
+	
+	// Population parameters with instantaneous (High and Low) trajectory
+	defineConstant("GOM_N0",   10000);  // initial pop size
+	defineConstant("GOM_NMAX", 1000);   // asymptotic min size
+	defineConstant("GOM_R",    0.004);  // rate parameter
+	
+	// Output directory
+	defineConstant("OUT_DIR", "/home/etb68/Mylab/EvoGenFP.sims/FluctPopulationModels.dir/Output.dir/InstSelInstatPop/");
+	
+	// Addition the QTL in their positions
+	pos = 0;
+	qPositions = c();
+	for (locus in 1:nloci) {
+		initializeGenomicElement(g1, pos, pos + nneutral - 1);
+		pos = pos + nneutral;
+		initializeGenomicElement(g2, pos, pos);
+		qPositions = c(qPositions, pos);
+		pos = pos + 1;
+		initializeGenomicElement(g1, pos, pos + nneutral - 1);
+		pos = pos + nneutral;
+	}
+	defineConstant("Q", qPositions);
+	
+	// QTL mutation stacking and  substitution policy
+	m2.convertToSubstitution = F;
+	m2.mutationStackPolicy   = "l";
+	
+	initializeRecombinationRate(1e-8);
+	
+	//Just for plotting
+	m1.color = "blue";
+	m2.color = "red";
+}
+
+/////////////////////////////////////////////////////////
+/////Introducing the initial population with QTLs //////
+//////////////////////////////////////////////////////// 
+
+1 early() {
+	// Adding ndividuals to be used for selecting QTLs
+	sim.addSubpop("p2", 2);
+	g = p2.genomes[0];
+	muts = g.addNewMutation(m2, rexp(nloci), Q);
+	// Adding individuals for the main simulation and assign them with probability to carry a given QTL marker
+	sim.addSubpop("p1", GOM_N0);
+	markers = runif(nloci,0,1);
+	ind = 0;
+	for (position in Q){
+		for (g in p1.genomes){
+			if(rbinom(1,1, markers[ind]) == 1){g.addMutations(muts[ind]);}
+		}
+		ind = ind + 1;
+	}
+	p2.setSubpopulationSize(0);
+	p1.setSexRatio(0.5);
+	p1.setCloningRate(0);
+	p1.setSelfingRate(0);
+}
+
+mutationEffect(m2) {
+	return 1.0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+///late event at initial generation to compute phenotype, optima & pop sizes changes ///
+////////////////////////////////////////////////////////////////////////////////////////
+
+1 early() {
+	inds     = p1.individuals;
+	additive = inds.sumOfMutationsOfType(m2);
+	
+	V_A = 2*nloci/3; //2*100/3; sd(additive)^2
+	defineConstant("V_E",(V_A - h2 * V_A) / h2);
+	env = rnorm(size(inds), 0.0, sqrt(V_E));
+	defineConstant("mup", nloci); // Expected mean; 
+	
+	phenotypes = additive + env;
+	sdp = sqrt(V_A/h2);
+	phenotypes = ((phenotypes - mup)/sdp); // Phenotype scaling	
+	
+	// moving optimum: alternate low/high every 25 gens
+	
+	lower_opt = mean(phenotypes) - sd(phenotypes)*stdv;
+	upper_opt = mean(phenotypes) + sd(phenotypes)*stdv;
+	nopt = rep(c(rep(lower_opt, gener),rep(upper_opt, gener)), ranges);
+	
+	//opt = mean(phenotypes) + sd(phenotypes)*stdv;
+        //nopt = rep(opt, 2001);
+
+	defineGlobal("newopt", nopt);
+	
+	inds.fitnessScaling = exp(-(1/125) * (phenotypes - newopt[sim.cycle])^2);
+	
+	/*
+	// build Gompertz trajectory inline (2025 points)
+	pop = seq(1,2001, by = 1);
+	for (i in 0:(size(pop)-1)) {
+		generation = i + 1;
+		pop[i] = asInteger(
+			GOM_NMAX * exp(log(GOM_N0 / GOM_NMAX) *
+			(1 - exp(-GOM_R * generation)))
+			);
+	}
+	defineGlobal("newpop", pop);*/
+	
+	//.................... Instant Pop Fluctuation ................
+	
+	npop = rep(c(rep(GOM_N0, gener), rep(GOM_NMAX, gener)), ranges);
+	defineGlobal("newpop", npop);
+	
+	filePrefix = paste0(
+		"_repl", repl,
+		"_loci", nloci,
+		"_h", h2,
+		"_Gen", gen,
+		"_SD",stdv
+		);
+	
+	defineConstant("AF", OUT_DIR + "/" + "genome" + filePrefix + ".csv");
+	defineConstant("Pheno", OUT_DIR + "/" + "pheno" + filePrefix + ".csv");
+	
+	// CSV header
+	writeFile(AF, "Generation,Position,Frequency,Effect\n");
+	writeFile(Pheno, "Generation,Phenotype,Optimum,PopSize\n");
+}
+
+1:2000 late(){
+	p1.setSubpopulationSize(newpop[sim.cycle]);
+	inds = sim.subpopulations.individuals;
+	additive = inds.sumOfMutationsOfType(m2);
+	
+	env = rnorm(size(inds), 0.0, sqrt(V_E));
+	
+	phenotypes = additive + env;
+	V_A = 2*nloci/3; //2*100/3; sd(additive)^2
+	sdp = sqrt(V_A/h2);
+	phenotypes = ((phenotypes - mup)/sdp); // Phenotype scaling
+	inds.fitnessScaling = exp(-(1/125) * (phenotypes - newopt[sim.cycle])^2);
+	
+	mean_fitness = mean(inds.fitnessScaling);
+	
+	inds.tagF = phenotypes;
+	meanPhenotype = mean(phenotypes);
+	
+	qtls = sim.mutationsOfType(m2);
+	freq = sim.mutationFrequencies(NULL, qtls);
+	selCoef = qtls.selectionCoeff;
+	posit = qtls.position;
+	origin = qtls.originTick;
+	
+	indices = order(freq, F);
+	
+	for (i in indices) {
+		line_geno = sim.cycle + "," +
+			posit[i] + "," +
+			format("%.6f", freq[i]) + "," +
+			format("%.6f", selCoef[i]) + "\n";
+		writeFile(AF, line_geno, append=T);
+	}
+	
+	line_pheno = sim.cycle + "," +
+		format("%.6f", meanPhenotype) + "," +
+		newopt[sim.cycle] + "," +
+		newpop[sim.cycle] + "\n";
+	writeFile(Pheno, line_pheno, append=T);
+	
+//	sim.outputFixedMutations();
+//	sim.simulationFinished();
+}
+
